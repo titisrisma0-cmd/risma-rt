@@ -4,13 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Iuran;
+use Illuminate\Validation\Rule;
 
 class IuranController extends Controller
 {
     public function index()
     {
-        $iuran = Iuran::orderBy('created_at', 'desc')->get();
-        return view('iuran.index', compact('iuran'));
+        // Ambil semua data iuran
+        $iuran = Iuran::orderBy('created_at', 'desc')
+            ->get()
+            ->unique(function ($item) {
+                return implode('|', [
+                    strtolower(trim($item->nama_iuran)),
+                    $item->jenis_iuran,
+                    $item->nominal,
+                    $item->periode,
+                    $item->kategori,
+                ]);
+            });
+
+        // Kelompokkan berdasarkan kategori
+        $iuranRamadhan = $iuran->where('kategori', 'Ramadhan');
+        $iuranNonRamadhan = $iuran->where('kategori', 'Non-Ramadhan');
+
+        // Kirim ke view index.blade.php
+        return view('iuran.index', compact('iuranRamadhan', 'iuranNonRamadhan'));
     }
     
     public function create()
@@ -20,25 +38,43 @@ class IuranController extends Controller
     
     public function store(Request $request)
     {
+        $request->merge([
+            'nama_iuran' => trim($request->nama_iuran),
+        ]);
+
         $request->validate([
-            'nama_iuran' => 'required',
-            'jenis_iuran' => 'required',
+            'nama_iuran' => [
+                'required',
+                Rule::unique('iurans', 'nama_iuran')->where(function ($query) use ($request) {
+                    return $query->where('jenis_iuran', $request->jenis_iuran)
+                        ->where('nominal', $request->nominal)
+                        ->where('periode', $request->periode)
+                        ->where('kategori', $request->kategori);
+                }),
+            ],
+            'jenis_iuran' => 'required|in:wajib,sukarela,khusus',
             'nominal' => 'required|numeric',
-            'periode' => 'required',
+            'periode' => 'required|in:bulanan,triwulan,tahunan',
+            'kategori' => 'required|in:Ramadhan,Non-Ramadhan',
+            'status' => 'nullable|in:aktif,nonaktif',
+        ], [
+            'nama_iuran.unique' => 'Jenis iuran dengan nama, nominal, periode, dan kategori yang sama sudah ada.',
         ]);
         
         $lastIuran = Iuran::orderBy('id', 'desc')->first();
         $kodeIuran = 'IUR' . str_pad(($lastIuran ? $lastIuran->id + 1 : 1), 3, '0', STR_PAD_LEFT);
         
         Iuran::create([
-            'kode_iuran' => $kodeIuran,
-            'nama_iuran' => $request->nama_iuran,
-            'jenis_iuran' => $request->jenis_iuran,
-            'nominal' => $request->nominal,
-            'periode' => $request->periode,
-            'keterangan' => $request->keterangan,
-            'status' => 'aktif'
+            'kode_iuran'   => $kodeIuran,
+            'nama_iuran'   => trim($request->nama_iuran),
+            'jenis_iuran'  => $request->jenis_iuran,
+            'nominal'      => $request->nominal,
+            'periode'      => $request->periode,
+            'keterangan'   => $request->keterangan,
+            'kategori'     => $request->kategori,
+            'status'       => $request->status ?? 'aktif'
         ]);
+
         
         return redirect()->route('iuran.index')->with('success', 'Iuran berhasil ditambahkan');
     }
@@ -52,15 +88,39 @@ class IuranController extends Controller
     public function update(Request $request, $id)
     {
         $iuran = Iuran::findOrFail($id);
-        
-        $request->validate([
-            'nama_iuran' => 'required',
-            'jenis_iuran' => 'required',
-            'nominal' => 'required|numeric',
-            'periode' => 'required',
+
+        $request->merge([
+            'nama_iuran' => trim($request->nama_iuran),
         ]);
         
-        $iuran->update($request->all());
+        $request->validate([
+            'nama_iuran' => [
+                'required',
+                Rule::unique('iurans', 'nama_iuran')->ignore($iuran->id)->where(function ($query) use ($request) {
+                    return $query->where('jenis_iuran', $request->jenis_iuran)
+                        ->where('nominal', $request->nominal)
+                        ->where('periode', $request->periode)
+                        ->where('kategori', $request->kategori);
+                }),
+            ],
+            'jenis_iuran' => 'required|in:wajib,sukarela,khusus',
+            'nominal' => 'required|numeric',
+            'periode' => 'required|in:bulanan,triwulan,tahunan',
+            'kategori' => 'required|in:Ramadhan,Non-Ramadhan',
+            'status' => 'required|in:aktif,nonaktif',
+        ], [
+            'nama_iuran.unique' => 'Jenis iuran dengan nama, nominal, periode, dan kategori yang sama sudah ada.',
+        ]);
+        
+        $iuran->update([
+            'nama_iuran' => trim($request->nama_iuran),
+            'jenis_iuran' => $request->jenis_iuran,
+            'nominal' => $request->nominal,
+            'periode' => $request->periode,
+            'kategori' => $request->kategori,
+            'status' => $request->status,
+            'keterangan' => $request->keterangan,
+        ]);
         
         return redirect()->route('iuran.index')->with('success', 'Iuran berhasil diupdate');
     }

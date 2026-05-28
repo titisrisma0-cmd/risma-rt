@@ -102,6 +102,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-white">Status</label>
                                 <select name="status" class="form-select bg-dark text-white border-secondary">
+                                    <option value="pending" {{ ($warga->profile->status ?? '') == 'pending' ? 'selected' : '' }} class="bg-dark text-white">Menunggu Verifikasi</option>
                                     <option value="aktif" {{ ($warga->profile->status ?? '') == 'aktif' ? 'selected' : '' }} class="bg-dark text-white">Aktif</option>
                                     <option value="nonaktif" {{ ($warga->profile->status ?? '') == 'nonaktif' ? 'selected' : '' }} class="bg-dark text-white">Nonaktif</option>
                                 </select>

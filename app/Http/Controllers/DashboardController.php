@@ -8,7 +8,9 @@ use App\Models\Iuran;
 use App\Models\Pembayaran;
 use App\Models\Kas;
 use App\Models\Pengeluaran;
+use App\Models\Notifikasi;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -29,7 +31,12 @@ class DashboardController extends Controller
         })->count();
         
         // Total Iuran Aktif
-        $totalIuranAktif = Iuran::where('status', 'aktif')->count();
+        $activeIuran = Iuran::where('status', 'aktif')
+            ->orderBy('nama_iuran')
+            ->orderBy('nominal')
+            ->orderBy('periode')
+            ->get();
+        $totalIuranAktif = Iuran::dedupeCollection($activeIuran)->count();
         
         // Pembayaran Bulan Ini
         $pembayaranBulanIni = Pembayaran::whereMonth('tanggal_bayar', date('m'))
@@ -61,10 +68,25 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
         
-        // Statistik per iuran
+        // Statistik per iuran, gabungkan entri iuran yang identik agar tidak muncul duplikat
         $statistikIuran = Iuran::withCount(['pembayaran as total_bayar' => function($q) {
             $q->where('status', 'lunas');
-        }])->get();
+        }])->orderBy('nama_iuran')->orderBy('nominal')->orderBy('periode')->get()
+            ->groupBy(function ($item) {
+                return implode('|', [
+                    strtolower(trim($item->nama_iuran)),
+                    $item->nominal,
+                    $item->periode,
+                ]);
+            })
+            ->map(function ($group) {
+                $representative = $group->sortByDesc(function ($item) {
+                    return $item->status === 'aktif' ? 1 : 0;
+                })->first();
+                $representative->total_bayar = $group->sum('total_bayar');
+                return $representative;
+            })
+            ->values();
         
         // TOP 5 WARGA DENGAN PEMBAYARAN TERBANYAK - PAKAI QUERY RAW
         $topWarga = DB::table('users')
@@ -85,12 +107,21 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
+
+        // Notifikasi untuk user saat ini
+        $notifikasis = [];
+        if (Auth::check()) {
+            $notifikasis = Notifikasi::where('user_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        }
         
         return view('dashboard', compact(
             'totalPemasukan', 'totalPengeluaran', 'saldoKas',
             'totalWarga', 'totalIuranAktif', 'pembayaranBulanIni',
             'chartData', 'expenseChartData', 'bulanLabels', 'recentPembayaran',
             'statistikIuran', 'topWarga', 'recentPengeluaran'
-        ));
+        ))->with('notifikasis', $notifikasis);
     }
 }

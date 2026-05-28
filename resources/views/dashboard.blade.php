@@ -1,14 +1,54 @@
 @extends('layouts.app')
 
+@php use Illuminate\Support\Str; @endphp
+
 @section('content')
 <div class="container-fluid px-4">
     <!-- Welcome Header -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="welcome-header" data-aos="fade-right">
-                <h1 class="display-5 fw-bold mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h1 class="display-5 fw-bold mb-2">
                     Selamat Datang, <span class="gradient-text">{{ Auth::user()->name }}</span> 👋
-                </h1>
+                            </h1>
+                            <div class="ms-3">
+                                @php $unread = $notifikasis->where('dibaca', false)->count(); @endphp
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-bell"></i>
+                                        @if($unread > 0)
+                                            <span class="badge bg-danger ms-1">{{ $unread }}</span>
+                                        @endif
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notifDropdown" style="min-width:320px">
+                                        @if($notifikasis->count())
+                                            @foreach($notifikasis->take(6) as $n)
+                                            <li class="px-2 py-2 d-flex justify-content-between align-items-start {{ $n->dibaca ? '' : 'bg-warning bg-opacity-10' }}">
+                                                <div>
+                                                    <strong>{{ $n->judul }}</strong>
+                                                    <div class="small text-secondary">{{ Str::limit($n->pesan, 80) }}</div>
+                                                    <div class="small text-muted">{{ $n->created_at->diffForHumans() }}</div>
+                                                </div>
+                                                <div class="ms-2">
+                                                    @if(!$n->dibaca)
+                                                    <form method="POST" action="{{ route('notifikasi.read', $n->id) }}">
+                                                        @csrf
+                                                        <button class="btn btn-sm btn-primary">OK</button>
+                                                    </form>
+                                                    @endif
+                                                </div>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            @endforeach
+                                            <li class="text-center"><a href="{{ route('notifikasi.index') }}" class="small">Lihat semua notifikasi</a></li>
+                                        @else
+                                            <li class="text-center p-3 small text-secondary">Tidak ada notifikasi</li>
+                                        @endif
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                 <p class="text-secondary mb-0">
                     Anda login sebagai 
                     <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 rounded-pill">
@@ -523,46 +563,63 @@
     const incomeData = {!! json_encode($chartData) !!};
     const expenseData = {!! json_encode($expenseChartData) !!};
 
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                labels: { color: '#ffd700', font: { weight: 'bold' } }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(26, 95, 63, 0.9)',
-                titleColor: '#ffd700',
-                bodyColor: '#fffbf0',
-                borderColor: 'rgba(255, 215, 0, 0.3)',
-                borderWidth: 1,
-                callbacks: {
-                    label: function(context) {
-                        return 'Rp ' + context.raw.toLocaleString('id-ID');
+    function getChartTheme() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+
+        return {
+            label: isLight ? '#384336' : '#ffd700',
+            body: isLight ? '#1f2933' : '#fffbf0',
+            gridStrong: isLight ? 'rgba(86, 101, 81, 0.18)' : 'rgba(255, 215, 0, 0.1)',
+            gridSoft: isLight ? 'rgba(86, 101, 81, 0.10)' : 'rgba(255, 215, 0, 0.05)',
+            tooltipBg: isLight ? 'rgba(248, 250, 244, 0.96)' : 'rgba(26, 95, 63, 0.9)',
+            tooltipBorder: isLight ? 'rgba(125, 138, 113, 0.32)' : 'rgba(255, 215, 0, 0.3)',
+        };
+    }
+
+    function buildChartOptions() {
+        const colors = getChartTheme();
+
+        return {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    labels: { color: colors.label, font: { weight: 'bold' } }
+                },
+                tooltip: {
+                    backgroundColor: colors.tooltipBg,
+                    titleColor: colors.label,
+                    bodyColor: colors.body,
+                    borderColor: colors.tooltipBorder,
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return 'Rp ' + context.raw.toLocaleString('id-ID');
+                        }
                     }
                 }
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(255, 215, 0, 0.1)' },
-                ticks: {
-                    color: '#ffd700',
-                    callback: function(value) {
-                        return 'Rp ' + value.toLocaleString('id-ID');
-                    }
-                }
             },
-            x: {
-                grid: { color: 'rgba(255, 215, 0, 0.05)' },
-                ticks: { color: '#ffd700' }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: colors.gridStrong },
+                    ticks: {
+                        color: colors.label,
+                        callback: function(value) {
+                            return 'Rp ' + value.toLocaleString('id-ID');
+                        }
+                    }
+                },
+                x: {
+                    grid: { color: colors.gridSoft },
+                    ticks: { color: colors.label }
+                }
             }
-        }
-    };
+        };
+    }
 
     const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-    new Chart(incomeCtx, {
+    const incomeChart = new Chart(incomeCtx, {
         type: 'line',
         data: {
             labels: labels,
@@ -580,11 +637,11 @@
                 pointHoverRadius: 7
             }]
         },
-        options: chartOptions
+        options: buildChartOptions()
     });
 
     const expenseCtx = document.getElementById('expenseChart').getContext('2d');
-    new Chart(expenseCtx, {
+    const expenseChart = new Chart(expenseCtx, {
         type: 'line',
         data: {
             labels: labels,
@@ -602,7 +659,14 @@
                 pointHoverRadius: 7
             }]
         },
-        options: chartOptions
+        options: buildChartOptions()
+    });
+
+    window.addEventListener('themechange', function () {
+        incomeChart.options = buildChartOptions();
+        expenseChart.options = buildChartOptions();
+        incomeChart.update();
+        expenseChart.update();
     });
 </script>
 @endpush

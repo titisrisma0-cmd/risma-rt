@@ -123,6 +123,11 @@ class WargaController extends Controller
         $warga = User::with('profile')->findOrFail($id);
         return view('warga.edit', compact('warga'));
     }
+
+    public function show($id)
+    {
+        return redirect()->route('warga.edit', $id);
+    }
     
     public function update(Request $request, $id)
     {
@@ -168,5 +173,16 @@ class WargaController extends Controller
         $user->delete();
         
         return redirect()->route('warga.index')->with('success', 'Warga berhasil dihapus');
+    }
+    
+    public function verify($id)
+    {
+        $user = User::findOrFail($id);
+        
+        if ($user->profile) {
+            $user->profile->update(['status' => 'aktif']);
+        }
+        
+        return redirect()->route('warga.index')->with('success', 'Warga ' . $user->name . ' berhasil diverifikasi dan dapat login ke aplikasi.');
     }
 }

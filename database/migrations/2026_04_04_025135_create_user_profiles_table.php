@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('nama_ayah')->nullable();
             $table->string('nama_ibu')->nullable();
             $table->string('foto')->nullable();  // <-- PASTIKAN ADA INI
-            $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
+            $table->enum('status', ['pending', 'aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });
     }

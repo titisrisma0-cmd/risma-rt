@@ -37,6 +37,71 @@
         </div>
     </div>
 
+    @if(Auth::user()->hasRole('warga'))
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0 text-white"><i class="fas fa-file-invoice-dollar"></i> Tagihan Bulan Ini</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @forelse($tagihan as $item)
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 border-secondary">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h6 class="text-white mb-1">{{ $item->iuran->nama_iuran }}</h6>
+                                                    <small class="text-secondary">{{ ucfirst($item->iuran->periode) }} - {{ $item->bulan_tahun }}</small>
+                                                </div>
+                                                @php
+                                                    if ($item->status == 'lunas') {
+                                                        $statusLabel = 'Lunas';
+                                                        $statusClass = 'bg-success';
+                                                    } elseif ($item->status == 'pending') {
+                                                        $statusLabel = 'Menunggu Verifikasi';
+                                                        $statusClass = 'bg-warning text-dark';
+                                                    } elseif ($item->status == 'gagal') {
+                                                        $statusLabel = 'Gagal';
+                                                        $statusClass = 'bg-danger';
+                                                    } else {
+                                                        $statusLabel = 'Belum Dibayar';
+                                                        $statusClass = 'bg-secondary';
+                                                    }
+                                                @endphp
+                                                <span class="badge {{ $statusClass }}">{{ $statusLabel }}</span>
+                                            </div>
+                                            <p class="text-white mb-2">Jumlah Tagihan: <strong>Rp {{ number_format($item->iuran->nominal, 0, ',', '.') }}</strong></p>
+                                            <p class="text-secondary mb-3">Jatuh tempo: {{ $item->iuran->due_day ?? 10 }} {{ date('F Y', strtotime($item->bulan_tahun . '-01')) }}</p>
+                                            @if($item->status == 'pending')
+                                                <button type="button" class="btn btn-warning btn-sm w-100" disabled>
+                                                    <i class="fas fa-clock"></i> Menunggu Verifikasi
+                                                </button>
+                                            @elseif($item->status !== 'lunas')
+                                                <a href="{{ route('pembayaran.create', ['iuran_id' => $item->iuran->id, 'bulan_tahun' => $item->bulan_tahun]) }}" class="btn btn-gradient btn-sm w-100">
+                                                    <i class="fas fa-wallet"></i> Bayar
+                                                </a>
+                                            @else
+                                                <button type="button" class="btn btn-secondary btn-sm w-100" disabled>
+                                                    <i class="fas fa-check-circle"></i> Sudah Lunas
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-12">
+                                    <div class="alert alert-info mb-0">Tidak ada tagihan aktif saat ini.</div>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0 text-white"><i class="fas fa-list"></i> Daftar Pembayaran</h5>
@@ -78,8 +143,14 @@
                             <td>
                                 @if($item->metode_bayar == 'tunai')
                                     <span class="badge bg-info">Tunai</span>
-                                @else
+                                @elseif($item->metode_bayar == 'transfer')
                                     <span class="badge bg-primary">Transfer</span>
+                                @elseif($item->metode_bayar == 'ewallet')
+                                    <span class="badge bg-warning text-dark">E-Wallet</span>
+                                @elseif($item->metode_bayar == 'qris')
+                                    <span class="badge bg-success">QRIS</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ ucfirst($item->metode_bayar) }}</span>
                                 @endif
                             </td>
                             <td>
@@ -178,4 +249,78 @@
     color: rgba(255, 255, 255, 0.5) !important;
 }
 </style>
+
+<script>
+    function formatRupiah(value) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(value);
+    }
+
+    function updatePaymentMethod(method) {
+        $('#bankInfo').toggleClass('d-none', method !== 'transfer');
+        $('#ewalletInfo').toggleClass('d-none', method !== 'ewallet');
+        $('#qrisInfo').toggleClass('d-none', method !== 'qris');
+
+        if (method === 'transfer' || method === 'ewallet' || method === 'qris') {
+            $('#buktiPembayaranDiv').show();
+            $('#modal_bukti_transfer').prop('required', true);
+        } else {
+            $('#buktiPembayaranDiv').hide();
+            $('#modal_bukti_transfer').prop('required', false);
+        }
+
+        if (method !== 'ewallet') {
+            $('#modal_ewallet_provider').val('');
+        }
+
+        if (method === 'qris') {
+            const iuranName = $('#modal_iuran_nama').text();
+            const amount = $('#modal_jumlah_bayar').val();
+            const period = $('#modal_bulan_tahun').val();
+            const qrData = `Pembayaran ${iuranName} - ${period} - Rp ${amount}`;
+            const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+            $('#modal_qris_code').attr('src', qrSrc);
+        }
+    }
+
+    $(document).ready(function () {
+        $('.bayar-tagihan-btn').on('click', function () {
+            const button = $(this);
+            const iuranId = button.data('iuran-id');
+            const iuranNama = button.data('iuran-nama');
+            const iuranNominal = Number(button.data('iuran-nominal')) || 0;
+            const bulanTahun = button.data('bulan-tahun');
+
+            $('#modal_iuran_id').val(iuranId);
+            $('#modal_iuran_nama').text(iuranNama);
+            $('#modal_jumlah_text').text(formatRupiah(iuranNominal));
+            $('#modal_jumlah_bayar').val(iuranNominal);
+            $('#modal_bulan_tahun').text(bulanTahun);
+            $('#modal_bulan_tahun').val(bulanTahun);
+            $('#modal_metode_bayar').val('transfer');
+            updatePaymentMethod('transfer');
+            $('#modal_preview_bukti').html('');
+        });
+
+        $('#modal_metode_bayar').on('change', function () {
+            updatePaymentMethod($(this).val());
+        });
+
+        $('#modal_bukti_transfer').on('change', function () {
+            const file = this.files[0];
+            if (!file) {
+                $('#modal_preview_bukti').html('');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#modal_preview_bukti').html(`<img src="${e.target.result}" class="img-fluid rounded" style="max-height: 180px;">`);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
 @endsection

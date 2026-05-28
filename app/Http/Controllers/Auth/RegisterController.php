@@ -28,10 +28,13 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'no_kk' => ['required', 'string', 'max:20', 'unique:user_profiles,no_kk'],
             'no_hp' => ['required', 'string', 'max:15'],
+            'jenis_kelamin' => ['required', 'in:L,P'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
             'no_kk.unique' => 'Nomor Kartu Keluarga sudah digunakan.',
+            'jenis_kelamin.required' => 'Jenis kelamin harus dipilih.',
+            'jenis_kelamin.in' => 'Jenis kelamin tidak valid.',
         ]);
     }
 
@@ -45,16 +48,25 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
             'role_id' => $roleWarga ? $roleWarga->id : null,
         ]);
-        
-        // Create profile
-        UserProfile::create([
-            'user_id' => $user->id,
+        // Ensure profile is created/updated. The User model may auto-create
+        // a minimal profile in the created event, so update it if present.
+        // Set status to 'pending' for verification by admin RT
+        $profileData = [
             'role_id' => $roleWarga ? $roleWarga->id : null,
             'no_kk' => $data['no_kk'],
             'no_hp' => $data['no_hp'],
+            'jenis_kelamin' => $data['jenis_kelamin'],
             'nama_lengkap' => $data['name'],
-            'status' => 'aktif'
-        ]);
+            'status' => 'pending'
+        ];
+
+        $existingProfile = UserProfile::where('user_id', $user->id)->first();
+        if ($existingProfile) {
+            $existingProfile->update($profileData);
+        } else {
+            $profileData = array_merge(['user_id' => $user->id], $profileData);
+            UserProfile::create($profileData);
+        }
         
         return $user;
     }
@@ -66,18 +78,16 @@ class RegisterController extends Controller
     }
     
     // Override register untuk tetap bisa register via AJAX
+    // Warga tidak langsung login, tunggu verifikasi admin RT
     public function register(Request $request)
     {
         $this->validator($request->all())->validate();
         
         event(new \Illuminate\Auth\Events\Registered($user = $this->create($request->all())));
         
-        $this->guard()->login($user);
+        // Jangan auto-login, tunggu verifikasi admin RT
+        // $this->guard()->login($user);
         
-        if ($response = $this->registered($request, $user)) {
-            return $response;
-        }
-        
-        return redirect($this->redirectPath())->with('success', 'Selamat datang! Akun Anda berhasil dibuat.');
+        return redirect('/login')->with('success', 'Pendaftaran berhasil! Silakan tunggu verifikasi dari Admin RT sebelum login.');
     }
 }

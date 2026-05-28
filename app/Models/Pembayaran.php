@@ -8,7 +8,7 @@ class Pembayaran extends Model
 {
     protected $fillable = [
         'no_transaksi', 'user_id', 'iuran_id', 'tanggal_bayar',
-        'jumlah_bayar', 'metode_bayar', 'bukti_transfer', 'status', 
+        'jumlah_bayar', 'denda', 'metode_bayar', 'bukti_transfer', 'status', 
         'bulan_tahun', 'keterangan', 'verified_by', 'verified_at'
     ];
 

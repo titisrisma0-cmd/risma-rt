@@ -28,7 +28,13 @@ class LaporanController extends Controller
             $q->where('nama_role', 'warga');
         })->get();
         
-        $iuran = Iuran::where('status', 'aktif')->get();
+        $iuran = Iuran::dedupeCollection(
+            Iuran::where('status', 'aktif')
+                ->orderBy('nama_iuran')
+                ->orderBy('nominal')
+                ->orderBy('periode')
+                ->get()
+        );
         
         return view('laporan.index', compact('laporan', 'warga', 'iuran'));
     }

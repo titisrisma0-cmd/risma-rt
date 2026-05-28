@@ -20,87 +20,87 @@
         </div>
     </div>
 
+    <!-- Bagian Iuran Ramadhan -->
+    <h3 class="text-white">Iuran Ramadhan</h3>
     <div class="row">
-        @foreach($iuran as $item)
+        @foreach($iuranRamadhan as $item)
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-white">{{ $item->nama_iuran }}</h5>
                     @if($item->status == 'aktif')
-                        <span class="badge bg-success">
-                            <i class="fas fa-check-circle"></i> Aktif
-                        </span>
+                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Aktif</span>
                     @else
-                        <span class="badge bg-danger">
-                            <i class="fas fa-times-circle"></i> Nonaktif
-                        </span>
+                        <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Nonaktif</span>
                     @endif
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <small class="text-secondary">Kode Iuran</small>
-                        <h6 class="text-white">{{ $item->kode_iuran }}</h6>
-                    </div>
-                    <div class="mb-3">
-                        <small class="text-secondary">Jenis Iuran</small>
-                        <div>
-                            @if($item->jenis_iuran == 'wajib')
-                                <span class="badge bg-primary"><i class="fas fa-exclamation-circle"></i> Wajib</span>
-                            @elseif($item->jenis_iuran == 'sukarela')
-                                <span class="badge bg-info"><i class="fas fa-heart"></i> Sukarela</span>
-                            @else
-                                <span class="badge bg-warning"><i class="fas fa-star"></i> Khusus</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <small class="text-secondary">Nominal</small>
-                        <h4 class="text-primary">Rp {{ number_format($item->nominal, 0, ',', '.') }}</h4>
-                    </div>
-                    <div class="mb-3">
-                        <small class="text-secondary">Periode</small>
-                        <div class="text-white">
-                            @if($item->periode == 'bulanan')
-                                <i class="fas fa-calendar-alt"></i> Bulanan
-                            @elseif($item->periode == 'triwulan')
-                                <i class="fas fa-calendar-week"></i> Triwulan
-                            @else
-                                <i class="fas fa-calendar-year"></i> Tahunan
-                            @endif
-                        </div>
-                    </div>
-                    @if($item->keterangan)
-                        <div class="mb-3">
-                            <small class="text-secondary">Keterangan</small>
-                            <p class="text-white mb-0">{{ $item->keterangan }}</p>
-                        </div>
-                    @endif
+                    <small class="text-secondary">Kode Iuran</small>
+                    <h6 class="text-white">{{ $item->kode_iuran }}</h6>
+                    <small class="text-secondary">Nominal</small>
+                    <h4 class="text-primary">Rp {{ number_format($item->nominal, 0, ',', '.') }}</h4>
+                    <small class="text-secondary">Periode</small>
+                    <p class="text-white">{{ ucfirst($item->periode) }}</p>
+                    <small class="text-secondary">Kategori</small>
+                    <p class="text-info">{{ $item->kategori }}</p>
                 </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('iuran.edit', $item->id) }}" class="btn btn-warning flex-fill">
-                            <i class="fas fa-edit"></i> Edit
+                @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara'))
+                    <div class="card-footer bg-transparent border-top-0 d-flex gap-2">
+                        <a href="{{ route('iuran.edit', $item->id) }}" class="btn btn-sm btn-outline-info flex-fill">
+                            <i class="fas fa-edit me-1"></i> Edit
                         </a>
-                        <form action="{{ route('iuran.toggle-status', $item->id) }}" method="POST" class="flex-fill">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn btn-info w-100" onclick="return confirm('Ubah status iuran ini?')">
-                                @if($item->status == 'aktif')
-                                    <i class="fas fa-ban"></i> Nonaktifkan
-                                @else
-                                    <i class="fas fa-check"></i> Aktifkan
-                                @endif
-                            </button>
-                        </form>
-                        <form action="{{ route('iuran.destroy', $item->id) }}" method="POST" class="flex-fill" onsubmit="return confirm('Yakin hapus {{ $item->nama_iuran }}?')">
+                        <form action="{{ route('iuran.destroy', $item->id) }}" method="POST" class="flex-fill m-0">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger w-100">
-                                <i class="fas fa-trash"></i> Hapus
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Hapus iuran {{ $item->nama_iuran }}?');">
+                                <i class="fas fa-trash me-1"></i> Hapus
                             </button>
                         </form>
                     </div>
+                @endif
+            </div>
+        </div>
+        @endforeach
+    </div>
+
+    <!-- Bagian Iuran Non-Ramadhan -->
+    <h3 class="text-white mt-4">Iuran Non-Ramadhan</h3>
+    <div class="row">
+        @foreach($iuranNonRamadhan as $item)
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-white">{{ $item->nama_iuran }}</h5>
+                    @if($item->status == 'aktif')
+                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Aktif</span>
+                    @else
+                        <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Nonaktif</span>
+                    @endif
                 </div>
+                <div class="card-body">
+                    <small class="text-secondary">Kode Iuran</small>
+                    <h6 class="text-white">{{ $item->kode_iuran }}</h6>
+                    <small class="text-secondary">Nominal</small>
+                    <h4 class="text-primary">Rp {{ number_format($item->nominal, 0, ',', '.') }}</h4>
+                    <small class="text-secondary">Periode</small>
+                    <p class="text-white">{{ ucfirst($item->periode) }}</p>
+                    <small class="text-secondary">Kategori</small>
+                    <p class="text-info">{{ $item->kategori }}</p>
+                </div>
+                @if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara'))
+                    <div class="card-footer bg-transparent border-top-0 d-flex gap-2">
+                        <a href="{{ route('iuran.edit', $item->id) }}" class="btn btn-sm btn-outline-info flex-fill">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <form action="{{ route('iuran.destroy', $item->id) }}" method="POST" class="flex-fill m-0">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Hapus iuran {{ $item->nama_iuran }}?');">
+                                <i class="fas fa-trash me-1"></i> Hapus
+                            </button>
+                        </form>
+                    </div>
+                @endif
             </div>
         </div>
         @endforeach
@@ -132,13 +132,6 @@
 }
 .text-white-50 {
     color: rgba(255, 255, 255, 0.5) !important;
-}
-.btn-group {
-    display: flex;
-    gap: 8px;
-}
-.flex-fill {
-    flex: 1;
 }
 </style>
 @endsection

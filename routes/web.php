@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
     
     // ==================== DATA WARGA ====================
     Route::resource('warga', WargaController::class);
+    Route::post('warga/{id}/verify', [WargaController::class, 'verify'])->name('warga.verify');
     
     // ==================== IURAN ====================
     Route::resource('iuran', IuranController::class);
@@ -59,4 +60,9 @@ Route::middleware(['auth'])->group(function () {
     
     // ==================== PENGELUARAN ====================
     Route::resource('pengeluaran', PengeluaranController::class);
+
+    // ==================== NOTIFIKASI ====================
+    Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifikasi.index');
+    Route::post('notifikasi/{id}/read', [\App\Http\Controllers\NotifikasiController::class, 'markRead'])->name('notifikasi.read');
+    Route::post('notifikasi/read-all', [\App\Http\Controllers\NotifikasiController::class, 'markAllRead'])->name('notifikasi.read-all');
 });

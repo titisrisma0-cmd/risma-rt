@@ -66,6 +66,19 @@
                                 @error('periode') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                             
+                            <!-- Tambahan kategori -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-white">Kategori Iuran <span class="text-danger">*</span></label>
+                                <select name="kategori" class="form-select bg-dark border-secondary text-white @error('kategori') is-invalid @enderror" required>
+                                    <option value="" class="text-dark">Pilih Kategori</option>
+                                    <option value="Ramadhan">Ramadhan</option>
+                                    <option value="Non-Ramadhan">Non-Ramadhan</option>
+                                </select>
+                                @error('kategori') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-white">Status</label>
                                 <select name="status" class="form-select bg-dark border-secondary text-white">

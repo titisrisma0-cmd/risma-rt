@@ -69,6 +69,16 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-white">Kategori Iuran <span class="text-danger">*</span></label>
+                                <select name="kategori" class="form-select bg-dark border-secondary text-white" required>
+                                    <option value="Ramadhan" {{ $iuran->kategori == 'Ramadhan' ? 'selected' : '' }}>Ramadhan</option>
+                                    <option value="Non-Ramadhan" {{ $iuran->kategori == 'Non-Ramadhan' ? 'selected' : '' }}>Non-Ramadhan</option>
+                                </select>
+                            </div>
+                        </div>
                         
                         <div class="mb-3">
                             <label class="form-label text-white">Keterangan</label>

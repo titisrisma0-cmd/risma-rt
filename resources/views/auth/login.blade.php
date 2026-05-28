@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login & Register | RISMA-RT</title>
+    <script>
+        (function () {
+            document.documentElement.setAttribute('data-theme', localStorage.getItem('risma-theme') || 'dark');
+        })();
+    </script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -294,6 +299,21 @@
         .input-group-custom input::placeholder {
             color: #64748b;
         }
+
+        .password-toggle {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 0 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-toggle:hover {
+            color: #ffd700;
+        }
         
         .form-check-input {
             background-color: transparent !important;
@@ -482,6 +502,13 @@
                                     {{ session('success') }}
                                 </div>
                             @endif
+
+                            @if(session('error'))
+                                <div class="alert-custom">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    {{ session('error') }}
+                                </div>
+                            @endif
                             
                             <form method="POST" action="{{ route('login') }}">
                                 @csrf
@@ -497,7 +524,10 @@
                                     <label>Password</label>
                                     <div class="input-group-custom">
                                         <span><i class="fas fa-lock"></i></span>
-                                        <input type="password" name="password" placeholder="••••••••" required>
+                                        <input type="password" name="password" id="loginPassword" placeholder="••••••••" required>
+                                        <button type="button" class="password-toggle" aria-label="Tampilkan password" data-target="loginPassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
                                     </div>
                                 </div>
                                 
@@ -558,6 +588,18 @@
                                     <div class="input-group-custom">
                                         <span><i class="fas fa-phone"></i></span>
                                         <input type="text" name="no_hp" placeholder="Nomor telepon" value="{{ old('no_hp') }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Jenis Kelamin</label>
+                                    <div class="input-group-custom">
+                                        <span><i class="fas fa-venus-mars"></i></span>
+                                        <select name="jenis_kelamin" required>
+                                            <option value="" disabled {{ old('jenis_kelamin') ? '' : 'selected' }}>Pilih jenis kelamin</option>
+                                            <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                            <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                                        </select>
                                     </div>
                                 </div>
 
@@ -630,6 +672,23 @@
         if (window.location.hash === '#register') {
             document.querySelector('.tab-btn[data-tab="register"]').click();
         }
+
+        // Toggle password visibility
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const targetId = toggle.dataset.target;
+                const input = document.getElementById(targetId);
+                if (!input) return;
+
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                const icon = toggle.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+                toggle.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
+            });
+        });
     </script>
 </body>
 </html>

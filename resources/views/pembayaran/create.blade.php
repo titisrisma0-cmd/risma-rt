@@ -51,7 +51,7 @@
                             <select name="iuran_id" id="iuran_id" class="form-control bg-dark text-white border-secondary" required>
                                 <option value="">-- Pilih Iuran --</option>
                                 @foreach($iuran as $item)
-                                    <option value="{{ $item->id }}" data-nominal="{{ $item->nominal }}">
+                                    <option value="{{ $item->id }}" data-nominal="{{ $item->nominal }}" @if(old('iuran_id', $selectedIuranId ?? '') == $item->id) selected @endif>
                                         {{ $item->nama_iuran }} - Rp {{ number_format($item->nominal, 0, ',', '.') }}
                                         @if($item->jenis_iuran == 'wajib') (Wajib) @endif
                                     </option>
@@ -63,7 +63,15 @@
                             <label class="form-label text-white">Jumlah Bayar <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-dark text-white border-secondary">Rp</span>
-                                <input type="number" name="jumlah_bayar" id="jumlah_bayar" class="form-control bg-dark text-white border-secondary" placeholder="Masukkan jumlah bayar" required>
+                                <input type="number" name="jumlah_bayar" id="jumlah_bayar" class="form-control bg-dark text-white border-secondary" placeholder="Masukkan jumlah bayar" value="{{ old('jumlah_bayar', $selectedIuran ? $selectedIuran->nominal : '') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="dendaInfo">
+                            <div class="alert alert-warning">
+                                <strong>Denda Terlambat:</strong> <span id="dendaAmountText">Rp 0</span><br>
+                                <strong>Total Bayar:</strong> <span id="totalBayarText">Rp 0</span><br>
+                                <small>Jatuh tempo: <span id="dueDateText">-</span></small>
                             </div>
                         </div>
                         
@@ -72,22 +80,60 @@
                                 <label class="form-label text-white">Metode Pembayaran <span class="text-danger">*</span></label>
                                 <select name="metode_bayar" id="metode_bayar" class="form-control bg-dark text-white border-secondary" required>
                                     <option value="">-- Pilih Metode --</option>
-                                    <option value="tunai">Tunai (Bayar Langsung)</option>
-                                    <option value="transfer">Transfer Bank</option>
+                                    <option value="tunai" @if(old('metode_bayar')=='tunai') selected @endif>Tunai (Bayar Langsung)</option>
+                                    <option value="transfer" @if(old('metode_bayar')=='transfer') selected @endif>Transfer Bank</option>
+                                    <option value="ewallet" @if(old('metode_bayar')=='ewallet') selected @endif>E-Wallet</option>
+                                    <option value="qris" @if(old('metode_bayar')=='qris') selected @endif>QRIS</option>
                                 </select>
                             </div>
                             
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-white">Periode (Bulan/Tahun)</label>
-                                <input type="month" name="bulan_tahun" class="form-control bg-dark text-white border-secondary" value="{{ date('Y-m') }}">
+                                <input type="month" name="bulan_tahun" id="bulan_tahun" class="form-control bg-dark text-white border-secondary" value="{{ old('bulan_tahun', $selectedBulanTahun ?? date('Y-m')) }}">
                             </div>
                         </div>
                         
-                        <!-- Upload Bukti Transfer - AWALNYA HIDDEN, AKAN MUNCUL SAAT PILIH TRANSFER -->
-                        <div class="mb-3" id="buktiTransferDiv" style="display: none;">
-                            <label class="form-label text-white">Upload Bukti Transfer <span class="text-danger" id="buktiRequired">*</span></label>
+                        <div class="mb-3" id="bankInfo" style="display: none;">
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">Nomor Rekening RT</h6>
+                                <p class="mb-1">BCA: <strong>123-456-7890</strong> a.n. Bendahara RT</p>
+                                <p class="mb-1">Mandiri: <strong>987-654-3210</strong> a.n. Bendahara RT</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="ewalletInfo" style="display: none;">
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">E-Wallet</h6>
+                                <p class="mb-1">Pilih salah satu E-Wallet dan transfer sesuai nomor/ID tujuan yang tersedia di bawah.</p>
+                            </div>
+                            <select name="ewallet_provider" id="ewallet_provider" class="form-control bg-dark text-white border-secondary">
+                                <option value="">-- Pilih E-Wallet --</option>
+                                <option value="Dana">Dana</option>
+                                <option value="OVO">OVO</option>
+                                <option value="GoPay">GoPay</option>
+                                <option value="ShopeePay">ShopeePay</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="qrisInfo" style="display: none;">
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">QRIS</h6>
+                                <p class="mb-1">Scan QRIS berikut dengan aplikasi e-wallet Anda.</p>
+                            </div>
+                            <div class="text-center">
+                                <img id="qris_code" src="" alt="QRIS Code" class="img-fluid rounded" style="max-width: 240px;">
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="buktiPembayaranDiv" style="display: none;">
+                            <label class="form-label text-white">Upload Bukti Pembayaran @if(Auth::user()->hasRole('warga')) <span class="text-danger">*</span> @else (Opsional) @endif</label>
                             <input type="file" name="bukti_transfer" id="bukti_transfer" class="form-control bg-dark text-white border-secondary" accept="image/*">
-                            <small class="text-secondary">Format: JPG, PNG. Maksimal 2MB</small>
+                            <small class="text-secondary">
+                                Format: JPG, PNG. Maksimal 2MB.
+                                @if(Auth::user()->hasRole('warga'))
+                                    Wajib untuk Transfer, E-Wallet, dan QRIS.
+                                @endif
+                            </small>
                             <div id="previewBukti" class="mt-2"></div>
                         </div>
                         
@@ -100,9 +146,9 @@
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i> 
                             <strong>Informasi:</strong><br>
-                            - Pembayaran akan diverifikasi oleh bendahara<br>
-                            - Status akan berubah menjadi "Lunas" setelah diverifikasi<br>
-                            - Jika transfer, upload bukti transfer yang jelas
+                            - Pembayaran akan tercatat sebagai "Menunggu Verifikasi"<br>
+                            - Admin atau bendahara akan mengecek bukti pembayaran terlebih dahulu<br>
+                            - Status berubah menjadi "Lunas" setelah pembayaran diverifikasi
                         </div>
                         
                         <div class="alert alert-warning">
@@ -110,6 +156,15 @@
                             <strong>Nomor Rekening untuk Transfer:</strong><br>
                             Bank BCA: 123-456-7890 a.n. Bendahara RT<br>
                             Bank Mandiri: 987-654-3210 a.n. Bendahara RT
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-mobile-alt"></i>
+                            <strong>Nomor E-Wallet:</strong><br>
+                            Dana: 0812-3456-7890 a.n. Bendahara RT<br>
+                            OVO: 0812-3456-7890 a.n. Bendahara RT<br>
+                            GoPay: 0812-3456-7890 a.n. Bendahara RT<br>
+                            ShopeePay: 0812-3456-7890 a.n. Bendahara RT
                         </div>
                         @else
                         <div class="alert alert-success">
@@ -174,10 +229,10 @@
                     <ol class="mb-0 small text-white">
                         <li>Pilih jenis iuran yang akan dibayar</li>
                         <li>Masukkan jumlah bayar sesuai iuran</li>
-                        <li>Pilih metode pembayaran (Tunai/Transfer)</li>
-                        <li>Jika Transfer, upload bukti transfer</li>
+                        <li>Pilih metode pembayaran (Tunai/Transfer/E-Wallet/QRIS)</li>
+                        <li>Jika menggunakan metode digital, upload bukti pembayaran</li>
                         <li>Klik "Simpan Pembayaran"</li>
-                        <li>Tunggu verifikasi dari bendahara</li>
+                        <li>Warga menunggu verifikasi admin/bendahara sebelum status menjadi Lunas</li>
                     </ol>
                 </div>
             </div>
@@ -219,26 +274,64 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             jumlahBayar.value = '';
         }
+        updateDendaInfo();
     });
+
+    jumlahBayar.addEventListener('input', updateDendaInfo);
     
-    // Tampilkan input bukti transfer jika pilih transfer
+    // Tampilkan input bukti pembayaran sesuai metode
     var metodeBayar = document.getElementById('metode_bayar');
-    var buktiTransferDiv = document.getElementById('buktiTransferDiv');
+    var buktiPembayaranDiv = document.getElementById('buktiPembayaranDiv');
     var buktiTransferInput = document.getElementById('bukti_transfer');
     var previewBukti = document.getElementById('previewBukti');
-    
+    var bankInfo = document.getElementById('bankInfo');
+    var ewalletInfo = document.getElementById('ewalletInfo');
+    var qrisInfo = document.getElementById('qrisInfo');
+    var qrisCodeImage = document.getElementById('qris_code');
+    var dendaInfo = document.getElementById('dendaInfo');
+    var dendaAmountText = document.getElementById('dendaAmountText');
+    var dueDateText = document.getElementById('dueDateText');
+    var selectedDendaAmount = {{ $dendaAmount ?? 0 }};
+    var selectedDueDate = '{{ $dueDate ? $dueDate->format('d F Y') : '' }}';
+
     metodeBayar.addEventListener('change', function() {
-        if (this.value == 'transfer') {
-            buktiTransferDiv.style.display = 'block';
-            buktiTransferInput.setAttribute('required', 'required');
+        var method = this.value;
+        bankInfo.style.display = method === 'transfer' ? 'block' : 'none';
+        ewalletInfo.style.display = method === 'ewallet' ? 'block' : 'none';
+        qrisInfo.style.display = method === 'qris' ? 'block' : 'none';
+
+        if (method === 'transfer' || method === 'ewallet' || method === 'qris') {
+            buktiPembayaranDiv.style.display = 'block';
+            @if(Auth::user()->hasRole('warga'))
+            buktiTransferInput.required = true;
+            @endif
         } else {
-            buktiTransferDiv.style.display = 'none';
-            buktiTransferInput.removeAttribute('required');
+            buktiPembayaranDiv.style.display = 'none';
+            buktiTransferInput.required = false;
             previewBukti.innerHTML = '';
         }
+
+        if (method === 'qris') {
+            var iuranName = $('#iuran_id option:selected').text();
+            var jumlah = $('#jumlah_bayar').val();
+            var bulanTahun = $('input[name="bulan_tahun"]').val();
+            var qrData = 'Pembayaran ' + iuranName + ' - ' + bulanTahun + ' - Rp ' + jumlah;
+            qrisCodeImage.src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(qrData);
+        }
     });
-    
-    // Preview bukti transfer
+
+    function updateDendaInfo() {
+        var nominal = Number(document.getElementById('jumlah_bayar').value) || 0;
+        var totalAmount = nominal + selectedDendaAmount;
+        dendaAmountText.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(selectedDendaAmount);
+        document.getElementById('totalBayarText').textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalAmount);
+        dueDateText.textContent = selectedDueDate || '-';
+        dendaInfo.style.display = 'block';
+    }
+
+    updateDendaInfo();
+
+    // Preview bukti pembayaran
     buktiTransferInput.addEventListener('change', function() {
         var file = this.files[0];
         if (file) {

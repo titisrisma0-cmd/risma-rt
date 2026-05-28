@@ -51,6 +51,7 @@
                     <label class="form-label text-white">Status</label>
                     <select name="status" class="form-select bg-dark text-white border-secondary">
                         <option value="">Semua</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu Verifikasi</option>
                         <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                         <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                     </select>
@@ -75,76 +76,73 @@
         </div>
     </div>
 
-    <!-- TABEL DATA WARGA -->
+    <!-- DAFTAR DATA WARGA -->
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0 text-white"><i class="fas fa-list"></i> Daftar Warga</h5>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Nama Lengkap</th>
-                            <th>Email</th>
-                            <th>NIK</th>
-                            <th>No. KK</th>
-                            <th>No. HP</th>
-                            <th>Alamat</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($warga as $index => $item)
-                        <tr>
-                            <td>{{ $warga->firstItem() + $index }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div>
-                                        <strong class="text-white">{{ $item->profile->nama_lengkap ?? $item->name }}</strong>
+        <div class="card-body">
+            <div class="row g-3">
+                @forelse($warga as $index => $item)
+                <div class="col-12">
+                    <div class="card warga-card bg-dark border-secondary">
+                        <div class="card-body py-3">
+                            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                                <div class="warga-info">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-info me-2">{{ $warga->firstItem() + $index }}</span>
+                                        <h5 class="mb-0 text-white">{{ $item->profile->nama_lengkap ?? $item->name }}</h5>
+                                    </div>
+                                    <div class="text-white-50 mb-1">{{ $item->email }}</div>
+                                    <div class="d-flex flex-wrap gap-2 mb-1">
+                                        <span class="warga-meta">NIK: {{ $item->profile->nik ?? '-' }}</span>
+                                        <span class="warga-meta">No. KK: {{ $item->profile->no_kk ?? '-' }}</span>
+                                        <span class="warga-meta">HP: {{ $item->profile->no_hp ?? '-' }}</span>
+                                    </div>
+                                    <div class="text-white-75">Alamat: {{ Str::limit($item->profile->alamat ?? '-', 80) }}</div>
+                                </div>
+                                <div class="warga-actions text-md-end">
+                                    <div class="mb-2">
+                                        @if($item->profile && $item->profile->status == 'aktif')
+                                            <span class="badge bg-success">Aktif</span>
+                                        @elseif($item->profile && $item->profile->status == 'pending')
+                                            <span class="badge bg-warning text-dark">Menunggu Verifikasi</span>
+                                        @else
+                                            <span class="badge bg-danger">Nonaktif</span>
+                                        @endif
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        @if($item->profile && $item->profile->status == 'pending')
+                                            <form action="{{ route('warga.verify', $item->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success" title="Verifikasi warga">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                        <a href="{{ route('warga.edit', $item->id) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button onclick="confirmDelete('{{ route('warga.destroy', $item->id) }}', '{{ $item->name }}')" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
-                            </td>
-                            <td>{{ $item->email }}</td>
-                            <td>{{ $item->profile->nik ?? '-' }}</td>
-                            <td>{{ $item->profile->no_kk ?? '-' }}</td>
-                            <td>{{ $item->profile->no_hp ?? '-' }}</td>
-                            <td>{{ Str::limit($item->profile->alamat ?? '-', 30) }}</td>
-                            <td>
-                                @if($item->profile && $item->profile->status == 'aktif')
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Nonaktif</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <a href="{{ route('warga.edit', $item->id) }}" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button onclick="confirmDelete('{{ route('warga.destroy', $item->id) }}', '{{ $item->name }}')" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="9" class="text-center py-4">
-                                <i class="fas fa-inbox fa-2x text-secondary mb-2 d-block"></i>
-                                <span class="text-secondary">Tidak ada data warga</span>
-                                @if(request()->anyFilled(['nama', 'email', 'nik', 'no_kk', 'no_hp', 'status']))
-                                    <div class="mt-2">
-                                        <a href="{{ route('warga.index') }}" class="btn btn-sm btn-outline-primary">Reset Pencarian</a>
-                                    </div>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="col-12 text-center py-4">
+                    <i class="fas fa-inbox fa-2x text-secondary mb-2 d-block"></i>
+                    <span class="text-secondary">Tidak ada data warga</span>
+                    @if(request()->anyFilled(['nama', 'email', 'nik', 'no_kk', 'no_hp', 'status']))
+                        <div class="mt-2">
+                            <a href="{{ route('warga.index') }}" class="btn btn-sm btn-outline-primary">Reset Pencarian</a>
+                        </div>
+                    @endif
+                </div>
+                @endforelse
             </div>
         </div>
         @if($warga->hasPages())
@@ -166,6 +164,19 @@
 .card-header {
     background: rgba(15, 23, 42, 0.5);
     border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+}
+.warga-card {
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+.warga-meta {
+    display: inline-block;
+    padding: 0.275rem 0.55rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 0.75rem;
+    color: #cbd5e1;
+    font-size: 0.85rem;
 }
 .table-dark {
     background: transparent;
