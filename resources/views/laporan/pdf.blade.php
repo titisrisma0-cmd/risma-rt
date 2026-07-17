@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Laporan Iuran RT</title>
+    <title>Laporan Iuran RW</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,8 +52,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>RISMA-RT</h1>
-        <p>Sistem Informasi Iuran RT</p>
+        <h1>RW Smart</h1>
+        <p>Sistem Informasi Iuran RW</p>
         <h3>Laporan {{ ucfirst($jenis_laporan) }}</h3>
         <p>Periode: {{ date('d/m/Y', strtotime($periode_awal)) }} - {{ date('d/m/Y', strtotime($periode_akhir)) }}</p>
     </div>
@@ -99,7 +99,7 @@
     </div>
 
     <div class="footer">
-        <p>Laporan ini digenerate secara otomatis oleh sistem RISMA-RT</p>
+        <p>Laporan ini digenerate secara otomatis oleh sistem RW Smart</p>
     </div>
 </body>
 </html>

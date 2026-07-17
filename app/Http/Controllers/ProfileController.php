@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -18,26 +20,75 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
+        $profileId = optional($user->profile)->id;
         
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:15',
-            'address' => 'nullable|string',
+            'nik' => ['nullable', 'string', 'max:20', Rule::unique('user_profiles', 'nik')->ignore($profileId)],
+            'no_kk' => ['nullable', 'string', 'max:20', Rule::unique('user_profiles', 'no_kk')->ignore($profileId)],
+            'tempat_lahir' => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'agama' => 'nullable|string|max:50',
+            'no_hp' => 'nullable|string|max:15',
+            'pekerjaan' => 'nullable|string|max:255',
+            'status_perkawinan' => 'nullable|string|max:50',
+            'pendidikan' => 'nullable|string|max:50',
+            'alamat' => 'nullable|string',
             'rt' => 'nullable|string|max:5',
             'rw' => 'nullable|string|max:5',
-            'bio' => 'nullable|string',
+            'kelurahan' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'kota' => 'nullable|string|max:255',
+            'nama_ayah' => 'nullable|string|max:255',
+            'nama_ibu' => 'nullable|string|max:255',
+            'password' => 'nullable|min:6|confirmed',
         ]);
-        
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'rt' => $request->rt,
-            'rw' => $request->rw,
-            'bio' => $request->bio,
-        ]);
+
+        DB::transaction(function () use ($request, $user) {
+            $userData = [
+                'name' => $request->name,
+                'email' => $request->email,
+            ];
+
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($userData);
+
+            $profileData = [
+                'role_id' => $user->role_id,
+                'nama_lengkap' => $request->name,
+                'no_kk' => $request->no_kk,
+                'nik' => $request->nik,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'agama' => $request->agama,
+                'alamat' => $request->alamat,
+                'rt' => $request->rt,
+                'rw' => $request->rw,
+                'kelurahan' => $request->kelurahan,
+                'kecamatan' => $request->kecamatan,
+                'kota' => $request->kota,
+                'no_hp' => $request->no_hp,
+                'pekerjaan' => $request->pekerjaan,
+                'status_perkawinan' => $request->status_perkawinan,
+                'pendidikan' => $request->pendidikan,
+                'nama_ayah' => $request->nama_ayah,
+                'nama_ibu' => $request->nama_ibu,
+            ];
+
+            if ($user->profile) {
+                $user->profile->update($profileData);
+            } else {
+                $user->profile()->create($profileData + [
+                    'status' => 'aktif',
+                ]);
+            }
+        });
         
         return redirect()->route('profile.index')->with('success', 'Profil berhasil diperbarui!');
     }
@@ -69,21 +120,36 @@ class ProfileController extends Controller
     public function updateKependudukan(Request $request)
     {
         $user = Auth::user();
+        $profileId = optional($user->profile)->id;
         
         $request->validate([
-            'nik' => 'nullable|string|max:16',
-            'tempat_lahir' => 'nullable|string',
+            'nik' => ['nullable', 'string', 'max:20', Rule::unique('user_profiles', 'nik')->ignore($profileId)],
+            'no_kk' => ['nullable', 'string', 'max:20', Rule::unique('user_profiles', 'no_kk')->ignore($profileId)],
+            'tempat_lahir' => 'nullable|string|max:255',
             'tanggal_lahir' => 'nullable|date',
             'jenis_kelamin' => 'nullable|in:L,P',
-            'agama' => 'nullable|string',
-            'pekerjaan' => 'nullable|string',
-            'status_perkawinan' => 'nullable|string',
+            'agama' => 'nullable|string|max:50',
+            'no_hp' => 'nullable|string|max:15',
+            'pekerjaan' => 'nullable|string|max:255',
+            'status_perkawinan' => 'nullable|string|max:50',
+            'pendidikan' => 'nullable|string|max:50',
         ]);
-        
-        $user->update($request->only([
-            'nik', 'tempat_lahir', 'tanggal_lahir',
-            'jenis_kelamin', 'agama', 'pekerjaan', 'status_perkawinan'
-        ]));
+
+        $profileData = $request->only([
+            'nik', 'no_kk', 'tempat_lahir', 'tanggal_lahir',
+            'jenis_kelamin', 'agama', 'no_hp', 'pekerjaan',
+            'status_perkawinan', 'pendidikan'
+        ]);
+
+        if ($user->profile) {
+            $user->profile->update($profileData);
+        } else {
+            $user->profile()->create($profileData + [
+                'role_id' => $user->role_id,
+                'nama_lengkap' => $user->name,
+                'status' => 'aktif',
+            ]);
+        }
         
         return redirect()->route('profile.index')->with('success', 'Data kependudukan berhasil diperbarui!');
     }

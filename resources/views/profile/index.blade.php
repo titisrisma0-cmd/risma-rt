@@ -17,6 +17,17 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i> Data belum tersimpan:
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="row">
         <!-- Sidebar Kiri -->
         <div class="col-md-4 mb-4">
@@ -47,7 +58,7 @@
                     
                     <div class="row mt-3">
                         <div class="col-6">
-                            <div class="border rounded p-2" style="border-color: #334155;">
+                            <div class="border rounded p-2">
                                 <small class="text-secondary">Status</small>
                                 <h6 class="mb-0">
                                     @if($user->profile && $user->profile->status == 'aktif')
@@ -59,7 +70,7 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="border rounded p-2" style="border-color: #334155;">
+                            <div class="border rounded p-2">
                                 <small class="text-secondary">Bergabung</small>
                                 <h6 class="text-white mb-0">{{ $user->created_at->format('d/m/Y') }}</h6>
                             </div>

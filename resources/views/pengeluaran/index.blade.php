@@ -9,7 +9,7 @@
                     <h2 class="text-white">
                         <i class="fas fa-shopping-cart"></i> Manajemen Pengeluaran
                     </h2>
-                    <p class="text-white-50">Kelola semua pengeluaran kas RT</p>
+                    <p class="text-white-50">Kelola semua pengeluaran kas RW</p>
                 </div>
                 <div>
                     <a href="{{ route('pengeluaran.create') }}" class="btn btn-gradient">

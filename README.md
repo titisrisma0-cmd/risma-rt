@@ -1,16 +1,16 @@
-# risma-rt
+# RW Smart
 
 ## Ringkasan
 
-`risma-rt` adalah aplikasi web Laravel untuk sistem informasi RT yang dirancang sebagai tugas mandiri. Aplikasi ini mengelola data warga, iuran, pembayaran, kas, pengeluaran, dan laporan keuangan dengan antarmuka admin berbasis autentikasi.
+`RW SMART` adalah aplikasi web Laravel untuk sistem informasi RW. Aplikasi ini mengelola data warga, iuran, pembayaran, kas, pengeluaran, layanan masyarakat, dan laporan keuangan dengan antarmuka pengurus berbasis autentikasi.
 
 ## Tujuan Proyek
 
 - Mengelola data warga dan profil kependudukan
-- Menangani iuran RT dan pembayaran iuran
-- Mencatat kas masuk/keluar dan pengeluaran RT
+- Menangani iuran RW dan pembayaran iuran
+- Mencatat kas masuk/keluar dan pengeluaran RW
 - Menghasilkan laporan keuangan periodik
-- Menyediakan dashboard ringkasan untuk admin RT
+- Menyediakan dashboard ringkasan untuk Admin RW
 
 ## Teknologi Utama
 
@@ -29,7 +29,7 @@
 - CRUD iuran dengan status aktif/nonaktif
 - CRUD pembayaran dengan verifikasi dan upload bukti bayar
 - Modul kas untuk pencatatan masuk/keluar
-- CRUD pengeluaran RT
+- CRUD pengeluaran RW
 - Pembuatan laporan keuangan bulanan/tahunan/per-iuran
 
 ## Struktur Aplikasi
@@ -170,7 +170,7 @@ Bagian ini menjelaskan cara menjalankan pengujian agar perubahan kode tidak meru
 Isi file `.env` berikut adalah contoh konfigurasi minimum untuk menjalankan aplikasi ini secara lokal.
 
 ```env
-APP_NAME=risma-rt
+APP_NAME="RW Smart"
 APP_ENV=local
 APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=
 APP_DEBUG=true
@@ -182,7 +182,7 @@ LOG_LEVEL=debug
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=risma_rt
+DB_DATABASE=rw_smart
 DB_USERNAME=root
 DB_PASSWORD=
 
@@ -200,7 +200,7 @@ MAIL_USERNAME=null
 MAIL_PASSWORD=null
 MAIL_ENCRYPTION=null
 MAIL_FROM_ADDRESS="hello@example.com"
-MAIL_FROM_NAME="risma-rt"
+MAIL_FROM_NAME="RW Smart"
 ```
 
 > Untuk Laragon, sesuaikan `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` dengan konfigurasi local Anda.

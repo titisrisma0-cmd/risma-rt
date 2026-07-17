@@ -28,7 +28,7 @@ class LaporanExport implements FromCollection, WithHeadings, WithStyles
         $data = collect();
         
         // Header info
-        $data->push(['LAPORAN IURAN RT', '', '', '', '']);
+        $data->push(['LAPORAN IURAN RW', '', '', '', '']);
         $data->push(['Jenis Laporan', $this->jenisLaporan, '', '', '']);
         $data->push(['Periode', $this->periodeAwal . ' s/d ' . $this->periodeAkhir, '', '', '']);
         $data->push(['', '', '', '', '']);

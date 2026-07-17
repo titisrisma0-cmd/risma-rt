@@ -85,8 +85,8 @@
                         <div class="alert alert-warning">
                             <i class="fas fa-university"></i>
                             <strong>Nomor Rekening untuk Transfer:</strong><br>
-                            Bank BCA: 123-456-7890 a.n. Bendahara RT<br>
-                            Bank Mandiri: 987-654-3210 a.n. Bendahara RT
+                            Bank BCA: 123-456-7890 a.n. Bendahara RW<br>
+                            Bank Mandiri: 987-654-3210 a.n. Bendahara RW
                         </div>
                         
                         <button type="submit" class="btn btn-gradient w-100">

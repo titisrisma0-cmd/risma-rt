@@ -42,60 +42,90 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0 text-white"><i class="fas fa-file-invoice-dollar"></i> Tagihan Bulan Ini</h5>
+                        <h5 class="mb-0 text-white"><i class="fas fa-file-invoice-dollar"></i> Tagihan Iuran</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            @forelse($tagihan as $item)
-                                <div class="col-md-6 mb-3">
-                                    <div class="card h-100 border-secondary">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div>
-                                                    <h6 class="text-white mb-1">{{ $item->iuran->nama_iuran }}</h6>
-                                                    <small class="text-secondary">{{ ucfirst($item->iuran->periode) }} - {{ $item->bulan_tahun }}</small>
-                                                </div>
-                                                @php
-                                                    if ($item->status == 'lunas') {
-                                                        $statusLabel = 'Lunas';
-                                                        $statusClass = 'bg-success';
-                                                    } elseif ($item->status == 'pending') {
-                                                        $statusLabel = 'Menunggu Verifikasi';
-                                                        $statusClass = 'bg-warning text-dark';
-                                                    } elseif ($item->status == 'gagal') {
-                                                        $statusLabel = 'Gagal';
-                                                        $statusClass = 'bg-danger';
-                                                    } else {
-                                                        $statusLabel = 'Belum Dibayar';
-                                                        $statusClass = 'bg-secondary';
-                                                    }
-                                                @endphp
-                                                <span class="badge {{ $statusClass }}">{{ $statusLabel }}</span>
-                                            </div>
-                                            <p class="text-white mb-2">Jumlah Tagihan: <strong>Rp {{ number_format($item->iuran->nominal, 0, ',', '.') }}</strong></p>
-                                            <p class="text-secondary mb-3">Jatuh tempo: {{ $item->iuran->due_day ?? 10 }} {{ date('F Y', strtotime($item->bulan_tahun . '-01')) }}</p>
-                                            @if($item->status == 'pending')
-                                                <button type="button" class="btn btn-warning btn-sm w-100" disabled>
-                                                    <i class="fas fa-clock"></i> Menunggu Verifikasi
-                                                </button>
-                                            @elseif($item->status !== 'lunas')
-                                                <a href="{{ route('pembayaran.create', ['iuran_id' => $item->iuran->id, 'bulan_tahun' => $item->bulan_tahun]) }}" class="btn btn-gradient btn-sm w-100">
-                                                    <i class="fas fa-wallet"></i> Bayar
-                                                </a>
-                                            @else
-                                                <button type="button" class="btn btn-secondary btn-sm w-100" disabled>
-                                                    <i class="fas fa-check-circle"></i> Sudah Lunas
-                                                </button>
-                                            @endif
-                                        </div>
+                        @if($tagihanGroups->isNotEmpty())
+                            <div class="period-switcher mb-3" role="tablist" aria-label="Pilih periode tagihan">
+                                @foreach($tagihanGroups as $group)
+                                    <button type="button" class="period-btn {{ $loop->first ? 'active' : '' }}" data-period-target="tagihan-period-{{ $loop->index }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                                        <span class="period-title">{{ $group->period->label }}</span>
+                                        <span class="period-month">{{ $group->period->month_label }}</span>
+                                        <span class="period-count">{{ $group->unpaid_count }} belum bayar</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @forelse($tagihanGroups as $group)
+                            <section id="tagihan-period-{{ $loop->index }}" class="tagihan-group period-panel {{ $loop->first ? 'active' : '' }}">
+                                <div class="tagihan-group-header">
+                                    <div>
+                                        <span class="badge {{ $group->period->badge_class }} mb-2">{{ $group->period->label }}</span>
+                                        <h6 class="text-white mb-0">{{ $group->period->month_label }}</h6>
+                                    </div>
+                                    <div class="tagihan-summary">
+                                        <span class="summary-pill paid"><i class="fas fa-check-circle"></i> {{ $group->paid_count }} lunas</span>
+                                        <span class="summary-pill pending"><i class="fas fa-clock"></i> {{ $group->pending_count }} proses</span>
+                                        <span class="summary-pill unpaid"><i class="fas fa-wallet"></i> {{ $group->unpaid_count }} belum</span>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="col-12">
-                                    <div class="alert alert-info mb-0">Tidak ada tagihan aktif saat ini.</div>
+
+                                <div class="row g-3">
+                                    @forelse($group->items as $item)
+                                        <div class="col-lg-6">
+                                            <div class="card h-100 border-secondary tagihan-card">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                                        <div>
+                                                            <h6 class="text-white mb-1">{{ $item->iuran->nama_iuran }}</h6>
+                                                            <small class="text-secondary">{{ ucfirst($item->iuran->periode) }} - {{ $item->bulan_tahun }}</small>
+                                                        </div>
+                                                        @php
+                                                            if ($item->status == 'lunas') {
+                                                                $statusLabel = 'Lunas';
+                                                                $statusClass = 'bg-success';
+                                                            } elseif ($item->status == 'pending') {
+                                                                $statusLabel = 'Menunggu Verifikasi';
+                                                                $statusClass = 'bg-warning text-dark';
+                                                            } elseif ($item->status == 'gagal') {
+                                                                $statusLabel = 'Gagal';
+                                                                $statusClass = 'bg-danger';
+                                                            } else {
+                                                                $statusLabel = 'Belum Dibayar';
+                                                                $statusClass = 'bg-secondary';
+                                                            }
+                                                        @endphp
+                                                        <span class="badge {{ $statusClass }}">{{ $statusLabel }}</span>
+                                                    </div>
+                                                    <p class="text-white mb-2">Jumlah Tagihan: <strong>Rp {{ number_format($item->iuran->nominal, 0, ',', '.') }}</strong></p>
+                                                    <p class="text-secondary mb-3">Jatuh tempo: {{ $item->iuran->due_day ?? 10 }} {{ \Carbon\Carbon::parse($item->bulan_tahun . '-01')->locale('id')->translatedFormat('F Y') }}</p>
+                                                    @if($item->status == 'pending')
+                                                        <button type="button" class="btn btn-warning btn-sm w-100" disabled>
+                                                            <i class="fas fa-clock"></i> Menunggu Verifikasi
+                                                        </button>
+                                                    @elseif($item->status !== 'lunas')
+                                                        <a href="{{ route('pembayaran.create', ['iuran_id' => $item->iuran->id, 'bulan_tahun' => $item->bulan_tahun]) }}" class="btn btn-gradient btn-sm w-100">
+                                                            <i class="fas fa-wallet"></i> Bayar
+                                                        </a>
+                                                    @else
+                                                        <button type="button" class="btn btn-secondary btn-sm w-100" disabled>
+                                                            <i class="fas fa-check-circle"></i> Sudah Lunas
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="col-12">
+                                            <div class="alert alert-info mb-0">Tidak ada tagihan untuk periode ini.</div>
+                                        </div>
+                                    @endforelse
                                 </div>
-                            @endforelse
-                        </div>
+                            </section>
+                        @empty
+                            <div class="alert alert-info mb-0">Tidak ada tagihan aktif saat ini.</div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -219,6 +249,99 @@
     background: rgba(15, 23, 42, 0.5);
     border-bottom: 1px solid rgba(96, 165, 250, 0.1);
 }
+.period-switcher {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.period-btn {
+    background: rgba(15, 23, 42, 0.48);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 14px;
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 88px;
+    padding: 14px 16px;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+.period-btn:hover {
+    border-color: rgba(96, 165, 250, 0.45);
+    color: #f1f5f9;
+}
+.period-btn.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.34), rgba(139, 92, 246, 0.28));
+    border-color: rgba(96, 165, 250, 0.6);
+    box-shadow: 0 10px 24px rgba(59, 130, 246, 0.16);
+    color: #f8fafc;
+}
+.period-title {
+    font-size: 1rem;
+    font-weight: 700;
+}
+.period-month {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+.period-btn.active .period-month {
+    color: #dbeafe;
+}
+.period-count {
+    color: #fde68a;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.tagihan-group {
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 16px;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.22);
+}
+.period-panel {
+    display: none;
+}
+.period-panel.active {
+    display: block;
+}
+.tagihan-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.tagihan-summary {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.summary-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 10px;
+}
+.summary-pill.paid {
+    background: rgba(34, 197, 94, 0.16);
+    color: #86efac;
+}
+.summary-pill.pending {
+    background: rgba(234, 179, 8, 0.16);
+    color: #fde68a;
+}
+.summary-pill.unpaid {
+    background: rgba(148, 163, 184, 0.16);
+    color: #cbd5e1;
+}
+.tagihan-card {
+    border-radius: 14px;
+}
 .table-dark {
     background: transparent;
 }
@@ -248,9 +371,49 @@
 .text-white-50 {
     color: rgba(255, 255, 255, 0.5) !important;
 }
+@media (max-width: 768px) {
+    .period-switcher {
+        grid-template-columns: 1fr;
+    }
+    .tagihan-group-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .tagihan-summary {
+        justify-content: flex-start;
+    }
+}
 </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const periodButtons = document.querySelectorAll('.period-btn');
+        const periodPanels = document.querySelectorAll('.period-panel');
+
+        periodButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                const targetId = button.dataset.periodTarget;
+                const targetPanel = document.getElementById(targetId);
+
+                periodButtons.forEach(function (item) {
+                    item.classList.remove('active');
+                    item.setAttribute('aria-selected', 'false');
+                });
+
+                periodPanels.forEach(function (panel) {
+                    panel.classList.remove('active');
+                });
+
+                button.classList.add('active');
+                button.setAttribute('aria-selected', 'true');
+
+                if (targetPanel) {
+                    targetPanel.classList.add('active');
+                }
+            });
+        });
+    });
+
     function formatRupiah(value) {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',

@@ -8,6 +8,8 @@ class Iuran extends Model
 {
     protected $fillable = [
         'kode_iuran',
+        'rt_id',
+        'rw_id',
         'nama_iuran',
         'jenis_iuran',
         'nominal',
@@ -50,5 +52,15 @@ class Iuran extends Model
     public function pembayaran()
     {
         return $this->hasMany(Pembayaran::class);
+    }
+
+    public function rt()
+    {
+        return $this->belongsTo(Rt::class);
+    }
+
+    public function rw()
+    {
+        return $this->belongsTo(Rw::class);
     }
 }

@@ -22,7 +22,7 @@ class LoginController extends Controller
         return view('auth.login');
     }
     
-    // Warga baru hanya boleh masuk setelah diverifikasi Admin RT.
+    // Warga baru hanya boleh masuk setelah diverifikasi Admin RW.
     public function login(Request $request)
     {
         $this->validateLogin($request);
@@ -43,7 +43,7 @@ class LoginController extends Controller
                 $request->session()->regenerateToken();
 
                 return back()->withInput($request->only($this->username(), 'remember'))
-                    ->with('error', 'Akun Anda masih menunggu verifikasi dari Admin RT. Silakan hubungi admin untuk informasi lebih lanjut.');
+                    ->with('error', 'Akun Anda masih menunggu verifikasi dari Admin RW. Silakan hubungi admin untuk informasi lebih lanjut.');
             }
 
             if ($request->hasSession()) {

@@ -95,9 +95,9 @@
                         
                         <div class="mb-3" id="bankInfo" style="display: none;">
                             <div class="alert alert-info">
-                                <h6 class="mb-2">Nomor Rekening RT</h6>
-                                <p class="mb-1">BCA: <strong>123-456-7890</strong> a.n. Bendahara RT</p>
-                                <p class="mb-1">Mandiri: <strong>987-654-3210</strong> a.n. Bendahara RT</p>
+                                <h6 class="mb-2">Nomor Rekening RW</h6>
+                                <p class="mb-1">BCA: <strong>123-456-7890</strong> a.n. Bendahara RW</p>
+                                <p class="mb-1">Mandiri: <strong>987-654-3210</strong> a.n. Bendahara RW</p>
                             </div>
                         </div>
 
@@ -154,17 +154,17 @@
                         <div class="alert alert-warning">
                             <i class="fas fa-university"></i>
                             <strong>Nomor Rekening untuk Transfer:</strong><br>
-                            Bank BCA: 123-456-7890 a.n. Bendahara RT<br>
-                            Bank Mandiri: 987-654-3210 a.n. Bendahara RT
+                            Bank BCA: 123-456-7890 a.n. Bendahara RW<br>
+                            Bank Mandiri: 987-654-3210 a.n. Bendahara RW
                         </div>
 
                         <div class="alert alert-warning">
                             <i class="fas fa-mobile-alt"></i>
                             <strong>Nomor E-Wallet:</strong><br>
-                            Dana: 0812-3456-7890 a.n. Bendahara RT<br>
-                            OVO: 0812-3456-7890 a.n. Bendahara RT<br>
-                            GoPay: 0812-3456-7890 a.n. Bendahara RT<br>
-                            ShopeePay: 0812-3456-7890 a.n. Bendahara RT
+                            Dana: 0812-3456-7890 a.n. Bendahara RW<br>
+                            OVO: 0812-3456-7890 a.n. Bendahara RW<br>
+                            GoPay: 0812-3456-7890 a.n. Bendahara RW<br>
+                            ShopeePay: 0812-3456-7890 a.n. Bendahara RW
                         </div>
                         @else
                         <div class="alert alert-success">

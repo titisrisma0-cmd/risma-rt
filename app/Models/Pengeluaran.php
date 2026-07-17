@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pengeluaran extends Model
 {
     protected $fillable = [
-        'tanggal', 'kategori', 'nominal', 'keterangan', 'bukti', 'created_by'
+        'rt_id', 'rw_id', 'tanggal', 'kategori', 'nominal', 'keterangan', 'bukti', 'nota_path', 'created_by'
     ];
 
     public function creator()

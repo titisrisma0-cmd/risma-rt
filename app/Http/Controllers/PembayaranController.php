@@ -17,7 +17,8 @@ class PembayaranController extends Controller
 {
     public function index()
     {
-        $currentPeriod = date('Y-m');
+        $currentPeriod = Carbon::now()->format('Y-m');
+        $previousPeriod = Carbon::now()->subMonthNoOverflow()->format('Y-m');
 
         if (Auth::user()->hasRole('warga')) {
             $pembayaran = Pembayaran::with(['iuran', 'verifikator'])
@@ -34,30 +35,60 @@ class PembayaranController extends Controller
 
             $activeIuran = Iuran::dedupeCollection($activeIuran);
 
-            $tagihan = $activeIuran->map(function ($iuran) use ($currentPeriod) {
-                $iuranIds = $iuran->duplicate_ids ?? collect([$iuran->id]);
+            $periods = collect([
+                [
+                    'value' => $currentPeriod,
+                    'label' => 'Bulan Ini',
+                    'month_label' => Carbon::parse($currentPeriod . '-01')->locale('id')->translatedFormat('F Y'),
+                    'badge_class' => 'bg-primary',
+                ],
+                [
+                    'value' => $previousPeriod,
+                    'label' => 'Bulan Sebelumnya',
+                    'month_label' => Carbon::parse($previousPeriod . '-01')->locale('id')->translatedFormat('F Y'),
+                    'badge_class' => 'bg-info',
+                ],
+            ]);
 
-                $lastPembayaran = Pembayaran::where('user_id', Auth::id())
-                    ->whereIn('iuran_id', $iuranIds)
-                    ->where('bulan_tahun', $currentPeriod)
-                    ->orderBy('created_at', 'desc')
-                    ->first();
+            $tagihanGroups = $periods->map(function ($period) use ($activeIuran) {
+                $items = $activeIuran->map(function ($iuran) use ($period) {
+                    $iuranIds = $iuran->duplicate_ids ?? collect([$iuran->id]);
+
+                    $lastPembayaran = Pembayaran::where('user_id', Auth::id())
+                        ->whereIn('iuran_id', $iuranIds)
+                        ->where('bulan_tahun', $period['value'])
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    return (object) [
+                        'iuran' => $iuran,
+                        'bulan_tahun' => $period['value'],
+                        'periode_label' => $period['label'],
+                        'status' => $lastPembayaran ? $lastPembayaran->status : 'unpaid',
+                        'pembayaran' => $lastPembayaran,
+                    ];
+                });
 
                 return (object) [
-                    'iuran' => $iuran,
-                    'bulan_tahun' => $currentPeriod,
-                    'status' => $lastPembayaran ? $lastPembayaran->status : 'unpaid',
-                    'pembayaran' => $lastPembayaran,
+                    'period' => (object) $period,
+                    'items' => $items,
+                    'total' => $items->count(),
+                    'unpaid_count' => $items->where('status', 'unpaid')->count(),
+                    'pending_count' => $items->where('status', 'pending')->count(),
+                    'paid_count' => $items->where('status', 'lunas')->count(),
                 ];
             });
+
+            $tagihan = $tagihanGroups->flatMap->items;
         } else {
             $pembayaran = Pembayaran::with(['user', 'iuran', 'verifikator'])
                 ->orderBy('created_at', 'desc')
                 ->get();
             $tagihan = collect();
+            $tagihanGroups = collect();
         }
         
-        return view('pembayaran.index', compact('pembayaran', 'tagihan'));
+        return view('pembayaran.index', compact('pembayaran', 'tagihan', 'tagihanGroups'));
     }
     
     public function create(Request $request)

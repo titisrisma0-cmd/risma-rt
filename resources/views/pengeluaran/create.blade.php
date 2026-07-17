@@ -8,7 +8,7 @@
                 <i class="fas fa-plus-circle"></i> Tambah Pengeluaran
             </h2>
             <p class="text-white-50 animate__animated animate__fadeInLeft animate__delay-1s">
-                Catat pengeluaran kas RT dengan detail
+                Catat pengeluaran kas RW dengan detail
             </p>
         </div>
     </div>
@@ -56,7 +56,7 @@
                         
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle"></i> 
-                            Pastikan pengeluaran sudah disetujui oleh ketua RT sebelum dicatat.
+                            Pastikan pengeluaran sudah disetujui oleh Ketua RW sebelum dicatat.
                         </div>
                         
                         <div class="text-end">

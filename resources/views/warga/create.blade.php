@@ -22,6 +22,21 @@
                 <div class="card-body">
                     <form action="{{ route('warga.store') }}" method="POST">
                         @csrf
+
+                        <div class="mb-3">
+                            <label class="form-label text-white">RT <span class="text-danger">*</span></label>
+                            @if(Auth::user()->isAdminRt())
+                                <input type="text" class="form-control bg-dark text-white border-secondary" value="RT {{ $rts->first()?->kode_rt ?? '-' }}" readonly>
+                            @else
+                                <select name="rt_id" class="form-select bg-dark text-white border-secondary @error('rt_id') is-invalid @enderror" required>
+                                    <option value="">Pilih RT</option>
+                                    @foreach($rts as $rt)
+                                        <option value="{{ $rt->id }}" @selected(old('rt_id') == $rt->id)>RW {{ $rt->rw?->kode_rw }} / RT {{ $rt->kode_rt }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                            @error('rt_id') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">

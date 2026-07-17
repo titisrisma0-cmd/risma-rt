@@ -15,8 +15,8 @@ class UserSeeder extends Seeder
         // Admin
         $adminRole = Role::where('nama_role', 'admin')->first();
         $admin = User::create([
-            'name' => 'Admin RISMA',
-            'email' => 'admin@risma-rt.test',
+            'name' => 'Admin RW Smart',
+            'email' => 'admin@rw-smart.test',
             'password' => Hash::make('password123'),
             'role_id' => $adminRole->id
         ]);
@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
             'role_id' => $adminRole->id,
             'no_kk' => '0000000000000000',
             'nik' => '0000000000000000',
-            'nama_lengkap' => 'Admin RISMA',
+            'nama_lengkap' => 'Admin RW Smart',
             'tempat_lahir' => 'Jakarta',
             'tanggal_lahir' => '1990-01-01',
             'jenis_kelamin' => 'L',
@@ -39,8 +39,8 @@ class UserSeeder extends Seeder
         // Bendahara
         $bendaharaRole = Role::where('nama_role', 'bendahara')->first();
         $bendahara = User::create([
-            'name' => 'Bendahara RT',
-            'email' => 'bendahara@risma-rt.test',
+            'name' => 'Bendahara RW',
+            'email' => 'bendahara@rw-smart.test',
             'password' => Hash::make('password123'),
             'role_id' => $bendaharaRole->id
         ]);
@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
             'role_id' => $bendaharaRole->id,
             'no_kk' => '1111111111111111',
             'nik' => '1111111111111111',
-            'nama_lengkap' => 'Bendahara RT',
+            'nama_lengkap' => 'Bendahara RW',
             'tempat_lahir' => 'Jakarta',
             'tanggal_lahir' => '1985-05-05',
             'jenis_kelamin' => 'P',
@@ -65,7 +65,7 @@ class UserSeeder extends Seeder
         for ($i = 1; $i <= 5; $i++) {
             $warga = User::create([
                 'name' => "Warga $i",
-                'email' => "warga$i@risma-rt.test",
+                'email' => "warga$i@rw-smart.test",
                 'password' => Hash::make('password123'),
                 'role_id' => $wargaRole->id
             ]);
@@ -75,7 +75,7 @@ class UserSeeder extends Seeder
                 'role_id' => $wargaRole->id,
                 'no_kk' => "222222222222222$i",
                 'nik' => "333333333333333$i",
-                'nama_lengkap' => "Warga $i RT",
+                'nama_lengkap' => "Warga $i RW",
                 'tempat_lahir' => 'Jakarta',
                 'tanggal_lahir' => "199$i-0$i-0$i",
                 'jenis_kelamin' => $i % 2 == 0 ? 'P' : 'L',

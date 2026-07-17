@@ -23,36 +23,36 @@ class DemoDataSeeder extends Seeder
         
         // Buat Admin
         $admin = User::updateOrCreate(
-            ['email' => 'admin@risma-rt.test'],
+            ['email' => 'admin@rw-smart.test'],
             [
-                'name' => 'Admin RISMA',
+                'name' => 'Admin RW Smart',
                 'password' => Hash::make('password123'),
                 'role_id' => $adminRole->id
             ]
         );
         UserProfile::updateOrCreate(
             ['user_id' => $admin->id],
-            ['nama_lengkap' => 'Admin RISMA', 'status' => 'aktif', 'role_id' => $adminRole->id]
+            ['nama_lengkap' => 'Admin RW Smart', 'status' => 'aktif', 'role_id' => $adminRole->id]
         );
         
         // Buat Bendahara
         $bendahara = User::updateOrCreate(
-            ['email' => 'bendahara@risma-rt.test'],
+            ['email' => 'bendahara@rw-smart.test'],
             [
-                'name' => 'Bendahara RT',
+                'name' => 'Bendahara RW',
                 'password' => Hash::make('password123'),
                 'role_id' => $bendaharaRole->id
             ]
         );
         UserProfile::updateOrCreate(
             ['user_id' => $bendahara->id],
-            ['nama_lengkap' => 'Bendahara RT', 'status' => 'aktif', 'role_id' => $bendaharaRole->id]
+            ['nama_lengkap' => 'Bendahara RW', 'status' => 'aktif', 'role_id' => $bendaharaRole->id]
         );
         
         // Buat 5 Warga
         for ($i = 1; $i <= 5; $i++) {
             $warga = User::updateOrCreate(
-                ['email' => "warga$i@risma-rt.test"],
+                ['email' => "warga$i@rw-smart.test"],
                 [
                     'name' => "Warga $i",
                     'password' => Hash::make('password123'),

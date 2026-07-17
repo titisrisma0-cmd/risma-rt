@@ -23,6 +23,19 @@
                     <form action="{{ route('warga.update', $warga->id) }}" method="POST">
                         @csrf
                         @method('PUT')
+
+                        <div class="mb-3">
+                            <label class="form-label text-white">RT <span class="text-danger">*</span></label>
+                            @if(Auth::user()->isAdminRt())
+                                <input type="text" class="form-control bg-dark text-white border-secondary" value="RT {{ $rts->first()?->kode_rt ?? '-' }}" readonly>
+                            @else
+                                <select name="rt_id" class="form-select bg-dark text-white border-secondary" required>
+                                    @foreach($rts as $rt)
+                                        <option value="{{ $rt->id }}" @selected(old('rt_id', $warga->profile?->rt_id) == $rt->id)>RW {{ $rt->rw?->kode_rw }} / RT {{ $rt->kode_rt }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">

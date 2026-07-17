@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login & Register | RISMA-RT</title>
+    <title>Login & Register | RW Smart</title>
+    <style>
+    </style>
+    @include('partials.whatsapp-help')
     <script>
         (function () {
             document.documentElement.setAttribute('data-theme', localStorage.getItem('risma-theme') || 'dark');
@@ -16,6 +19,62 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        :root {
+            --page-bg: radial-gradient(circle at top right, #dbe9e1 0%, #eef3ed 45%, #f5f7f2 100%);
+            --card-bg: rgba(245, 247, 242, 0.9);
+            --card-border: rgba(20, 132, 110, 0.22);
+            --card-shadow: 0 25px 50px -12px rgba(14, 45, 59, 0.2);
+            --info-bg: linear-gradient(135deg, rgba(20, 132, 110, 0.88), rgba(88, 173, 112, 0.72));
+            --info-glow: radial-gradient(circle, rgba(255, 201, 71, 0.15) 0%, transparent 70%);
+            --form-bg: rgba(238, 243, 237, 0.82);
+            --text-primary: #17394a;
+            --text-strong: #113527;
+            --text-muted: #4b6573;
+            --text-soft: #5f7885;
+            --input-bg: #f8faf6;
+            --input-bg-focus: #eef3ed;
+            --input-border: rgba(20, 132, 110, 0.2);
+            --accent: #0f9f75;
+            --accent-strong: #0b6f55;
+            --accent-soft: rgba(15, 159, 117, 0.14);
+            --button-bg: linear-gradient(135deg, #0f9f75, #64c85b);
+            --button-text: #ffffff;
+            --button-shadow: rgba(15, 159, 117, 0.32);
+            --warning-bg: rgba(255, 193, 7, 0.14);
+            --warning-border: rgba(255, 193, 7, 0.36);
+            --warning-text: #996f00;
+            --decoration-gold: #ffc947;
+            --decoration-green: #2d8659;
+        }
+
+        :root[data-theme="dark"] {
+            --page-bg: radial-gradient(circle at top right, #17394a 0%, #0b1d28 40%, #07131d 100%);
+            --card-bg: rgba(26, 95, 63, 0.15);
+            --card-border: rgba(255, 215, 0, 0.2);
+            --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --info-bg: linear-gradient(135deg, rgba(26, 95, 63, 0.8), rgba(45, 134, 89, 0.6));
+            --info-glow: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+            --form-bg: rgba(11, 29, 40, 0.3);
+            --text-primary: #fffbf0;
+            --text-strong: #fffbf0;
+            --text-muted: #cbd5e1;
+            --text-soft: #94a3b8;
+            --input-bg: rgba(255, 251, 240, 0.1);
+            --input-bg-focus: rgba(255, 251, 240, 0.15);
+            --input-border: rgba(255, 215, 0, 0.2);
+            --accent: #ffd700;
+            --accent-strong: #ffd700;
+            --accent-soft: rgba(255, 215, 0, 0.2);
+            --button-bg: linear-gradient(135deg, #ffd700, #ffed4e);
+            --button-text: #1a5f3f;
+            --button-shadow: rgba(255, 215, 0, 0.4);
+            --warning-bg: rgba(255, 215, 0, 0.1);
+            --warning-border: rgba(255, 215, 0, 0.3);
+            --warning-text: #ffd700;
+            --decoration-gold: #ffd700;
+            --decoration-green: #2d8659;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -24,10 +83,11 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, #17394a 0%, #0b1d28 40%, #07131d 100%);
+            background: var(--page-bg);
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            transition: background 0.3s ease;
         }
         
         /* Ornamental Decorations */
@@ -41,7 +101,7 @@
             top: 20px;
             left: 30px;
             font-size: 4rem;
-            color: #ffd700;
+            color: var(--decoration-gold);
             animation: float 4s ease-in-out infinite;
             filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
         }
@@ -50,7 +110,7 @@
             top: 10px;
             right: 40px;
             font-size: 5rem;
-            color: #ffd700;
+            color: var(--decoration-gold);
             animation: float 3.5s ease-in-out infinite;
             filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
         }
@@ -59,14 +119,18 @@
             top: 50px;
             right: 120px;
             font-size: 3rem;
-            color: #ffed4e;
+            color: var(--decoration-gold);
             animation: twinkle 3s ease-in-out infinite;
             filter: drop-shadow(0 0 15px rgba(255, 237, 74, 0.3));
+        }
+
+        :root:not([data-theme="dark"]) .moon i::before {
+            content: "\f185";
         }
         
         .stars {
             font-size: 1.2rem;
-            color: #ffd700;
+            color: var(--decoration-gold);
             animation: twinkle 2s ease-in-out infinite;
             filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
         }
@@ -78,7 +142,7 @@
         
         .leaves {
             font-size: 2.5rem;
-            color: #2d8659;
+            color: var(--decoration-green);
             opacity: 0.6;
             animation: float 5s ease-in-out infinite;
         }
@@ -108,19 +172,19 @@
         }
         
         .auth-card {
-            background: rgba(26, 95, 63, 0.15);
+            background: var(--card-bg);
             backdrop-filter: blur(20px);
             border-radius: 32px;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255, 215, 0, 0.2);
+            box-shadow: var(--card-shadow);
+            border: 2px solid var(--card-border);
             max-width: 1100px;
             width: 100%;
         }
         
         /* Left Side - Info Panel */
         .info-panel {
-            background: linear-gradient(135deg, rgba(26, 95, 63, 0.8), rgba(45, 134, 89, 0.6));
+            background: var(--info-bg);
             padding: 48px;
             height: 100%;
             position: relative;
@@ -134,14 +198,14 @@
             right: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+            background: var(--info-glow);
             pointer-events: none;
         }
         
         .brand {
             font-size: 1.8rem;
             font-weight: 800;
-            color: #ffd700;
+            color: var(--accent);
             margin-bottom: 40px;
             display: inline-block;
         }
@@ -164,7 +228,7 @@
         }
         
         .info-panel > p {
-            color: #cbd5e1;
+            color: #edf7f2;
             font-size: 0.95rem;
             margin-bottom: 30px;
             line-height: 1.6;
@@ -184,7 +248,7 @@
         .feature-icon {
             width: 50px;
             height: 50px;
-            background: rgba(255, 215, 0, 0.2);
+            background: rgba(255, 255, 255, 0.16);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -200,28 +264,63 @@
         .feature-text h6 {
             font-weight: 600;
             margin-bottom: 5px;
-            color: #ffd700;
+            color: #fff1a6;
             font-size: 0.95rem;
         }
         
         .feature-text p {
             font-size: 0.8rem;
-            color: #cbd5e1;
+            color: #e5f5ed;
             margin: 0;
         }
         
         /* Right Side - Form Panel */
         .form-panel {
             padding: 48px;
-            background: rgba(11, 29, 40, 0.3);
+            background: var(--form-bg);
+        }
+
+        .auth-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--input-border);
+            padding-bottom: 15px;
         }
         
         .tab-buttons {
             display: flex;
             gap: 30px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-            padding-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 999px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1;
+            padding: 8px 11px;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent-strong);
+        }
+
+        .theme-toggle .theme-icon {
+            color: var(--accent);
+            width: 16px;
         }
         
         .tab-btn {
@@ -229,7 +328,7 @@
             border: none;
             font-size: 1rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: var(--text-soft);
             padding: 8px 0;
             cursor: pointer;
             transition: all 0.3s;
@@ -237,7 +336,7 @@
         }
         
         .tab-btn.active {
-            color: #ffd700;
+            color: var(--accent);
         }
         
         .tab-btn.active::after {
@@ -247,12 +346,12 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: #ffd700;
+            background: var(--accent);
             border-radius: 2px;
         }
         
         .tab-btn:hover {
-            color: #ffd700;
+            color: var(--accent);
         }
         
         .form-group {
@@ -264,46 +363,52 @@
             font-weight: 500;
             margin-bottom: 8px;
             display: block;
-            color: #fffbf0;
+            color: var(--text-strong);
         }
         
         .input-group-custom {
             display: flex;
             align-items: center;
-            background: rgba(255, 251, 240, 0.1);
+            background: var(--input-bg);
             border-radius: 12px;
-            border: 1px solid rgba(255, 215, 0, 0.2);
+            border: 1px solid var(--input-border);
             transition: all 0.3s;
         }
         
         .input-group-custom:focus-within {
-            border-color: #ffd700;
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
-            background: rgba(255, 251, 240, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+            background: var(--input-bg-focus);
         }
         
         .input-group-custom span {
             padding: 0 15px;
-            color: #94a3b8;
+            color: var(--text-soft);
         }
         
-        .input-group-custom input {
+        .input-group-custom input,
+        .input-group-custom select {
             background: transparent;
             border: none;
             padding: 14px 15px 14px 0;
             width: 100%;
-            color: #fffbf0;
+            color: var(--text-primary);
             outline: none;
         }
         
         .input-group-custom input::placeholder {
-            color: #64748b;
+            color: var(--text-soft);
+            opacity: 0.85;
+        }
+
+        .input-group-custom select option {
+            color: #17394a;
         }
 
         .password-toggle {
             background: none;
             border: none;
-            color: #94a3b8;
+            color: var(--text-soft);
             padding: 0 15px;
             cursor: pointer;
             font-size: 1rem;
@@ -312,28 +417,28 @@
         }
 
         .password-toggle:hover {
-            color: #ffd700;
+            color: var(--accent);
         }
         
         .form-check-input {
             background-color: transparent !important;
-            border: 1px solid #ffd700 !important;
+            border: 1px solid var(--accent) !important;
         }
         
         .form-check-input:checked {
-            background-color: #ffd700 !important;
-            border-color: #ffd700 !important;
+            background-color: var(--accent) !important;
+            border-color: var(--accent) !important;
         }
         
         .btn-submit {
             width: 100%;
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            background: var(--button-bg);
             border: none;
             padding: 14px;
             border-radius: 12px;
             font-weight: 700;
             font-size: 1rem;
-            color: #1a5f3f;
+            color: var(--button-text);
             transition: all 0.3s;
             margin-top: 10px;
             text-transform: uppercase;
@@ -342,30 +447,30 @@
         
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-            color: #1a5f3f;
+            box-shadow: 0 8px 25px var(--button-shadow);
+            color: var(--button-text);
         }
         
         .demo-accounts {
             margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid rgba(255, 215, 0, 0.2);
+            border-top: 1px solid var(--input-border);
         }
         
         .demo-accounts h6 {
             font-size: 0.8rem;
-            color: #ffd700;
+            color: var(--accent);
             margin-bottom: 12px;
         }
         
         .demo-item {
             font-size: 0.75rem;
-            color: #cbd5e1;
+            color: var(--text-muted);
             margin-bottom: 8px;
         }
         
         .demo-item strong {
-            color: #ffd700;
+            color: var(--accent);
         }
         
         .alert-custom {
@@ -383,13 +488,20 @@
             border: 1px solid rgba(34, 197, 94, 0.3);
             color: #4ade80;
         }
+
+        .info-note {
+            background: var(--warning-bg);
+            border-color: var(--warning-border);
+            color: var(--warning-text);
+            margin-top: 15px;
+        }
         
         .form-check-label {
-            color: #cbd5e1;
+            color: var(--text-muted);
         }
         
         a {
-            color: #ffd700;
+            color: var(--accent);
         }
         
         @media (max-width: 768px) {
@@ -399,8 +511,18 @@
             .form-panel {
                 padding: 32px;
             }
+            .auth-top {
+                align-items: center;
+            }
             .decoration {
                 display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-top {
+                align-items: flex-start;
+                flex-direction: column;
             }
         }
     </style>
@@ -425,12 +547,12 @@
                 <div class="col-lg-6">
                     <div class="info-panel">
                         <a href="{{ url('/') }}" class="brand">
-                            <i class="fas fa-home"></i> RISMA-RT
+                            <i class="fas fa-home"></i> RW Smart
                         </a>
                         
-                        <h3>Kelola Iuran RT<br><span class="gold-text">Lebih Mudah</span></h3>
+                        <h3>Kelola Iuran RW<br><span class="gold-text">Lebih Mudah</span></h3>
                         <p>
-                            Platform digital untuk mengelola iuran warga, pembayaran, dan laporan keuangan RT secara real-time.
+                            Platform digital untuk mengelola iuran warga, pembayaran, dan laporan keuangan RW secara real-time.
                         </p>
                         
                         <div class="feature-list">
@@ -440,7 +562,7 @@
                                 </div>
                                 <div class="feature-text">
                                     <h6>Laporan Real-time</h6>
-                                    <p>Pantau keuangan RT langsung</p>
+                                    <p>Pantau keuangan RW langsung</p>
                                 </div>
                             </div>
                             <div class="feature-item">
@@ -478,12 +600,18 @@
                 <div class="col-lg-6">
                     <div class="form-panel">
                         <!-- Tab Buttons -->
-                        <div class="tab-buttons">
-                            <button class="tab-btn active" data-tab="login">
-                                <i class="fas fa-sign-in-alt"></i> Login
-                            </button>
-                            <button class="tab-btn" data-tab="register">
-                                <i class="fas fa-user-plus"></i> Daftar
+                        <div class="auth-top">
+                            <div class="tab-buttons">
+                                <button class="tab-btn active" data-tab="login">
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </button>
+                                <button class="tab-btn" data-tab="register">
+                                    <i class="fas fa-user-plus"></i> Daftar
+                                </button>
+                            </div>
+                            <button type="button" class="theme-toggle" id="themeToggle" aria-label="Ganti ke mode siang">
+                                <i class="fas fa-moon theme-icon"></i>
+                                <span>Mode Malam</span>
                             </button>
                         </div>
                         
@@ -546,9 +674,9 @@
                             
                             <div class="demo-accounts">
                                 <h6><i class="fas fa-laptop-code"></i> Akun Demo</h6>
-                                <div class="demo-item"><strong>Admin:</strong> admin@risma-rt.test / password123</div>
-                                <div class="demo-item"><strong>Bendahara:</strong> bendahara@risma-rt.test / password123</div>
-                                <div class="demo-item"><strong>Warga:</strong> warga@risma-rt.test / password123</div>
+                                <div class="demo-item"><strong>Admin:</strong> admin@rw-smart.test / password123</div>
+                                <div class="demo-item"><strong>Bendahara:</strong> bendahara@rw-smart.test / password123</div>
+                                <div class="demo-item"><strong>Warga:</strong> warga@rw-smart.test / password123</div>
                             </div>
                         </div>
                         
@@ -627,9 +755,9 @@
                                     </div>
                                 </div>
                                 
-                                <div class="alert-custom" style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); color: #ffd700; margin-top: 15px;">
+                                <div class="alert-custom info-note">
                                     <i class="fas fa-info-circle me-2"></i>
-                                    <small>Setelah mendaftar, akun Anda akan diverifikasi oleh Admin RT.</small>
+                                    <small>Setelah mendaftar, akun Anda akan diverifikasi oleh Admin RW.</small>
                                 </div>
                                 
                                 <button type="submit" class="btn-submit">
@@ -644,6 +772,28 @@
     </div>
     
     <script>
+        // Theme Switching
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('.theme-icon');
+        const themeLabel = themeToggle.querySelector('span');
+
+        function setTheme(theme) {
+            const isDark = theme === 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('risma-theme', theme);
+            themeIcon.classList.toggle('fa-moon', isDark);
+            themeIcon.classList.toggle('fa-sun', !isDark);
+            themeLabel.textContent = isDark ? 'Mode Malam' : 'Mode Siang';
+            themeToggle.setAttribute('aria-label', isDark ? 'Ganti ke mode siang' : 'Ganti ke mode malam');
+        }
+
+        setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
         // Tab Switching
         const tabBtns = document.querySelectorAll('.tab-btn');
         const loginForm = document.getElementById('loginForm');

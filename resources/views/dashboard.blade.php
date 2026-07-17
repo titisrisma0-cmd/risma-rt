@@ -115,29 +115,50 @@
         </div>
     </div>
 
-    <!-- Chart Comparison -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-6" data-aos="fade-right">
-            <div class="glass-card">
-                <div class="card-header-custom">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-line gradient-text me-2"></i> Grafik Pemasukan {{ date('Y') }}
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="incomeChart" height="250"></canvas>
-                </div>
+    <section class="mb-4" id="layanan-masyarakat">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <h4 class="mb-1"><i class="fas fa-handshake-angle gradient-text me-2"></i>Layanan Masyarakat</h4>
+                <p class="text-secondary mb-0 small">Akses cepat seluruh layanan warga dan pengurus RW.</p>
             </div>
         </div>
-        <div class="col-lg-6" data-aos="fade-left">
+        <div class="service-dashboard-grid">
+            @php
+                $layananDashboard = [
+                    ['route' => 'bank-sampah.index', 'icon' => 'fa-leaf', 'color' => 'green', 'title' => 'Bank Sampah', 'description' => 'Setoran, saldo, harga, dan jadwal sampah.'],
+                    ['route' => 'layanan.umkm.index', 'icon' => 'fa-shop', 'color' => 'orange', 'title' => 'UMKM', 'description' => 'Produk dan jasa milik warga sekitar.'],
+                    ['route' => 'layanan.surat.index', 'icon' => 'fa-file-signature', 'color' => 'blue', 'title' => 'Surat Menyurat', 'description' => 'Pengajuan dan cetak surat warga.'],
+                    ['route' => 'layanan.posyandu.index', 'icon' => 'fa-baby-carriage', 'color' => 'pink', 'title' => 'Posyandu', 'description' => 'Jadwal, pertumbuhan, dan imunisasi.'],
+                    ['route' => 'layanan.ronda.index', 'icon' => 'fa-shield-halved', 'color' => 'red', 'title' => 'Keamanan / Ronda', 'description' => 'Jadwal piket, absensi, dan darurat.'],
+                    ['route' => 'kegiatan.index', 'icon' => 'fa-calendar-day', 'color' => 'purple', 'title' => 'Kegiatan', 'description' => 'Agenda, pendaftaran, dan kehadiran.'],
+                    ['route' => 'warga.index', 'icon' => 'fa-address-card', 'color' => 'cyan', 'title' => 'Warga', 'description' => 'Data warga dan kependudukan.'],
+                    ['route' => 'aspirasi.index', 'icon' => 'fa-bullhorn', 'color' => 'yellow', 'title' => 'Aspirasi', 'description' => 'Saran, keluhan, dan tindak lanjut.'],
+                    ['route' => 'kas.index', 'icon' => 'fa-coins', 'color' => 'emerald', 'title' => 'Kas', 'description' => 'Pemasukan, pengeluaran, dan saldo.'],
+                ];
+            @endphp
+            @foreach($layananDashboard as $layanan)
+                <article class="service-dashboard-card">
+                    <a class="service-icon service-icon-{{ $layanan['color'] }}" href="{{ route($layanan['route']) }}" aria-label="Buka layanan {{ $layanan['title'] }}">
+                        <i class="fas {{ $layanan['icon'] }}" aria-hidden="true"></i>
+                    </a>
+                    <a class="service-dashboard-title" href="{{ route($layanan['route']) }}">{{ $layanan['title'] }}</a>
+                    <p>{{ $layanan['description'] }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <!-- Grafik Kas -->
+    <div class="row g-4 mb-4">
+        <div class="col-12" data-aos="fade-up">
             <div class="glass-card">
                 <div class="card-header-custom">
                     <h5 class="mb-0">
-                        <i class="fas fa-chart-area gradient-text me-2"></i> Grafik Pengeluaran {{ date('Y') }}
+                        <i class="fas fa-chart-line gradient-text me-2"></i> Grafik Kas {{ date('Y') }}
                     </h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="expenseChart" height="250"></canvas>
+                    <div class="kas-chart-wrapper"><canvas id="kasChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -524,6 +545,109 @@
     .info-item .text-secondary {
         color: #cbd5e1 !important;
     }
+
+    .service-dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .service-dashboard-card {
+        min-width: 0;
+        min-height: 190px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.055);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 18px;
+        box-shadow: 0 5px 16px rgba(15, 23, 42, 0.08);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .service-dashboard-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(59, 130, 246, 0.35);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+    }
+
+    .service-dashboard-title {
+        display: inline-block;
+        margin-bottom: 7px;
+        color: var(--text-primary, #f8fafc);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.3;
+        text-decoration: none;
+    }
+
+    .service-dashboard-title:hover {
+        color: #3b82f6;
+    }
+
+    .service-dashboard-card p {
+        margin: 0;
+        color: var(--text-secondary, #94a3b8);
+        font-size: .84rem;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .service-icon {
+        width: 54px;
+        height: 54px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        border-radius: 16px;
+        font-size: 1.45rem;
+        color: #fff;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .service-dashboard-card:hover .service-icon {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
+    }
+
+    .service-icon:hover,
+    .service-icon:focus-visible {
+        color: #fff;
+        outline: 3px solid rgba(59, 130, 246, 0.3);
+        outline-offset: 3px;
+    }
+
+    .service-icon-green { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .service-icon-orange { background: linear-gradient(135deg, #f97316, #c2410c); }
+    .service-icon-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .service-icon-pink { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .service-icon-red { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .service-icon-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .service-icon-cyan { background: linear-gradient(135deg, #06b6d4, #0e7490); }
+    .service-icon-yellow { background: linear-gradient(135deg, #eab308, #a16207); }
+    .service-icon-emerald { background: linear-gradient(135deg, #10b981, #047857); }
+
+    .kas-chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 360px;
+    }
+
+    @media (min-width: 768px) {
+        .service-dashboard-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 1200px) {
+        .service-dashboard-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
     
     .welcome-header {
         background: linear-gradient(135deg, rgba(26, 95, 63, 0.3), rgba(45, 134, 89, 0.15));
@@ -553,6 +677,11 @@
         .welcome-header h1 {
             font-size: 1.8rem;
         }
+        .service-dashboard-card {
+            min-height: 180px;
+            padding: 16px;
+        }
+        .kas-chart-wrapper { height: 300px; }
     }
 </style>
 
@@ -564,15 +693,21 @@
     const expenseData = {!! json_encode($expenseChartData) !!};
 
     function getChartTheme() {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const styles = getComputedStyle(document.documentElement);
+        const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
 
         return {
-            label: isLight ? '#384336' : '#ffd700',
-            body: isLight ? '#1f2933' : '#fffbf0',
-            gridStrong: isLight ? 'rgba(86, 101, 81, 0.18)' : 'rgba(255, 215, 0, 0.1)',
-            gridSoft: isLight ? 'rgba(86, 101, 81, 0.10)' : 'rgba(255, 215, 0, 0.05)',
-            tooltipBg: isLight ? 'rgba(248, 250, 244, 0.96)' : 'rgba(26, 95, 63, 0.9)',
-            tooltipBorder: isLight ? 'rgba(125, 138, 113, 0.32)' : 'rgba(255, 215, 0, 0.3)',
+            label: token('--chart-label', '#37443b'),
+            body: token('--text-primary', '#1f2933'),
+            gridStrong: token('--chart-grid', 'rgba(55, 68, 59, 0.22)'),
+            gridSoft: token('--chart-grid-soft', 'rgba(55, 68, 59, 0.12)'),
+            tooltipBg: token('--chart-tooltip-bg', '#f5f7f2'),
+            tooltipBorder: token('--chart-tooltip-border', '#9ba99d'),
+            income: token('--chart-income', '#166534'),
+            incomeFill: token('--chart-income-fill', 'rgba(22, 101, 52, 0.14)'),
+            expense: token('--chart-expense', '#b91c1c'),
+            expenseFill: token('--chart-expense-fill', 'rgba(185, 28, 28, 0.12)'),
+            pointBorder: token('--chart-point-border', '#f5f7f2'),
         };
     }
 
@@ -581,7 +716,7 @@
 
         return {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     labels: { color: colors.label, font: { weight: 'bold' } }
@@ -618,55 +753,50 @@
         };
     }
 
-    const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-    const incomeChart = new Chart(incomeCtx, {
+    const initialChartColors = getChartTheme();
+    const kasCtx = document.getElementById('kasChart').getContext('2d');
+    const kasChart = new Chart(kasCtx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Pemasukan (Rp)',
-                data: incomeData,
-                borderColor: '#2d8659',
-                backgroundColor: 'rgba(45, 134, 89, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#ffd700',
-                pointBorderColor: '#fffbf0',
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: buildChartOptions()
-    });
-
-    const expenseCtx = document.getElementById('expenseChart').getContext('2d');
-    const expenseChart = new Chart(expenseCtx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Pengeluaran (Rp)',
-                data: expenseData,
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(248, 113, 113, 0.14)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#fde68a',
-                pointBorderColor: '#fffbf0',
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
+            datasets: [
+                {
+                    label: 'Pemasukan (Rp)',
+                    data: incomeData,
+                    borderColor: initialChartColors.income,
+                    backgroundColor: initialChartColors.incomeFill,
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.4,
+                    pointBackgroundColor: initialChartColors.income,
+                    pointBorderColor: initialChartColors.pointBorder,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                },
+                {
+                    label: 'Pengeluaran (Rp)',
+                    data: expenseData,
+                    borderColor: initialChartColors.expense,
+                    backgroundColor: initialChartColors.expenseFill,
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.4,
+                    pointBackgroundColor: initialChartColors.expense,
+                    pointBorderColor: initialChartColors.pointBorder,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }
+            ]
         },
         options: buildChartOptions()
     });
 
     window.addEventListener('themechange', function () {
-        incomeChart.options = buildChartOptions();
-        expenseChart.options = buildChartOptions();
-        incomeChart.update();
-        expenseChart.update();
+        const colors = getChartTheme();
+        Object.assign(kasChart.data.datasets[0], { borderColor: colors.income, backgroundColor: colors.incomeFill, pointBackgroundColor: colors.income, pointBorderColor: colors.pointBorder });
+        Object.assign(kasChart.data.datasets[1], { borderColor: colors.expense, backgroundColor: colors.expenseFill, pointBackgroundColor: colors.expense, pointBorderColor: colors.pointBorder });
+        kasChart.options = buildChartOptions();
+        kasChart.update();
     });
 </script>
 @endpush

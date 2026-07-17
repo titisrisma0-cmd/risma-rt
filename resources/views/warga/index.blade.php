@@ -9,13 +9,15 @@
                     <h2 class="text-white">
                         <i class="fas fa-users"></i> Data Warga
                     </h2>
-                    <p class="text-white-50">Kelola data seluruh warga RT</p>
+                    <p class="text-white-50">{{ Auth::user()->isAdminRt() ? 'Kelola warga RT Anda' : 'Kelola data seluruh warga per RT' }}</p>
                 </div>
-                <div>
-                    <a href="{{ route('warga.create') }}" class="btn btn-gradient">
-                        <i class="fas fa-plus-circle"></i> Tambah Warga
-                    </a>
-                </div>
+                @if(Auth::user()->isAdminRw() || Auth::user()->isAdminRt())
+                    <div>
+                        <a href="{{ route('warga.create') }}" class="btn btn-gradient">
+                            <i class="fas fa-plus-circle"></i> Tambah Warga
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -97,7 +99,11 @@
                                     <div class="d-flex flex-wrap gap-2 mb-1">
                                         <span class="warga-meta">NIK: {{ $item->profile->nik ?? '-' }}</span>
                                         <span class="warga-meta">No. KK: {{ $item->profile->no_kk ?? '-' }}</span>
+                                        @if($item->profile?->no_kk)
+                                            <span class="warga-meta">Anggota KK: {{ $familyCounts[$item->profile->no_kk] ?? 0 }}</span>
+                                        @endif
                                         <span class="warga-meta">HP: {{ $item->profile->no_hp ?? '-' }}</span>
+                                        <span class="warga-meta">RT: {{ $item->profile->wilayahRt->kode_rt ?? '-' }}</span>
                                     </div>
                                     <div class="text-white-75">Alamat: {{ Str::limit($item->profile->alamat ?? '-', 80) }}</div>
                                 </div>
@@ -111,22 +117,24 @@
                                             <span class="badge bg-danger">Nonaktif</span>
                                         @endif
                                     </div>
-                                    <div class="btn-group" role="group">
-                                        @if($item->profile && $item->profile->status == 'pending')
-                                            <form action="{{ route('warga.verify', $item->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-success" title="Verifikasi warga">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            </form>
-                                        @endif
-                                        <a href="{{ route('warga.edit', $item->id) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <button onclick="confirmDelete('{{ route('warga.destroy', $item->id) }}', '{{ $item->name }}')" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
+                                    @if(Auth::user()->isAdminRw() || Auth::user()->isAdminRt())
+                                        <div class="btn-group" role="group">
+                                            @if($item->profile && $item->profile->status == 'pending')
+                                                <form action="{{ route('warga.verify', $item->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Verifikasi warga">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <a href="{{ route('warga.edit', $item->id) }}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button onclick='confirmDelete(@json(route('warga.destroy', $item->id)), @json($item->name))' class="btn btn-sm btn-danger" title="Hapus warga">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>

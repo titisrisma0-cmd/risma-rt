@@ -11,7 +11,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role_id',
+        'name', 'email', 'password', 'role_id', 'rt_id',
     ];
 
     protected $hidden = [
@@ -28,9 +28,36 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class, 'user_id');
     }
 
+    public function managedRt()
+    {
+        return $this->belongsTo(Rt::class, 'rt_id');
+    }
+
+    public function isAdminRw(): bool
+    {
+        return in_array(optional($this->role)->nama_role, ['admin', 'rw', 'admin_rw'], true);
+    }
+
+    public function isAdminRt(): bool
+    {
+        return in_array(optional($this->role)->nama_role, ['rt', 'admin_rt'], true);
+    }
+
+    public function managedRtId(): ?int
+    {
+        $rtId = $this->rt_id ?? optional($this->profile)->rt_id;
+
+        return $rtId === null ? null : (int) $rtId;
+    }
+
     public function hasRole($role)
     {
         return $this->role && $this->role->nama_role === $role;
+    }
+
+    public function kegiatanPeserta()
+    {
+        return $this->hasMany(KegiatanPeserta::class);
     }
     
     protected static function booted()

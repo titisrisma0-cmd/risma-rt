@@ -50,7 +50,7 @@ class RegisterController extends Controller
         ]);
         // Ensure profile is created/updated. The User model may auto-create
         // a minimal profile in the created event, so update it if present.
-        // Set status to 'pending' for verification by admin RT
+        // Set status to 'pending' for verification by admin RW
         $profileData = [
             'role_id' => $roleWarga ? $roleWarga->id : null,
             'no_kk' => $data['no_kk'],
@@ -78,16 +78,16 @@ class RegisterController extends Controller
     }
     
     // Override register untuk tetap bisa register via AJAX
-    // Warga tidak langsung login, tunggu verifikasi admin RT
+    // Warga tidak langsung login, tunggu verifikasi admin RW
     public function register(Request $request)
     {
         $this->validator($request->all())->validate();
         
         event(new \Illuminate\Auth\Events\Registered($user = $this->create($request->all())));
         
-        // Jangan auto-login, tunggu verifikasi admin RT
+        // Jangan auto-login, tunggu verifikasi admin RW
         // $this->guard()->login($user);
         
-        return redirect('/login')->with('success', 'Pendaftaran berhasil! Silakan tunggu verifikasi dari Admin RT sebelum login.');
+        return redirect('/login')->with('success', 'Pendaftaran berhasil! Silakan tunggu verifikasi dari Admin RW sebelum login.');
     }
 }

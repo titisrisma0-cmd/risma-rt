@@ -5,10 +5,10 @@
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="text-white animate__animated animate__fadeInLeft">
-                <i class="fas fa-chart-line"></i> Laporan Kas RT
+                <i class="fas fa-chart-line"></i> Laporan Kas RW
             </h2>
             <p class="text-white-50 animate__animated animate__fadeInLeft animate__delay-1s">
-                Ringkasan pemasukan dan pengeluaran kas RT
+                Ringkasan pemasukan dan pengeluaran kas RW
             </p>
         </div>
     </div>
