@@ -240,10 +240,10 @@ html {
     font-size: 14px;
 }
 
-.hero-card { flex: 1; display: flex; justify-content: center; }
+.hero-card { flex: 1; display: flex; justify-content: center; min-width: 0; }
 .card-box {
-    width: 400px;
-    height: 400px;
+    width: min(400px, 100%);
+    aspect-ratio: 1;
     border: 1px solid var(--card-border);
     border-radius: 20px;
     background: var(--card-bg);
@@ -251,7 +251,14 @@ html {
     box-shadow: var(--card-shadow);
     overflow: hidden;
 }
-.card-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+.card-box img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    border-radius: inherit;
+}
 
 /* SECTIONS */
 .section {
@@ -332,6 +339,7 @@ html {
 .service-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
 
 .service-card { padding: 20px; min-height: 170px; border-radius: 18px; }
+.service-card strong, .service-card span { display: block; }
 .service-card:hover {
     transform: translateY(-5px);
     border-color: var(--card-hover-border);
@@ -398,7 +406,8 @@ html {
     .hero { flex-direction: column; text-align: center; padding-top: 40px; }
     .hero-text h1 { font-size: 2.5rem; }
     .hero-buttons, .trust { justify-content: center; }
-    .card-box { width: 300px; height: 300px; }
+    .hero-card { width: 100%; }
+    .card-box { width: min(300px, calc(100vw - 32px)); }
     .nav-links { flex-wrap: wrap; justify-content: center; }
     .grid, .service-grid, .feature-list, .flow, .about-panel { grid-template-columns: 1fr; }
     .section { padding: 60px 6%; }

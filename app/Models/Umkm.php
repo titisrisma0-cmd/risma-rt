@@ -8,10 +8,10 @@ class Umkm extends Model
 {
     protected $fillable = [
         'user_id', 'nama_usaha', 'kategori', 'deskripsi', 'alamat', 'whatsapp',
-        'foto_toko', 'status', 'moderated_by', 'moderated_at', 'catatan_moderasi',
+        'foto_toko', 'latitude', 'longitude', 'status', 'moderated_by', 'moderated_at', 'catatan_moderasi',
     ];
 
-    protected $casts = ['moderated_at' => 'datetime'];
+    protected $casts = ['moderated_at' => 'datetime', 'latitude' => 'float', 'longitude' => 'float'];
 
     public function pemilik()
     {

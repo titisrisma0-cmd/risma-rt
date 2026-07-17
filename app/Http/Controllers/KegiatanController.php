@@ -113,6 +113,8 @@ class KegiatanController extends Controller
             'cakupan' => ['required', 'in:rt,rw'], 'rt_id' => ['nullable', 'exists:rts,id'],
             'tanggal_mulai' => ['required', 'date'], 'tanggal_selesai' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'lokasi' => ['required', 'string', 'max:255'], 'kuota_peserta' => ['nullable', 'integer', 'min:1'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             'status' => ['required', 'in:draft,dibuka,berlangsung,selesai,dibatalkan'],
         ]);
     }

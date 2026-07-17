@@ -8,12 +8,14 @@ class Kegiatan extends Model
 {
     protected $fillable = [
         'rt_id', 'rw_id', 'cakupan', 'judul', 'kategori', 'tanggal_mulai',
-        'tanggal_selesai', 'lokasi', 'kuota_peserta', 'deskripsi', 'status', 'created_by', 'creator_role',
+        'tanggal_selesai', 'lokasi', 'latitude', 'longitude', 'kuota_peserta', 'deskripsi', 'status', 'created_by', 'creator_role',
     ];
 
     protected $casts = [
         'tanggal_mulai' => 'datetime',
         'tanggal_selesai' => 'datetime',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function rsvps()

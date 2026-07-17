@@ -15,6 +15,7 @@ use App\Http\Controllers\KegiatanController;
 use App\Http\Controllers\AspirasiController;
 use App\Http\Controllers\RtController;
 use App\Http\Controllers\CctvController;
+use App\Http\Controllers\PetaWilayahController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
     
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/peta-wilayah', [PetaWilayahController::class, 'index'])->name('peta-wilayah.index');
+    Route::get('/peta-wilayah/data', [PetaWilayahController::class, 'data'])->name('peta-wilayah.data');
 
     // ==================== KEGIATAN RW/RT ====================
     Route::get('/kegiatan', [KegiatanController::class, 'index'])->name('kegiatan.index');
@@ -101,6 +104,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/umkm', [LayananMasyarakatController::class, 'umkm'])->name('umkm.index');
         Route::post('/umkm/toko-saya', [LayananMasyarakatController::class, 'storeUmkm'])->name('umkm.toko.store');
         Route::post('/umkm/produk', [LayananMasyarakatController::class, 'storeProdukUmkm'])->name('umkm.produk.store');
+        Route::put('/umkm/produk/{produk}', [LayananMasyarakatController::class, 'updateProdukUmkm'])->name('umkm.produk.update');
+        Route::delete('/umkm/produk/{produk}', [LayananMasyarakatController::class, 'destroyProdukUmkm'])->name('umkm.produk.destroy');
         Route::patch('/umkm/produk/{produk}/moderasi', [LayananMasyarakatController::class, 'moderateProdukUmkm'])->name('umkm.produk.moderate');
         Route::get('/surat', [LayananMasyarakatController::class, 'surat'])->name('surat.index');
         Route::post('/surat', [LayananMasyarakatController::class, 'storeSurat'])->name('surat.store');

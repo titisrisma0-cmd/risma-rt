@@ -30,6 +30,7 @@
         </div>
 
         <div class="nav-links">
+            <a href="#layanan">Layanan</a>
             <a href="#fitur">Fitur</a>
             <a href="#program">Program</a>
             <a href="#tentang">Tentang</a>
@@ -76,7 +77,7 @@
         <!-- GAMBAR HERO -->
         <div class="hero-card">
             <div class="card-box">
-                <img src="{{ asset('images/banner.png') }}" alt="Banner">
+                <img src="{{ asset('images/rw-smart-hero.png') }}" alt="Logo RW Smart">
             </div>
         </div>
 
@@ -125,6 +126,65 @@
                     <li><i class="fas fa-check-circle"></i> Laporan mudah dibagikan</li>
                 </ul>
             </div>
+        </div>
+    </section>
+
+    <section class="section" id="layanan">
+        <div class="section-header">
+            <div class="eyebrow">Layanan Masyarakat</div>
+            <h2>Layanan warga dalam <span>satu platform</span></h2>
+            <p>
+                RW SMART menghubungkan kebutuhan administrasi, kesehatan, keamanan,
+                lingkungan, kegiatan, dan ekonomi warga agar lebih mudah diakses.
+            </p>
+        </div>
+
+        <div class="service-grid">
+            <article class="service-card">
+                <i class="fas fa-leaf"></i>
+                <strong>Bank Sampah</strong>
+                <span>Setoran, saldo, harga, dan jadwal layanan sampah warga.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-shop"></i>
+                <strong>UMKM</strong>
+                <span>Etalase produk dan jasa milik warga di lingkungan sekitar.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-file-signature"></i>
+                <strong>Surat Menyurat</strong>
+                <span>Pengajuan, pemantauan status, dan pencetakan surat warga.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-baby-carriage"></i>
+                <strong>Posyandu</strong>
+                <span>Jadwal layanan, pertumbuhan anak, dan informasi imunisasi.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-shield-halved"></i>
+                <strong>Keamanan / Ronda</strong>
+                <span>Jadwal piket, absensi petugas, CCTV, dan laporan darurat.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-calendar-day"></i>
+                <strong>Kegiatan</strong>
+                <span>Agenda RT/RW, pendaftaran peserta, dan pencatatan kehadiran.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-map-location-dot"></i>
+                <strong>Peta Wilayah</strong>
+                <span>Pemetaan CCTV, kegiatan, Posyandu, dan lokasi UMKM warga.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-bullhorn"></i>
+                <strong>Aspirasi</strong>
+                <span>Penyampaian saran, keluhan, serta pemantauan tindak lanjut.</span>
+            </article>
+            <article class="service-card">
+                <i class="fas fa-coins"></i>
+                <strong>Kas</strong>
+                <span>Informasi pemasukan, pengeluaran, dan saldo kas lingkungan.</span>
+            </article>
         </div>
     </section>
 

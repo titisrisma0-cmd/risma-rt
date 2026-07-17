@@ -246,6 +246,8 @@
             <label class="form-label">Judul Kegiatan</label><input class="form-control mb-2" name="judul" value="{{ old('judul', 'Posyandu Balita Bulanan') }}" required>
             <div class="row g-2"><div class="col-sm-6"><label class="form-label">Tanggal Mulai</label><input class="form-control" type="datetime-local" name="tanggal_mulai" required></div><div class="col-sm-6"><label class="form-label">Tanggal Selesai</label><input class="form-control" type="datetime-local" name="tanggal_selesai"></div></div>
             <label class="form-label mt-2">Lokasi</label><input class="form-control mb-2" name="lokasi" placeholder="Balai RW" required>
+            <label class="form-label">Wilayah RT (opsional)</label><select class="form-select mb-2" name="rt_id"><option value="">Tingkat RW</option>@foreach($rts as $rt)<option value="{{ $rt->id }}">RT {{ $rt->kode_rt }}{{ $rt->nama_rt ? ' - '.$rt->nama_rt : '' }}</option>@endforeach</select>
+            <div class="row g-2 mb-2"><div class="col-sm-6"><label class="form-label">Latitude (opsional)</label><input class="form-control" type="number" step="0.0000001" min="-90" max="90" name="latitude"></div><div class="col-sm-6"><label class="form-label">Longitude (opsional)</label><input class="form-control" type="number" step="0.0000001" min="-180" max="180" name="longitude"></div></div>
             <label class="form-label">Keterangan</label><textarea class="form-control" name="keterangan" rows="2"></textarea>
         </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-info">Simpan Jadwal</button></div></form></div></div></div>
     @endif

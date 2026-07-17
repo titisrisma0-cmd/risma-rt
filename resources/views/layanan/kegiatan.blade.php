@@ -27,6 +27,8 @@
                 <div class="col-md-3"><label class="form-label">Mulai</label><input type="datetime-local" name="tanggal_mulai" class="form-control" required></div>
                 <div class="col-md-3"><label class="form-label">Selesai</label><input type="datetime-local" name="tanggal_selesai" class="form-control" required></div>
                 <div class="col-md-6"><label class="form-label">Lokasi</label><input name="lokasi" class="form-control" required></div>
+                <div class="col-md-3"><label class="form-label">Latitude (opsional)</label><input type="number" step="0.0000001" min="-90" max="90" name="latitude" class="form-control" value="{{ old('latitude') }}" placeholder="-6.2000000"></div>
+                <div class="col-md-3"><label class="form-label">Longitude (opsional)</label><input type="number" step="0.0000001" min="-180" max="180" name="longitude" class="form-control" value="{{ old('longitude') }}" placeholder="106.8166667"></div>
                 <div class="col-md-3"><label class="form-label">Kuota (opsional)</label><input type="number" min="1" name="kuota_peserta" class="form-control"></div>
                 <div class="col-md-9"><label class="form-label">Deskripsi</label><textarea name="deskripsi" class="form-control" rows="2"></textarea></div>
                 <div class="col-12"><button class="btn btn-warning"><i class="fas fa-save me-1"></i>Simpan Kegiatan</button></div>

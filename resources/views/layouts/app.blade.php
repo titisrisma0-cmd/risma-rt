@@ -196,7 +196,7 @@
                 @php
                     $layananAktif = request()->routeIs(
                         'bank-sampah.*', 'layanan.umkm.*', 'layanan.surat.*', 'layanan.posyandu.*',
-                        'layanan.ronda.*', 'kegiatan.*', 'warga.*', 'aspirasi.*', 'kas.*'
+                        'layanan.ronda.*', 'kegiatan.*', 'aspirasi.*', 'kas.*', 'peta-wilayah.*'
                     );
                 @endphp
                 <nav class="nav flex-column">
@@ -211,9 +211,7 @@
                         <a class="nav-link {{ request()->routeIs('layanan.posyandu.*') ? 'active' : '' }}" href="{{ route('layanan.posyandu.index') }}"><i class="fas fa-baby"></i> Posyandu</a>
                         <a class="nav-link {{ request()->routeIs('layanan.ronda.*') ? 'active' : '' }}" href="{{ route('layanan.ronda.index') }}"><i class="fas fa-shield-halved"></i> Keamanan / Ronda</a>
                         <a class="nav-link {{ request()->routeIs('kegiatan.*') ? 'active' : '' }}" href="{{ route('kegiatan.index') }}"><i class="fas fa-calendar-check"></i> Kegiatan</a>
-                        @if(Auth::check() && (Auth::user()->isAdminRw() || Auth::user()->isAdminRt()))
-                            <a class="nav-link {{ request()->routeIs('warga.*') ? 'active' : '' }}" href="{{ route('warga.index') }}"><i class="fas fa-users"></i> Warga</a>
-                        @endif
+                        <a class="nav-link {{ request()->routeIs('peta-wilayah.*') ? 'active' : '' }}" href="{{ route('peta-wilayah.index') }}"><i class="fas fa-map-location-dot"></i> Peta Wilayah</a>
                         <a class="nav-link {{ request()->routeIs('aspirasi.*') ? 'active' : '' }}" href="{{ route('aspirasi.index') }}"><i class="fas fa-comment-dots"></i> Aspirasi</a>
                         <a class="nav-link {{ request()->routeIs('kas.*') ? 'active' : '' }}" href="{{ route('kas.index') }}"><i class="fas fa-wallet"></i> Kas</a>
                     </div>

@@ -22,12 +22,14 @@ use App\Models\Pengeluaran;
 use App\Models\PetugasRonda;
 use App\Models\ProdukUmkm;
 use App\Models\RsvpKegiatan;
+use App\Models\Rt;
 use App\Models\Umkm;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class LayananMasyarakatController extends Controller
@@ -35,7 +37,11 @@ class LayananMasyarakatController extends Controller
     public function umkm(Request $request)
     {
         $this->ensureDemoUmkmCategories();
-        $isPengurus = Auth::user()->hasRole('admin');
+        $isPengurus = Auth::user()->isAdminRw();
+        $produkKelola = ProdukUmkm::with('umkm.pemilik')
+            ->when(! $isPengurus, fn ($query) => $query->whereHas('umkm', fn ($umkm) => $umkm->where('user_id', Auth::id())))
+            ->latest()
+            ->get();
 
         $produk = ProdukUmkm::with('umkm.pemilik')
             ->where('status', 'aktif')
@@ -63,6 +69,7 @@ class LayananMasyarakatController extends Controller
             'produk' => $produk,
             'kategoriProduk' => $kategoriProduk,
             'tokoSaya' => Umkm::with('produk')->where('user_id', Auth::id())->first(),
+            'produkSaya' => $produkKelola,
             'produkPending' => $isPengurus ? ProdukUmkm::with('umkm.pemilik')->where('status', 'pending')->latest()->get() : collect(),
         ]);
     }
@@ -75,6 +82,8 @@ class LayananMasyarakatController extends Controller
             'deskripsi' => ['nullable', 'string'],
             'alamat' => ['nullable', 'string'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
         ]);
 
         Umkm::updateOrCreate(['user_id' => Auth::id()], $validated + ['status' => 'aktif']);
@@ -110,7 +119,7 @@ class LayananMasyarakatController extends Controller
 
     public function moderateProdukUmkm(Request $request, ProdukUmkm $produk)
     {
-        abort_unless(Auth::user()->hasRole('admin'), 403);
+        abort_unless(Auth::user()->isAdminRw(), 403);
 
         $validated = $request->validate([
             'status' => ['required', 'in:aktif,ditolak,nonaktif'],
@@ -123,6 +132,63 @@ class LayananMasyarakatController extends Controller
         ]);
 
         return back()->with('success', 'Status produk UMKM berhasil diperbarui.');
+    }
+
+    public function updateProdukUmkm(Request $request, ProdukUmkm $produk)
+    {
+        $this->authorizeProdukUmkm($produk);
+        $validated = $request->validate($this->produkUmkmRules());
+
+        if ($request->hasFile('foto')) {
+            if ($produk->foto) {
+                Storage::disk('public')->delete($produk->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('umkm', 'public');
+        }
+
+        if (! Auth::user()->isAdminRw()) {
+            $validated['status'] = 'pending';
+            $validated['moderated_by'] = null;
+            $validated['moderated_at'] = null;
+            $validated['catatan_moderasi'] = null;
+        }
+
+        $produk->update($validated);
+
+        return back()->with('success', Auth::user()->isAdminRw()
+            ? 'Produk berhasil diperbarui.'
+            : 'Produk berhasil diperbarui dan dikirim ulang untuk moderasi.');
+    }
+
+    public function destroyProdukUmkm(ProdukUmkm $produk)
+    {
+        $this->authorizeProdukUmkm($produk);
+
+        if ($produk->foto) {
+            Storage::disk('public')->delete($produk->foto);
+        }
+        $produk->delete();
+
+        return back()->with('success', 'Produk berhasil dihapus.');
+    }
+
+    private function authorizeProdukUmkm(ProdukUmkm $produk): void
+    {
+        $isOwner = $produk->umkm()->where('user_id', Auth::id())->exists();
+        abort_unless($isOwner || Auth::user()->isAdminRw(), 403);
+    }
+
+    private function produkUmkmRules(): array
+    {
+        return [
+            'nama_produk' => ['required', 'string', 'max:255'],
+            'kategori' => ['required', 'string', 'max:255'],
+            'deskripsi' => ['nullable', 'string'],
+            'harga' => ['required', 'numeric', 'min:0'],
+            'stok' => ['nullable', 'integer', 'min:0'],
+            'satuan' => ['nullable', 'string', 'max:50'],
+            'foto' => ['nullable', 'image', 'max:2048'],
+        ];
     }
 
     public function surat()
@@ -235,6 +301,7 @@ class LayananMasyarakatController extends Controller
                 : Balita::with(['orangTua', 'pemeriksaan' => fn ($query) => $query->orderBy('tanggal_periksa')])->where('orang_tua_user_id', Auth::id())->orderBy('nama')->get(),
             'semuaBalita' => Balita::orderBy('nama')->get(),
             'wargas' => $this->wargaQuery()->orderBy('name')->get(),
+            'rts' => Rt::orderBy('kode_rt')->get(),
         ]);
     }
 
@@ -264,6 +331,9 @@ class LayananMasyarakatController extends Controller
             'tanggal_selesai' => ['nullable', 'date'],
             'lokasi' => ['required', 'string', 'max:255'],
             'keterangan' => ['nullable', 'string'],
+            'rt_id' => ['nullable', 'exists:rts,id'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
         ]) + ['created_by' => Auth::id()]);
 
         $this->notifyWarga('Jadwal Posyandu Baru', $jadwal->judul . ' pada ' . $jadwal->tanggal_mulai->format('d/m/Y H:i'));

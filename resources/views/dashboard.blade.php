@@ -131,7 +131,7 @@
                     ['route' => 'layanan.posyandu.index', 'icon' => 'fa-baby-carriage', 'color' => 'pink', 'title' => 'Posyandu', 'description' => 'Jadwal, pertumbuhan, dan imunisasi.'],
                     ['route' => 'layanan.ronda.index', 'icon' => 'fa-shield-halved', 'color' => 'red', 'title' => 'Keamanan / Ronda', 'description' => 'Jadwal piket, absensi, dan darurat.'],
                     ['route' => 'kegiatan.index', 'icon' => 'fa-calendar-day', 'color' => 'purple', 'title' => 'Kegiatan', 'description' => 'Agenda, pendaftaran, dan kehadiran.'],
-                    ['route' => 'warga.index', 'icon' => 'fa-address-card', 'color' => 'cyan', 'title' => 'Warga', 'description' => 'Data warga dan kependudukan.'],
+                    ['route' => 'peta-wilayah.index', 'icon' => 'fa-map-location-dot', 'color' => 'cyan', 'title' => 'Peta Wilayah', 'description' => 'Peta CCTV, kegiatan, Posyandu, dan UMKM.'],
                     ['route' => 'aspirasi.index', 'icon' => 'fa-bullhorn', 'color' => 'yellow', 'title' => 'Aspirasi', 'description' => 'Saran, keluhan, dan tindak lanjut.'],
                     ['route' => 'kas.index', 'icon' => 'fa-coins', 'color' => 'emerald', 'title' => 'Kas', 'description' => 'Pemasukan, pengeluaran, dan saldo.'],
                 ];

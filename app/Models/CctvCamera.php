@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class CctvCamera extends Model
 {
-    protected $fillable = ['rt_id', 'nama_lokasi', 'stream_url', 'status'];
+    protected $fillable = ['rt_id', 'nama_lokasi', 'stream_url', 'status', 'latitude', 'longitude'];
+
+    protected $casts = ['latitude' => 'float', 'longitude' => 'float'];
 
     protected static function booted(): void
     {

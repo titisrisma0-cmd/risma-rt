@@ -89,6 +89,8 @@ class CctvController extends Controller
             'nama_lokasi' => 'required|string|max:255',
             'stream_url' => 'nullable|url|max:2048',
             'status' => 'required|in:aktif,nonaktif,rusak',
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
         ]);
         $data['rt_id'] = Auth::user()->isAdminRt() ? Auth::user()->managedRtId() : (int) $data['rt_id'];
         abort_if(! $data['rt_id'], 403, 'Admin RT belum ditugaskan ke RT.');
