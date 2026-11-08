@@ -1,77 +1,67 @@
 @extends('layouts.app')
 
+@section('title', 'Detail Laporan ' . $laporan->kode_laporan)
+
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="text-white animate__animated animate__fadeInLeft">
-                <i class="fas fa-file-alt"></i> Detail Laporan
-            </h2>
+<div class="content-container" style="max-width: 860px;">
+    {{-- Page Header --}}
+    <div class="page-header d-flex align-items-center gap-3">
+        <a href="{{ route('laporan.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
+        <div>
+            <h1 class="page-title mb-0">
+                <i class="fas fa-file-alt text-emerald me-2"></i> Detail Laporan: {{ $laporan->kode_laporan }}
+            </h1>
+            <p class="page-subtitle">Rincian data ikhtisar laporan yang telah digenerate</p>
         </div>
     </div>
 
-    <div class="card animate__animated animate__fadeInUp">
-        <div class="card-header bg-primary">
-            <h5 class="mb-0 text-white">Laporan: {{ $laporan->kode_laporan }}</h5>
+    <div class="saas-card p-4">
+        <div class="table-responsive">
+            <table class="table table-borderless align-middle mb-0">
+                <tbody>
+                    <tr class="border-bottom">
+                        <th class="text-secondary py-3" width="220">Kode Laporan</th>
+                        <td class="text-emerald font-monospace fw-bold py-3">{{ $laporan->kode_laporan }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-secondary py-3">Jenis Laporan</th>
+                        <td class="text-dark fw-medium py-3">{{ ucwords(str_replace('_', ' ', $laporan->jenis_laporan)) }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-secondary py-3">Periode</th>
+                        <td class="text-dark py-3">{{ date('d/m/Y', strtotime($laporan->periode_awal)) }} – {{ date('d/m/Y', strtotime($laporan->periode_akhir)) }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-secondary py-3">Total Pemasukan</th>
+                        <td class="text-emerald fw-bold font-monospace py-3">Rp {{ number_format($laporan->total_pemasukan, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-secondary py-3">Total Pengeluaran</th>
+                        <td class="text-danger fw-bold font-monospace py-3">Rp {{ number_format($laporan->total_pengeluaran, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-secondary py-3">Saldo Akhir</th>
+                        <td class="text-dark fw-bold font-monospace fs-5 py-3">Rp {{ number_format($laporan->saldo_akhir, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <th class="text-secondary py-3">Dibuat oleh</th>
+                        <td class="text-dark py-3">{{ optional($laporan->creator)->name ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-secondary py-3">Waktu Pembuatan</th>
+                        <td class="text-secondary py-3">{{ $laporan->created_at->format('d/m/Y H:i:s') }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th class="text-secondary" width="200">Jenis Laporan</th>
-                            <td class="text-white">: {{ ucfirst($laporan->jenis_laporan) }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Periode</th>
-                            <td class="text-white">: {{ date('d/m/Y', strtotime($laporan->periode_awal)) }} - {{ date('d/m/Y', strtotime($laporan->periode_akhir)) }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Total Pemasukan</th>
-                            <td class="text-success">: Rp {{ number_format($laporan->total_pemasukan, 0, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Total Pengeluaran</th>
-                            <td class="text-danger">: Rp {{ number_format($laporan->total_pengeluaran, 0, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Saldo Akhir</th>
-                            <td class="text-primary fw-bold">: Rp {{ number_format($laporan->saldo_akhir, 0, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Dibuat oleh</th>
-                            <td class="text-white">: {{ $laporan->creator->name }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-secondary">Tanggal Buat</th>
-                            <td class="text-white">: {{ $laporan->created_at->format('d/m/Y H:i:s') }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="text-end mt-4">
-                <a href="{{ route('laporan.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Kembali
-                </a>
-            </div>
+        
+        <div class="d-flex justify-content-end border-top pt-3 mt-3">
+            <a href="{{ route('laporan.index') }}" class="btn btn-outline-secondary px-4">
+                <i class="fas fa-arrow-left me-1"></i> Kembali ke Riwayat
+            </a>
         </div>
     </div>
 </div>
-
-<style>
-.card {
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(96, 165, 250, 0.1);
-}
-
-.text-secondary {
-    color: #94a3b8 !important;
-}
-
-.text-white {
-    color: #f1f5f9 !important;
-}
-</style>
 @endsection

@@ -1,197 +1,164 @@
 @extends('layouts.app')
 
+@section('title', 'Laporan Kas RW')
+
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="text-white animate__animated animate__fadeInLeft">
-                <i class="fas fa-chart-line"></i> Laporan Kas RW
-            </h2>
-            <p class="text-white-50 animate__animated animate__fadeInLeft animate__delay-1s">
-                Ringkasan pemasukan dan pengeluaran kas RW
-            </p>
-        </div>
+<div class="content-container">
+    {{-- Page Header --}}
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-chart-line text-emerald me-2"></i> Laporan Kas RW
+        </h1>
+        <p class="page-subtitle">Ringkasan arus kas, pemasukan iuran warga, dan pengeluaran operasional</p>
     </div>
 
     <!-- Statistik Kas -->
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="stat-card animate__animated animate__fadeInUp">
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="mb-1 text-white-50">Total Pemasukan</h6>
-                        <h3 class="mb-0 text-white">Rp {{ number_format($saldoMasuk, 0, ',', '.') }}</h3>
+                        <span class="stat-label">Total Pemasukan</span>
+                        <h3 class="stat-value text-emerald mb-0">Rp {{ number_format($saldoMasuk, 0, ',', '.') }}</h3>
                     </div>
-                    <i class="fas fa-arrow-down fa-2x text-success"></i>
+                    <div class="stat-icon-wrapper" style="background-color: var(--soft-green); color: var(--primary-green);">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="stat-card animate__animated animate__fadeInUp animate__delay-1s" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid rgba(239, 68, 68, 0.3);">
+        <div class="col-md-4">
+            <div class="stat-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="mb-1 text-white-50">Total Pengeluaran</h6>
-                        <h3 class="mb-0 text-white">Rp {{ number_format($saldoKeluar, 0, ',', '.') }}</h3>
+                        <span class="stat-label">Total Pengeluaran</span>
+                        <h3 class="stat-value text-danger mb-0">Rp {{ number_format($saldoKeluar, 0, ',', '.') }}</h3>
                     </div>
-                    <i class="fas fa-arrow-up fa-2x text-danger"></i>
+                    <div class="stat-icon-wrapper" style="background-color: #FEE2E2; color: #DC2626;">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-4">
-            <div class="stat-card animate__animated animate__fadeInUp animate__delay-2s" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid rgba(96, 165, 250, 0.3);">
+        <div class="col-md-4">
+            <div class="stat-card h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="mb-1 text-white-50">Saldo Akhir</h6>
-                        <h3 class="mb-0 text-white">Rp {{ number_format($saldoAkhir, 0, ',', '.') }}</h3>
+                        <span class="stat-label">Saldo Akhir</span>
+                        <h3 class="stat-value text-dark mb-0">Rp {{ number_format($saldoAkhir, 0, ',', '.') }}</h3>
                     </div>
-                    <i class="fas fa-wallet fa-2x text-primary"></i>
+                    <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                        <i class="fas fa-wallet"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Tabel Pemasukan -->
-    <div class="card animate__animated animate__fadeInLeft mb-4">
-        <div class="card-header" style="background: rgba(34, 197, 94, 0.1); border-bottom: 1px solid rgba(34, 197, 94, 0.3);">
-            <h5 class="mb-0 text-white"><i class="fas fa-arrow-down text-success"></i> Riwayat Pemasukan</h5>
+    <div class="saas-card overflow-hidden mb-4">
+        <div class="card-header bg-white border-bottom p-3">
+            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-arrow-down text-emerald me-2"></i> Riwayat Pemasukan Kas</h6>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Sumber</th>
-                            <th>Keterangan</th>
-                            <th class="text-end">Nominal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($kasMasuk as $item)
-                        <tr>
-                            <td>{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
-                            <td>
-                                @if($item->sumber == 'Iuran')
-                                    <span class="badge bg-primary"><i class="fas fa-hand-holding-usd"></i> Iuran</span>
-                                @else
-                                    <span class="badge bg-info">{{ $item->sumber }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $item->keterangan }}</td>
-                            <td class="text-end text-success fw-bold">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="text-center py-4">
-                                <i class="fas fa-inbox fa-2x text-secondary mb-2 d-block"></i>
-                                Belum ada data pemasukan
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                    <tfoot class="table-active">
-                        <tr>
-                            <th colspan="3" class="text-end">Total Pemasukan:</th>
-                            <th class="text-end text-success">Rp {{ number_format($saldoMasuk, 0, ',', '.') }}</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="table-saas">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Sumber</th>
+                        <th>Keterangan</th>
+                        <th class="text-end">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($kasMasuk as $item)
+                    <tr>
+                        <td class="text-secondary small font-monospace">{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
+                        <td>
+                            @if($item->sumber == 'Iuran')
+                                <span class="badge-soft-emerald"><i class="fas fa-hand-holding-usd me-1"></i> Iuran</span>
+                            @else
+                                <span class="badge-soft-info">{{ $item->sumber }}</span>
+                            @endif
+                        </td>
+                        <td class="text-dark small">{{ $item->keterangan }}</td>
+                        <td class="text-end text-emerald fw-bold">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-secondary">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3 d-block opacity-50"></i>
+                            Belum ada data pemasukan kas.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+                @if($kasMasuk->count() > 0)
+                <tfoot class="bg-light border-top">
+                    <tr>
+                        <th colspan="3" class="text-end text-dark fw-bold">Total Pemasukan:</th>
+                        <th class="text-end text-emerald fw-bold fs-6">Rp {{ number_format($saldoMasuk, 0, ',', '.') }}</th>
+                    </tr>
+                </tfoot>
+                @endif
+            </table>
         </div>
     </div>
 
     <!-- Tabel Pengeluaran -->
-    <div class="card animate__animated animate__fadeInRight">
-        <div class="card-header" style="background: rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.3);">
-            <h5 class="mb-0 text-white"><i class="fas fa-arrow-up text-danger"></i> Riwayat Pengeluaran</h5>
+    <div class="saas-card overflow-hidden">
+        <div class="card-header bg-white border-bottom p-3">
+            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-arrow-up text-danger me-2"></i> Riwayat Pengeluaran Kas</h6>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Kategori</th>
-                            <th>Keterangan</th>
-                            <th class="text-end">Nominal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($kasKeluar as $item)
-                        <tr>
-                            <td>{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
-                            <td>
-                                @if($item->kategori == 'Kebersihan')
-                                    <span class="badge bg-success"><i class="fas fa-broom"></i> Kebersihan</span>
-                                @elseif($item->kategori == 'Keamanan')
-                                    <span class="badge bg-info"><i class="fas fa-shield-alt"></i> Keamanan</span>
-                                @elseif($item->kategori == 'Sosial')
-                                    <span class="badge bg-warning"><i class="fas fa-hand-holding-heart"></i> Sosial</span>
-                                @elseif($item->kategori == 'Pembangunan')
-                                    <span class="badge bg-primary"><i class="fas fa-hard-hat"></i> Pembangunan</span>
-                                @else
-                                    <span class="badge bg-secondary">{{ $item->kategori }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $item->keterangan }}</td>
-                            <td class="text-end text-danger fw-bold">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="text-center py-4">
-                                <i class="fas fa-inbox fa-2x text-secondary mb-2 d-block"></i>
-                                Belum ada data pengeluaran
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                    <tfoot class="table-active">
-                        <tr>
-                            <th colspan="3" class="text-end">Total Pengeluaran:</th>
-                            <th class="text-end text-danger">Rp {{ number_format($saldoKeluar, 0, ',', '.') }}</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="table-saas">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Kategori</th>
+                        <th>Keterangan</th>
+                        <th class="text-end">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($kasKeluar as $item)
+                    <tr>
+                        <td class="text-secondary small font-monospace">{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
+                        <td>
+                            @if($item->kategori == 'Kebersihan')
+                                <span class="badge-soft-emerald"><i class="fas fa-broom me-1"></i> Kebersihan</span>
+                            @elseif($item->kategori == 'Keamanan')
+                                <span class="badge-soft-info"><i class="fas fa-shield-alt me-1"></i> Keamanan</span>
+                            @elseif($item->kategori == 'Sosial')
+                                <span class="badge-soft-warning"><i class="fas fa-hand-holding-heart me-1"></i> Sosial</span>
+                            @elseif($item->kategori == 'Pembangunan')
+                                <span class="badge-soft-primary"><i class="fas fa-hard-hat me-1"></i> Pembangunan</span>
+                            @else
+                                <span class="badge-soft-secondary">{{ $item->kategori }}</span>
+                            @endif
+                        </td>
+                        <td class="text-dark small">{{ $item->keterangan }}</td>
+                        <td class="text-end text-danger fw-bold">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-secondary">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3 d-block opacity-50"></i>
+                            Belum ada data pengeluaran kas.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+                @if($kasKeluar->count() > 0)
+                <tfoot class="bg-light border-top">
+                    <tr>
+                        <th colspan="3" class="text-end text-dark fw-bold">Total Pengeluaran:</th>
+                        <th class="text-end text-danger fw-bold fs-6">Rp {{ number_format($saldoKeluar, 0, ',', '.') }}</th>
+                    </tr>
+                </tfoot>
+                @endif
+            </table>
         </div>
     </div>
 </div>
-
-<style>
-.stat-card {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    border-radius: 20px;
-    padding: 20px;
-    transition: all 0.3s;
-    border: 1px solid rgba(96, 165, 250, 0.1);
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(96, 165, 250, 0.3);
-}
-
-.text-white-50 {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.table-dark {
-    background: transparent;
-}
-
-.table-dark th {
-    border-bottom-color: rgba(96, 165, 250, 0.2);
-    color: #94a3b8;
-    font-weight: 500;
-}
-
-.table-dark td {
-    border-bottom-color: rgba(96, 165, 250, 0.05);
-    color: #f1f5f9;
-}
-
-.table-active {
-    background: rgba(15, 23, 42, 0.8);
-}
-</style>
 @endsection

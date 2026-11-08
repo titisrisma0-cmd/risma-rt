@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Posyandu RW')
+
 @php
     $nextJadwal = $jadwals
         ->filter(fn ($jadwal) => $jadwal->tanggal_mulai->greaterThanOrEqualTo(now()))
@@ -36,69 +38,111 @@
     });
 
     $tips = [
-        ['icon' => 'fa-child-reaching', 'title' => 'Cegah Stunting', 'text' => 'Pantau berat dan tinggi badan setiap bulan serta cukupi protein harian.'],
-        ['icon' => 'fa-bowl-food', 'title' => 'MPASI Bergizi', 'text' => 'Lengkapi karbohidrat, protein, sayur, buah, dan lemak sehat.'],
-        ['icon' => 'fa-syringe', 'title' => 'Imunisasi', 'text' => 'Bawa buku KIA agar riwayat dan jadwal imunisasi tercatat lengkap.'],
+        ['icon' => 'fa-child-reaching', 'title' => 'Cegah Stunting', 'text' => 'Pantau berat dan tinggi badan setiap bulan serta cukupi protein hewani harian.'],
+        ['icon' => 'fa-bowl-food', 'title' => 'MPASI Bergizi', 'text' => 'Lengkapi karbohidrat, protein, sayur, buah, dan lemak sehat di setiap porsi.'],
+        ['icon' => 'fa-syringe', 'title' => 'Imunisasi Rutin', 'text' => 'Selalu bawa buku KIA / KMS agar jadwal vaksinasi imunisasi tercatat lengkap.'],
     ];
 @endphp
 
 @section('content')
-<div class="container-fluid px-3 px-lg-4 py-3 posyandu-page">
-    <header class="pos-head">
+<div class="content-container posyandu-page">
+    <header class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div>
-            <h2><i class="fas fa-baby me-2"></i>Posyandu RW</h2>
-            <p>Informasi pertumbuhan, jadwal, imunisasi, dan kunjungan anak.</p>
+            <h1 class="page-title mb-1">
+                <i class="fas fa-baby text-emerald me-2"></i>Posyandu RW
+            </h1>
+            <p class="page-subtitle">Informasi pertumbuhan balita, jadwal pemeriksaan, imunisasi rutin, dan kartu KMS digital.</p>
         </div>
-        <a href="{{ route('dashboard') }}#layanan-masyarakat" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Kembali
+        <a href="{{ route('dashboard') }}#layanan-masyarakat" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
         </a>
     </header>
 
     @if($isPengurus)
-        <div class="pos-quick-actions" aria-label="Akses cepat Posyandu">
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahAnak"><i class="fas fa-user-plus"></i> Tambah Anak</button>
-            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalPenimbangan"><i class="fas fa-weight-scale"></i> Input Penimbangan</button>
-            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus"></i> Input Jadwal</button>
+        <div class="d-flex flex-wrap gap-2 mb-4" aria-label="Akses cepat Posyandu">
+            <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalTambahAnak"><i class="fas fa-user-plus me-1"></i> Tambah Anak</button>
+            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalPenimbangan"><i class="fas fa-weight-scale text-emerald me-1"></i> Input Penimbangan</button>
+            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus text-info me-1"></i> Input Jadwal Posyandu</button>
         </div>
     @endif
 
-    <section class="pos-summary-grid" aria-label="Ringkasan Posyandu">
-        <article class="pos-summary-card">
-            <i class="fas fa-children pos-icon blue"></i>
-            <div><strong>{{ $balitas->count() }}</strong><span>Jumlah Anak</span></div>
-        </article>
-        <article class="pos-summary-card">
-            <i class="fas fa-calendar-check pos-icon purple"></i>
-            <div><strong>{{ $nextJadwal?->tanggal_mulai?->format('d M') ?? '-' }}</strong><span>Jadwal Terdekat</span></div>
-        </article>
-        <article class="pos-summary-card">
-            <i class="fas fa-list-ol pos-icon amber"></i>
-            <div><strong>{{ $queueCount }}</strong><span>Perlu Kunjungan</span></div>
-        </article>
-        <article class="pos-summary-card nutrition-card">
-            <i class="fas fa-heart-pulse pos-icon green"></i>
-            <div>
-                <span>Status Gizi</span>
-                <div class="pos-status-row"><b class="ok">Normal {{ $normalCount }}</b><b class="watch">Pantau {{ $watchCount }}</b><b class="danger">Buruk 0</b></div>
+    <section class="row g-3 mb-4" aria-label="Ringkasan Posyandu">
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label">Jumlah Anak</span>
+                        <h3 class="stat-value text-dark mb-0">{{ $balitas->count() }}</h3>
+                        <small class="text-secondary">Balita Terdaftar</small>
+                    </div>
+                    <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                        <i class="fas fa-children"></i>
+                    </div>
+                </div>
             </div>
-        </article>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label">Jadwal Terdekat</span>
+                        <h3 class="stat-value text-emerald mb-0 fs-5">{{ $nextJadwal?->tanggal_mulai?->format('d M Y') ?? '-' }}</h3>
+                        <small class="text-secondary">{{ $nextJadwal?->lokasi ?? 'Lokasi belum diatur' }}</small>
+                    </div>
+                    <div class="stat-icon-wrapper" style="background-color: var(--soft-green); color: var(--primary-green);">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label">Perlu Ditimbang</span>
+                        <h3 class="stat-value text-warning mb-0">{{ $queueCount }}</h3>
+                        <small class="text-secondary">Belum Melakukan Kunjungan</small>
+                    </div>
+                    <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #D97706;">
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label">Status Gizi</span>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            <span class="badge-soft-emerald">Normal {{ $normalCount }}</span>
+                            <span class="badge-soft-warning">Pantau {{ $watchCount }}</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper" style="background-color: var(--soft-green); color: var(--primary-green);">
+                        <i class="fas fa-heart-pulse"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <nav class="pos-tabs nav nav-tabs" role="tablist">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pos-ringkasan" type="button">Ringkasan</button>
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-medis" type="button">Rekam Medis & Imunisasi</button>
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-tips" type="button">Tips & Panduan</button>
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-galeri" type="button">Galeri</button>
+    <nav class="nav nav-tabs-saas mb-4" role="tablist">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pos-ringkasan" type="button"><i class="fas fa-chart-line me-1"></i>Ringkasan & Pertumbuhan</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-medis" type="button"><i class="fas fa-file-medical me-1"></i>Rekam Medis & Imunisasi</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-tips" type="button"><i class="fas fa-lightbulb me-1"></i>Tips & Panduan Gizi</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-galeri" type="button"><i class="fas fa-images me-1"></i>Layanan Kegiatan</button>
     </nav>
 
-    <div class="tab-content pos-tab-content">
+    <div class="tab-content">
         <section class="tab-pane fade show active" id="pos-ringkasan">
-            <div class="pos-main-grid">
-                <div class="pos-column">
-                    <article class="pos-card" id="grafik-pertumbuhan">
-                        <div class="pos-card-head">
-                            <h5><i class="fas fa-chart-line"></i> Grafik Pertumbuhan</h5>
-                            <select id="growthChildSelect" class="form-select form-select-sm">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    {{-- Grafik Pertumbuhan --}}
+                    <div class="saas-card p-4 mb-4" id="grafik-pertumbuhan">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-chart-line text-emerald me-2"></i>Grafik Pertumbuhan Anak</h6>
+                            <select id="growthChildSelect" class="form-select form-control-saas" style="width: auto; min-width: 200px;">
                                 @forelse($balitas as $balita)
                                     <option value="{{ $balita->id }}">{{ $balita->nama }}</option>
                                 @empty
@@ -106,260 +150,504 @@
                                 @endforelse
                             </select>
                         </div>
-                        <div id="growthEmpty" class="pos-empty d-none">Belum ada hasil penimbangan untuk anak ini.</div>
-                        <div class="pos-chart-wrap"><canvas id="growthChart"></canvas></div>
-                        <div id="growthMeta" class="pos-chart-meta"></div>
-                    </article>
-
-                    <article class="pos-card">
-                        <div class="pos-card-head">
-                            <h5><i class="fas fa-children"></i> Data Anak Terdaftar</h5>
-                            <input id="childSearch" type="search" class="form-control form-control-sm" placeholder="Cari anak...">
+                        <div id="growthEmpty" class="text-center py-5 text-secondary d-none">
+                            <i class="fas fa-chart-line fa-3x text-muted opacity-50 mb-2 d-block"></i>
+                            Belum ada hasil penimbangan untuk anak ini.
                         </div>
-                        <div class="table-responsive pos-table-scroll">
-                            <table class="table table-sm align-middle mb-0" id="childTable">
-                                <thead><tr><th>Nama</th><th>Orang Tua</th><th>Lahir</th><th>Status</th></tr></thead>
+                        <div style="position: relative; height: 280px;"><canvas id="growthChart"></canvas></div>
+                        <div id="growthMeta" class="small text-secondary pt-2 border-top mt-2"></div>
+                    </div>
+
+                    {{-- Tabel Data Anak --}}
+                    <div class="saas-card overflow-hidden">
+                        <div class="card-header bg-white border-bottom p-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-children text-emerald me-2"></i>Data Anak Terdaftar</h6>
+                            <input id="childSearch" type="search" class="form-control form-control-sm form-control-saas" style="width: 220px;" placeholder="Cari nama anak...">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-saas" id="childTable">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Balita</th>
+                                        <th>Orang Tua</th>
+                                        <th>Tanggal Lahir</th>
+                                        <th>Status Gizi</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     @forelse($balitas as $balita)
                                         @php($latest = $balita->pemeriksaan->sortByDesc('tanggal_periksa')->first())
                                         <tr>
-                                            <td><strong>{{ $balita->nama }}</strong></td>
-                                            <td>{{ $balita->orangTua->name ?? '-' }}</td>
-                                            <td>{{ $balita->tanggal_lahir->format('d/m/Y') }}</td>
-                                            <td><span class="pos-badge {{ $statusGizi($latest) === 'Normal' ? 'ok' : 'watch' }}">{{ $statusGizi($latest) }}</span></td>
+                                            <td><strong class="text-dark">{{ $balita->nama }}</strong></td>
+                                            <td class="text-secondary">{{ $balita->orangTua->name ?? '-' }}</td>
+                                            <td class="text-secondary small">{{ $balita->tanggal_lahir->format('d/m/Y') }}</td>
+                                            <td>
+                                                @if($statusGizi($latest) === 'Normal')
+                                                    <span class="badge-soft-emerald">Normal</span>
+                                                @elseif($statusGizi($latest) === 'Perlu Pantau')
+                                                    <span class="badge-soft-warning">Perlu Pantau</span>
+                                                @else
+                                                    <span class="badge-soft-secondary">Belum Ada</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="4" class="text-center">Belum ada data anak.</td></tr>
+                                        <tr><td colspan="4" class="text-center py-5 text-secondary">Belum ada data anak.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
-                        <div class="pos-pagination"><button id="childPrev" class="btn btn-sm btn-outline-secondary">Sebelumnya</button><span id="childPageInfo"></span><button id="childNext" class="btn btn-sm btn-outline-secondary">Berikutnya</button></div>
-                    </article>
+                        <div class="p-3 border-top bg-white d-flex justify-content-between align-items-center">
+                            <button id="childPrev" class="btn btn-sm btn-outline-secondary">Sebelumnya</button>
+                            <span id="childPageInfo" class="small text-secondary"></span>
+                            <button id="childNext" class="btn btn-sm btn-outline-secondary">Berikutnya</button>
+                        </div>
+                    </div>
                 </div>
 
-                <aside class="pos-column">
-                    <article class="pos-card" id="jadwal-lengkap">
-                        <div class="pos-card-head"><h5><i class="fas fa-calendar-days"></i> Jadwal Posyandu</h5><span class="pos-count">{{ $jadwals->count() }}</span></div>
-                        <div class="pos-compact-list schedule-list">
+                <div class="col-lg-4">
+                    {{-- Jadwal Posyandu --}}
+                    <div class="saas-card overflow-hidden mb-4" id="jadwal-lengkap">
+                        <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-calendar-days text-emerald me-2"></i>Jadwal Posyandu</h6>
+                            <span class="badge-soft-emerald">{{ $jadwals->count() }} Jadwal</span>
+                        </div>
+                        <div class="p-3">
                             @forelse($jadwals as $jadwal)
-                                <div class="pos-list-item d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <time><strong>{{ $jadwal->tanggal_mulai->format('d') }}</strong><span>{{ $jadwal->tanggal_mulai->format('M') }}</span></time>
+                                <div class="p-3 mb-2 rounded-3 border bg-light d-flex justify-content-between align-items-start">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="text-center p-2 rounded-2 bg-white border" style="min-width: 48px;">
+                                            <strong class="d-block text-emerald fs-5 line-height-1">{{ $jadwal->tanggal_mulai->format('d') }}</strong>
+                                            <small class="text-secondary text-uppercase" style="font-size: 0.7rem;">{{ $jadwal->tanggal_mulai->format('M') }}</small>
+                                        </div>
                                         <div>
-                                            <strong>{{ $jadwal->judul }}</strong>
-                                            <span class="d-block small text-muted">{{ $jadwal->tanggal_mulai->format('H:i') }} · {{ $jadwal->lokasi }}</span>
+                                            <strong class="text-dark d-block mb-1">{{ $jadwal->judul }}</strong>
+                                            <span class="small text-secondary d-block"><i class="fas fa-clock me-1 text-muted"></i>{{ $jadwal->tanggal_mulai->format('H:i') }} WIB · {{ $jadwal->lokasi }}</span>
                                             <div class="d-flex flex-wrap gap-1 mt-1">
                                                 @if($jadwal->nama_bidan)
-                                                    <span class="badge bg-info-subtle text-info border"><i class="fas fa-user-doctor me-1"></i>{{ $jadwal->nama_bidan }}</span>
+                                                    <span class="badge-soft-info"><i class="fas fa-user-doctor me-1"></i>{{ $jadwal->nama_bidan }}</span>
                                                     @if($jadwal->kontak_bidan)
-                                                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $jadwal->kontak_bidan) }}" target="_blank" class="badge bg-success text-white text-decoration-none"><i class="fab fa-whatsapp me-1"></i>WA Bidan</a>
+                                                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $jadwal->kontak_bidan) }}" target="_blank" class="badge bg-success text-white text-decoration-none"><i class="fab fa-whatsapp me-1"></i>WA</a>
                                                     @endif
                                                 @endif
-                                                @if($jadwal->kader_info)
-                                                    <span class="badge bg-secondary-subtle text-dark border"><i class="fas fa-hand-holding-heart me-1"></i>{{ $jadwal->kader_info }}</span>
-                                                @endif
-                                                <span class="badge bg-primary-subtle text-primary border">{{ ucfirst($jadwal->status) }}</span>
+                                                <span class="badge-soft-emerald">{{ ucfirst($jadwal->status) }}</span>
                                             </div>
                                         </div>
                                     </div>
                                     @if($isPengurus)
-                                        <div class="d-flex gap-1 ms-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#modalEditJadwalPosyandu{{ $jadwal->id }}" title="Edit Jadwal">
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditJadwalPosyandu{{ $jadwal->id }}" title="Edit Jadwal">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <form method="POST" action="{{ route('layanan.posyandu.jadwal.destroy', $jadwal) }}" class="d-inline" onsubmit="return confirm('Hapus jadwal posyandu ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Hapus"><i class="fas fa-trash"></i></button>
+                                                <button type="submit" class="btn btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                                             </form>
                                         </div>
                                     @endif
                                 </div>
                             @empty
-                                <div class="pos-empty">Belum ada jadwal.</div>
+                                <div class="text-center py-4 text-secondary">Belum ada jadwal posyandu aktif.</div>
                             @endforelse
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="pos-card">
-                        <div class="pos-card-head"><h5><i class="fas fa-clipboard-list"></i> Antrian Posyandu</h5></div>
-                        <div class="pos-queue-grid">
-                            <div><strong>{{ $balitas->count() }}</strong><span>Terdata</span></div>
-                            <div><strong>{{ $latestRecords->count() }}</strong><span>Ditimbang</span></div>
-                            <div><strong>{{ $queueCount }}</strong><span>Menunggu</span></div>
+                    {{-- Kunjungan Terakhir --}}
+                    <div class="saas-card overflow-hidden">
+                        <div class="card-header bg-white border-bottom p-3">
+                            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-notes-medical text-emerald me-2"></i>Kunjungan Terakhir</h6>
                         </div>
-                        <small class="pos-help">Warga datang sesuai jadwal dan melakukan konfirmasi di meja pendaftaran.</small>
-                    </article>
-
-                    <article class="pos-card">
-                        <div class="pos-card-head"><h5><i class="fas fa-notes-medical"></i> Kunjungan Terakhir</h5></div>
-                        <div class="pos-compact-list visit-list">
+                        <div class="p-3">
                             @forelse($latestRecords->take(5) as $item)
-                                <div class="pos-visit">
-                                    <div><strong>{{ $item['balita']->nama }}</strong><span>{{ $item['record']->tanggal_periksa->format('d M Y') }}</span></div>
-                                    <span>{{ $item['record']->berat_kg ?? '-' }} kg · {{ $item['record']->tinggi_cm ?? '-' }} cm</span>
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <div>
+                                        <strong class="text-dark d-block">{{ $item['balita']->nama }}</strong>
+                                        <small class="text-secondary">{{ $item['record']->tanggal_periksa->format('d M Y') }}</small>
+                                    </div>
+                                    <span class="badge-soft-emerald">{{ $item['record']->berat_kg ?? '-' }} kg · {{ $item['record']->tinggi_cm ?? '-' }} cm</span>
                                 </div>
                             @empty
-                                <div class="pos-empty">Belum ada kunjungan.</div>
+                                <div class="text-center py-4 text-secondary">Belum ada data kunjungan.</div>
                             @endforelse
                         </div>
-                    </article>
-                </aside>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="tab-pane fade" id="pos-medis">
-            <div class="pos-card mb-3">
-                <div class="pos-card-head"><h5><i class="fas fa-file-medical"></i> Rekam Medis Terakhir</h5></div>
-                <div class="table-responsive pos-large-table-scroll">
-                    <table class="table table-sm align-middle mb-0">
-                        <thead><tr><th>Anak</th><th>Tanggal</th><th>Berat</th><th>Tinggi</th><th>Status Gizi</th><th>Catatan</th></tr></thead>
+            <div class="saas-card overflow-hidden mb-4">
+                <div class="card-header bg-white border-bottom p-3">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-file-medical text-emerald me-2"></i> Rekam Medis Terakhir Balita</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-saas">
+                        <thead>
+                            <tr>
+                                <th>Nama Anak</th>
+                                <th>Tanggal Periksa</th>
+                                <th>Berat Badan</th>
+                                <th>Tinggi Badan</th>
+                                <th>Status Gizi</th>
+                                <th>Catatan Medis</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @forelse($latestRecords as $item)
-                                <tr><td>{{ $item['balita']->nama }}</td><td>{{ $item['record']->tanggal_periksa->format('d/m/Y') }}</td><td>{{ $item['record']->berat_kg ?? '-' }} kg</td><td>{{ $item['record']->tinggi_cm ?? '-' }} cm</td><td><span class="pos-badge {{ $statusGizi($item['record']) === 'Normal' ? 'ok' : 'watch' }}">{{ $statusGizi($item['record']) }}</span></td><td>{{ $item['record']->catatan ?: '-' }}</td></tr>
+                                <tr>
+                                    <td><strong class="text-dark">{{ $item['balita']->nama }}</strong></td>
+                                    <td class="text-secondary small">{{ $item['record']->tanggal_periksa->format('d/m/Y') }}</td>
+                                    <td class="fw-bold text-emerald">{{ $item['record']->berat_kg ?? '-' }} kg</td>
+                                    <td class="fw-bold text-info">{{ $item['record']->tinggi_cm ?? '-' }} cm</td>
+                                    <td>
+                                        @if($statusGizi($item['record']) === 'Normal')
+                                            <span class="badge-soft-emerald">Normal</span>
+                                        @else
+                                            <span class="badge-soft-warning">Perlu Pantau</span>
+                                        @endif
+                                    </td>
+                                    <td class="small text-secondary">{{ $item['record']->catatan ?: '-' }}</td>
+                                </tr>
                             @empty
-                                <tr><td colspan="6" class="text-center">Belum ada rekam medis.</td></tr>
+                                <tr><td colspan="6" class="text-center py-5 text-secondary">Belum ada rekam medis tersimpan.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="pos-card">
-                <div class="pos-card-head"><h5><i class="fas fa-syringe"></i> Status Imunisasi</h5></div>
-                <div class="pos-compact-list immun-list">
+
+            <div class="saas-card overflow-hidden">
+                <div class="card-header bg-white border-bottom p-3">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-syringe text-emerald me-2"></i> Status Imunisasi Balita</h6>
+                </div>
+                <div class="p-3">
                     @forelse($latestRecords as $item)
-                        <div class="pos-visit"><div><strong>{{ $item['balita']->nama }}</strong><span>Sudah: {{ implode(', ', $item['record']->imunisasi_sudah ?? []) ?: '-' }}</span></div><span>Belum: {{ implode(', ', $item['record']->imunisasi_belum ?? []) ?: '-' }}</span></div>
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <strong class="text-dark d-block">{{ $item['balita']->nama }}</strong>
+                                <small class="text-secondary">Sudah: {{ implode(', ', $item['record']->imunisasi_sudah ?? []) ?: '-' }}</small>
+                            </div>
+                            <span class="badge-soft-warning">Belum: {{ implode(', ', $item['record']->imunisasi_belum ?? []) ?: '-' }}</span>
+                        </div>
                     @empty
-                        <div class="pos-empty">Belum ada data imunisasi.</div>
+                        <div class="text-center py-4 text-secondary">Belum ada data imunisasi tersimpan.</div>
                     @endforelse
                 </div>
             </div>
         </section>
 
         <section class="tab-pane fade" id="pos-tips">
-            <div class="pos-info-grid">
+            <div class="row g-3">
                 @foreach($tips as $tip)
-                    <article class="pos-card pos-tip"><i class="fas {{ $tip['icon'] }}"></i><div><h5>{{ $tip['title'] }}</h5><p>{{ $tip['text'] }}</p></div></article>
+                    <div class="col-md-4">
+                        <div class="saas-card p-4 h-100">
+                            <div class="stat-icon-wrapper mb-3" style="background-color: var(--soft-green); color: var(--primary-green);">
+                                <i class="fas {{ $tip['icon'] }}"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-2">{{ $tip['title'] }}</h6>
+                            <p class="text-secondary small mb-0">{{ $tip['text'] }}</p>
+                        </div>
+                    </div>
                 @endforeach
             </div>
         </section>
 
         <section class="tab-pane fade" id="pos-galeri">
-            <div class="pos-info-grid">
-                <article class="pos-card pos-gallery"><i class="fas fa-weight-scale"></i><strong>Penimbangan Balita</strong><span>Pengukuran berat dan tinggi badan.</span></article>
-                <article class="pos-card pos-gallery"><i class="fas fa-syringe"></i><strong>Imunisasi</strong><span>Pelayanan imunisasi rutin.</span></article>
-                <article class="pos-card pos-gallery"><i class="fas fa-bowl-food"></i><strong>Edukasi Gizi</strong><span>Panduan MPASI dan pencegahan stunting.</span></article>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="saas-card p-4 text-center h-100">
+                        <div class="stat-icon-wrapper mx-auto mb-3" style="background-color: #E0F2FE; color: #0284C7;">
+                            <i class="fas fa-weight-scale"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Penimbangan Rutin</h6>
+                        <span class="text-secondary small">Pengukuran berkala berat, tinggi, dan lingkar kepala balita.</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="saas-card p-4 text-center h-100">
+                        <div class="stat-icon-wrapper mx-auto mb-3" style="background-color: var(--soft-green); color: var(--primary-green);">
+                            <i class="fas fa-syringe"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Pelayanan Imunisasi</h6>
+                        <span class="text-secondary small">Pemberian vaksin dasar lengkap oleh bidan dan tenaga medis puskesmas.</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="saas-card p-4 text-center h-100">
+                        <div class="stat-icon-wrapper mx-auto mb-3" style="background-color: #FEF3C7; color: #D97706;">
+                            <i class="fas fa-bowl-food"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Edukasi Gizi & MPASI</h6>
+                        <span class="text-secondary small">Konseling pencegahan stunting dan panduan menu sehat keluarga.</span>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
 
     @if($isPengurus)
-        <div class="modal fade" id="modalTambahAnak" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Tambah Data Anak</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.posyandu.balita.store') }}">@csrf<div class="modal-body">
-            <label class="form-label">Nama Anak</label><input class="form-control mb-2" name="nama" value="{{ old('nama') }}" required>
-            <label class="form-label">Orang Tua / Akun Warga</label><select class="form-select mb-2" name="orang_tua_user_id"><option value="">Belum dihubungkan</option>@foreach($wargas as $warga)<option value="{{ $warga->id }}">{{ $warga->name }}</option>@endforeach</select>
-            <label class="form-label">NIK Anak</label><input class="form-control mb-2" name="nik" value="{{ old('nik') }}">
-            <div class="row g-2"><div class="col-sm-6"><label class="form-label">Tanggal Lahir</label><input class="form-control" type="date" name="tanggal_lahir" required></div><div class="col-sm-6"><label class="form-label">Jenis Kelamin</label><select class="form-select" name="jenis_kelamin" required><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div></div>
-            <label class="form-label mt-2">Catatan Kesehatan</label><textarea class="form-control" name="catatan_kesehatan" rows="2"></textarea>
-        </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Simpan Anak</button></div></form></div></div></div>
-
-        <div class="modal fade" id="modalPenimbangan" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Input Hasil Penimbangan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.posyandu.pemeriksaan.store') }}">@csrf<div class="modal-body">
-            <div class="row g-2"><div class="col-md-6"><label class="form-label">Nama Anak</label><select class="form-select" name="balita_id" required><option value="">Pilih anak</option>@foreach($semuaBalita as $balita)<option value="{{ $balita->id }}">{{ $balita->nama }}</option>@endforeach</select></div><div class="col-md-6"><label class="form-label">Jadwal</label><select class="form-select" name="jadwal_posyandu_id"><option value="">Tanpa jadwal</option>@foreach($jadwals as $jadwal)<option value="{{ $jadwal->id }}">{{ $jadwal->tanggal_mulai->format('d/m/Y') }} - {{ $jadwal->judul }}</option>@endforeach</select></div></div>
-            <label class="form-label mt-2">Tanggal Periksa</label><input class="form-control mb-2" type="date" name="tanggal_periksa" value="{{ date('Y-m-d') }}" required>
-            <div class="row g-2">
-                <div class="col-md-6"><label class="form-label">Berat Badan (kg) <span class="text-danger">*</span></label><input class="form-control" type="number" step="0.01" min="0" name="berat_kg" required></div>
-                <div class="col-md-6"><label class="form-label">Tinggi Badan (cm) <span class="text-danger">*</span></label><input class="form-control" type="number" step="0.01" min="0" name="tinggi_cm" required></div>
-            </div>
-            <div class="row g-2 mt-1">
-                <div class="col-md-4"><label class="form-label">Lingkar Kepala (cm)</label><input class="form-control" type="number" step="0.01" min="0" name="lingkar_kepala_cm"></div>
-                <div class="col-md-4"><label class="form-label">Lingkar Lengan / LILA (cm)</label><input class="form-control" type="number" step="0.01" min="0" name="lingkar_lengan_cm"></div>
-                <div class="col-md-4">
-                    <label class="form-label">Status Gizi</label>
-                    <select name="status_gizi" class="form-select">
-                        <option value="Gizi Baik" selected>Gizi Baik</option>
-                        <option value="Gizi Kurang">Gizi Kurang</option>
-                        <option value="Gizi Lebih">Gizi Lebih</option>
-                        <option value="Berisiko Stunting">Berisiko Stunting</option>
-                        <option value="Stunting">Stunting</option>
-                    </select>
+        {{-- Modal Tambah Anak --}}
+        <div class="modal fade" id="modalTambahAnak" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header border-bottom bg-white">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-user-plus text-emerald me-2"></i>Tambah Data Anak</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="{{ route('layanan.posyandu.balita.store') }}">
+                        @csrf
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Nama Anak <span class="text-danger">*</span></label>
+                                <input class="form-control form-control-saas" name="nama" value="{{ old('nama') }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Orang Tua / Akun Warga</label>
+                                <select class="form-select form-control-saas" name="orang_tua_user_id">
+                                    <option value="">Belum dihubungkan</option>
+                                    @foreach($wargas as $warga)
+                                        <option value="{{ $warga->id }}">{{ $warga->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">NIK Anak</label>
+                                <input class="form-control form-control-saas font-monospace" name="nik" value="{{ old('nik') }}">
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Tanggal Lahir <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" type="date" name="tanggal_lahir" required>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Jenis Kelamin <span class="text-danger">*</span></label>
+                                    <select class="form-select form-control-saas" name="jenis_kelamin" required>
+                                        <option value="L">Laki-laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold text-secondary">Catatan Kesehatan</label>
+                                <textarea class="form-control form-control-saas" name="catatan_kesehatan" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top bg-light">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button class="btn btn-emerald text-white px-4">Simpan Anak</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="row g-2 mt-1"><div class="col-md-6"><label class="form-label">Imunisasi Sudah</label><input class="form-control" name="imunisasi_sudah" placeholder="BCG, Polio, DPT"></div><div class="col-md-6"><label class="form-label">Imunisasi Belum</label><input class="form-control" name="imunisasi_belum" placeholder="Campak, DPT lanjutan"></div></div>
-            <label class="form-label mt-2">Catatan Perkembangan Anak</label><textarea class="form-control" name="catatan" rows="2" placeholder="Catatan keaktifan, nafsu makan, dll..."></textarea>
-        </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-success">Simpan Penimbangan</button></div></form></div></div></div>
+        </div>
 
-        <div class="modal fade" id="modalJadwal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold text-success"><i class="fas fa-calendar-plus me-2"></i>Input Jadwal Posyandu RT</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.posyandu.jadwal.store') }}">@csrf<div class="modal-body">
-            <label class="form-label">Judul Kegiatan <span class="text-danger">*</span></label><input class="form-control mb-2" name="judul" value="{{ old('judul', 'Posyandu Balita Rutin RT') }}" required>
-            <div class="row g-2"><div class="col-sm-6"><label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label><input class="form-control" type="datetime-local" name="tanggal_mulai" required></div><div class="col-sm-6"><label class="form-label">Tanggal Selesai</label><input class="form-control" type="datetime-local" name="tanggal_selesai"></div></div>
-            <label class="form-label mt-2">Lokasi Posyandu <span class="text-danger">*</span></label><input class="form-control mb-2" name="lokasi" placeholder="Pos Ronda RT / Balai Warga" required>
-            <div class="row g-2 mb-2">
-                <div class="col-sm-6"><label class="form-label">Nama Bidan / Tenaga Medis</label><input class="form-control" name="nama_bidan" placeholder="Bidan Siti / Puskesmas"></div>
-                <div class="col-sm-6"><label class="form-label">Kontak Bidan (WA/HP)</label><input class="form-control" name="kontak_bidan" placeholder="081234567890"></div>
-            </div>
-            <div class="row g-2 mb-2">
-                <div class="col-sm-6"><label class="form-label">Nama Kader Penanggung Jawab</label><input class="form-control" name="kader_info" placeholder="Ibu Rahma"></div>
-                <div class="col-sm-6">
-                    <label class="form-label">Status Jadwal</label>
-                    <select name="status" class="form-select">
-                        <option value="terjadwal" selected>Terjadwal</option>
-                        <option value="berlangsung">Berlangsung</option>
-                        <option value="selesai">Selesai</option>
-                        <option value="ditunda">Ditunda</option>
-                    </select>
+        {{-- Modal Input Penimbangan --}}
+        <div class="modal fade" id="modalPenimbangan" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header border-bottom bg-white">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-weight-scale text-emerald me-2"></i>Input Hasil Penimbangan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="{{ route('layanan.posyandu.pemeriksaan.store') }}">
+                        @csrf
+                        <div class="modal-body p-4">
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Nama Anak <span class="text-danger">*</span></label>
+                                    <select class="form-select form-control-saas" name="balita_id" required>
+                                        <option value="">Pilih anak</option>
+                                        @foreach($semuaBalita as $balita)
+                                            <option value="{{ $balita->id }}">{{ $balita->nama }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Jadwal Posyandu</label>
+                                    <select class="form-select form-control-saas" name="jadwal_posyandu_id">
+                                        <option value="">Tanpa jadwal</option>
+                                        @foreach($jadwals as $jadwal)
+                                            <option value="{{ $jadwal->id }}">{{ $jadwal->tanggal_mulai->format('d/m/Y') }} - {{ $jadwal->judul }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Tanggal Periksa <span class="text-danger">*</span></label>
+                                <input class="form-control form-control-saas" type="date" name="tanggal_periksa" value="{{ date('Y-m-d') }}" required>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Berat Badan (kg) <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" type="number" step="0.01" min="0" name="berat_kg" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Tinggi Badan (cm) <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" type="number" step="0.01" min="0" name="tinggi_cm" required>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold text-secondary">Lingkar Kepala (cm)</label>
+                                    <input class="form-control form-control-saas" type="number" step="0.01" min="0" name="lingkar_kepala_cm">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold text-secondary">Lingkar Lengan (cm)</label>
+                                    <input class="form-control form-control-saas" type="number" step="0.01" min="0" name="lingkar_lengan_cm">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold text-secondary">Status Gizi</label>
+                                    <select name="status_gizi" class="form-select form-control-saas">
+                                        <option value="Gizi Baik" selected>Gizi Baik</option>
+                                        <option value="Gizi Kurang">Gizi Kurang</option>
+                                        <option value="Gizi Lebih">Gizi Lebih</option>
+                                        <option value="Berisiko Stunting">Berisiko Stunting</option>
+                                        <option value="Stunting">Stunting</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Imunisasi Diberikan</label>
+                                    <input class="form-control form-control-saas" name="imunisasi_sudah" placeholder="BCG, Polio, DPT">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Imunisasi Berikutnya</label>
+                                    <input class="form-control form-control-saas" name="imunisasi_belum" placeholder="Campak, DPT lanjutan">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold text-secondary">Catatan Perkembangan Anak</label>
+                                <textarea class="form-control form-control-saas" name="catatan" rows="2" placeholder="Catatan keaktifan, nafsu makan, dll..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top bg-light">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button class="btn btn-emerald text-white px-4">Simpan Penimbangan</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <label class="form-label">Keterangan / Instruksi ke Orang Tua</label><textarea class="form-control" name="keterangan" rows="2" placeholder="Wajib membawa buku KIA / KMS..."></textarea>
-            <p class="small text-muted mb-0 mt-2"><i class="fas fa-bell text-warning me-1"></i>Notifikasi pengingat otomatis akan dikirim ke seluruh orang tua balita di RT ini.</p>
-        </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-success">Simpan & Siarkan Jadwal</button></div></form></div></div></div>
+        </div>
+
+        {{-- Modal Input Jadwal --}}
+        <div class="modal fade" id="modalJadwal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header border-bottom bg-white">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-plus text-emerald me-2"></i>Input Jadwal Posyandu RT</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="{{ route('layanan.posyandu.jadwal.store') }}">
+                        @csrf
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Judul Kegiatan <span class="text-danger">*</span></label>
+                                <input class="form-control form-control-saas" name="judul" value="{{ old('judul', 'Posyandu Balita Rutin RT') }}" required>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Tanggal Mulai <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" type="datetime-local" name="tanggal_mulai" required>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Tanggal Selesai</label>
+                                    <input class="form-control form-control-saas" type="datetime-local" name="tanggal_selesai">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Lokasi Posyandu <span class="text-danger">*</span></label>
+                                <input class="form-control form-control-saas" name="lokasi" placeholder="Pos Ronda RT / Balai Warga" required>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Nama Bidan / Tenaga Medis</label>
+                                    <input class="form-control form-control-saas" name="nama_bidan" placeholder="Bidan Siti / Puskesmas">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Kontak Bidan (WA/HP)</label>
+                                    <input class="form-control form-control-saas" name="kontak_bidan" placeholder="081234567890">
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Kader Penanggung Jawab</label>
+                                    <input class="form-control form-control-saas" name="kader_info" placeholder="Ibu Rahma">
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-semibold text-secondary">Status Jadwal</label>
+                                    <select name="status" class="form-select form-control-saas">
+                                        <option value="terjadwal" selected>Terjadwal</option>
+                                        <option value="berlangsung">Berlangsung</option>
+                                        <option value="selesai">Selesai</option>
+                                        <option value="ditunda">Ditunda</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold text-secondary">Keterangan / Instruksi ke Orang Tua</label>
+                                <textarea class="form-control form-control-saas" name="keterangan" rows="2" placeholder="Wajib membawa buku KIA / KMS..."></textarea>
+                            </div>
+                            <p class="small text-muted mb-0 mt-2"><i class="fas fa-bell text-warning me-1"></i>Notifikasi pengingat otomatis akan dikirim ke seluruh orang tua balita di RT ini.</p>
+                        </div>
+                        <div class="modal-footer border-top bg-light">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button class="btn btn-emerald text-white px-4">Simpan & Siarkan Jadwal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         @foreach($jadwals as $jEdit)
             <div class="modal fade" id="modalEditJadwalPosyandu{{ $jEdit->id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title fw-bold text-primary"><i class="fas fa-edit me-2"></i>Edit Jadwal Posyandu</h5>
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                        <div class="modal-header border-bottom bg-white">
+                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-edit text-warning me-2"></i>Edit Jadwal Posyandu</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <form method="POST" action="{{ route('layanan.posyandu.jadwal.update', $jEdit) }}">
                             @csrf
                             @method('PUT')
-                            <div class="modal-body">
-                                <label class="form-label">Judul Kegiatan <span class="text-danger">*</span></label>
-                                <input class="form-control mb-2" name="judul" value="{{ old('judul', $jEdit->judul) }}" required>
-                                
-                                <div class="row g-2">
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Judul Kegiatan <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" name="judul" value="{{ old('judul', $jEdit->judul) }}" required>
+                                </div>
+                                <div class="row g-2 mb-3">
                                     <div class="col-sm-6">
-                                        <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="datetime-local" name="tanggal_mulai" value="{{ $jEdit->tanggal_mulai->format('Y-m-d\TH:i') }}" required>
+                                        <label class="form-label small fw-semibold text-secondary">Tanggal Mulai <span class="text-danger">*</span></label>
+                                        <input class="form-control form-control-saas" type="datetime-local" name="tanggal_mulai" value="{{ $jEdit->tanggal_mulai->format('Y-m-d\TH:i') }}" required>
                                     </div>
                                     <div class="col-sm-6">
-                                        <label class="form-label">Tanggal Selesai</label>
-                                        <input class="form-control" type="datetime-local" name="tanggal_selesai" value="{{ $jEdit->tanggal_selesai ? $jEdit->tanggal_selesai->format('Y-m-d\TH:i') : '' }}">
+                                        <label class="form-label small fw-semibold text-secondary">Tanggal Selesai</label>
+                                        <input class="form-control form-control-saas" type="datetime-local" name="tanggal_selesai" value="{{ $jEdit->tanggal_selesai ? $jEdit->tanggal_selesai->format('Y-m-d\TH:i') : '' }}">
                                     </div>
                                 </div>
-
-                                <label class="form-label mt-2">Lokasi Posyandu <span class="text-danger">*</span></label>
-                                <input class="form-control mb-2" name="lokasi" value="{{ old('lokasi', $jEdit->lokasi) }}" required>
-
-                                <div class="row g-2 mb-2">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Lokasi Posyandu <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" name="lokasi" value="{{ old('lokasi', $jEdit->lokasi) }}" required>
+                                </div>
+                                <div class="row g-2 mb-3">
                                     <div class="col-sm-6">
-                                        <label class="form-label">Nama Bidan / Tenaga Medis</label>
-                                        <input class="form-control" name="nama_bidan" value="{{ old('nama_bidan', $jEdit->nama_bidan) }}" placeholder="Bidan Siti / Puskesmas">
+                                        <label class="form-label small fw-semibold text-secondary">Nama Bidan / Tenaga Medis</label>
+                                        <input class="form-control form-control-saas" name="nama_bidan" value="{{ old('nama_bidan', $jEdit->nama_bidan) }}" placeholder="Bidan Siti / Puskesmas">
                                     </div>
                                     <div class="col-sm-6">
-                                        <label class="form-label">Kontak Bidan (WA/HP)</label>
-                                        <input class="form-control" name="kontak_bidan" value="{{ old('kontak_bidan', $jEdit->kontak_bidan) }}" placeholder="081234567890">
+                                        <label class="form-label small fw-semibold text-secondary">Kontak Bidan (WA/HP)</label>
+                                        <input class="form-control form-control-saas" name="kontak_bidan" value="{{ old('kontak_bidan', $jEdit->kontak_bidan) }}" placeholder="081234567890">
                                     </div>
                                 </div>
-
-                                <div class="row g-2 mb-2">
+                                <div class="row g-2 mb-3">
                                     <div class="col-sm-6">
-                                        <label class="form-label">Nama Kader Penanggung Jawab</label>
-                                        <input class="form-control" name="kader_info" value="{{ old('kader_info', $jEdit->kader_info) }}" placeholder="Ibu Rahma">
+                                        <label class="form-label small fw-semibold text-secondary">Kader Penanggung Jawab</label>
+                                        <input class="form-control form-control-saas" name="kader_info" value="{{ old('kader_info', $jEdit->kader_info) }}" placeholder="Ibu Rahma">
                                     </div>
                                     <div class="col-sm-6">
-                                        <label class="form-label">Status Jadwal</label>
-                                        <select name="status" class="form-select">
+                                        <label class="form-label small fw-semibold text-secondary">Status Jadwal</label>
+                                        <select name="status" class="form-select form-control-saas">
                                             <option value="terjadwal" {{ $jEdit->status === 'terjadwal' ? 'selected' : '' }}>Terjadwal</option>
                                             <option value="berlangsung" {{ $jEdit->status === 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
                                             <option value="selesai" {{ $jEdit->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
@@ -367,13 +655,14 @@
                                         </select>
                                     </div>
                                 </div>
-
-                                <label class="form-label">Keterangan / Instruksi ke Orang Tua</label>
-                                <textarea class="form-control" name="keterangan" rows="2">{{ old('keterangan', $jEdit->keterangan) }}</textarea>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-semibold text-secondary">Keterangan / Instruksi ke Orang Tua</label>
+                                    <textarea class="form-control form-control-saas" name="keterangan" rows="2">{{ old('keterangan', $jEdit->keterangan) }}</textarea>
+                                </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Simpan Perubahan</button>
+                            <div class="modal-footer border-top bg-light">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-save me-1"></i>Simpan Perubahan</button>
                             </div>
                         </form>
                     </div>
@@ -382,34 +671,6 @@
         @endforeach
     @endif
 </div>
-
-<style>
-    .posyandu-page { --pos-surface: var(--surface, #10271e); --pos-raised: var(--surface-raised, #18382b); --pos-text: var(--text-primary, #f8fafc); --pos-muted: var(--text-muted, #b8c7be); --pos-border: var(--border-color, #526b5c); color: var(--pos-text); }
-    .posyandu-page .pos-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px; }
-    .posyandu-page .pos-head h2 { margin:0; font-size:1.45rem; color:var(--pos-text); }
-    .posyandu-page .pos-head p { margin:3px 0 0; color:var(--pos-muted); font-size:.88rem; }
-    .posyandu-page .pos-quick-actions { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-    .posyandu-page .pos-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
-    .posyandu-page .pos-summary-card { min-height:78px; display:flex; align-items:center; gap:11px; padding:12px 14px; border:1px solid var(--pos-border); border-radius:14px; background:var(--pos-surface); }
-    .posyandu-page .pos-summary-card > div { min-width:0; }
-    .posyandu-page .pos-summary-card strong { display:block; font-size:1.35rem; line-height:1.1; color:var(--pos-text); }
-    .posyandu-page .pos-summary-card span { color:var(--pos-muted); font-size:.76rem; }
-    .posyandu-page .pos-icon { width:36px; height:36px; display:grid; place-items:center; flex:0 0 36px; border-radius:10px; }
-    .posyandu-page .pos-icon.blue { color:#60a5fa; background:rgba(59,130,246,.15); }.posyandu-page .pos-icon.purple { color:#c084fc; background:rgba(168,85,247,.15); }.posyandu-page .pos-icon.amber { color:#fbbf24; background:rgba(245,158,11,.15); }.posyandu-page .pos-icon.green { color:#4ade80; background:rgba(34,197,94,.15); }
-    .posyandu-page .nutrition-card { grid-column:auto; }.posyandu-page .pos-status-row { display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; }.posyandu-page .pos-status-row b,.posyandu-page .pos-badge { padding:3px 7px; border-radius:999px; font-size:.68rem; white-space:nowrap; }.posyandu-page .ok { color:#166534!important; background:#dcfce7!important; }.posyandu-page .watch { color:#854d0e!important; background:#fef3c7!important; }.posyandu-page .danger { color:#991b1b!important; background:#fee2e2!important; }
-    .posyandu-page .pos-tabs { gap:3px; border-color:var(--pos-border); overflow-x:auto; flex-wrap:nowrap; }.posyandu-page .pos-tabs .nav-link { white-space:nowrap; font-size:.82rem; padding:8px 12px; color:var(--pos-muted)!important; }.posyandu-page .pos-tabs .nav-link.active { color:var(--pos-text)!important; background:var(--pos-raised)!important; border-color:var(--pos-border)!important; }
-    .posyandu-page .pos-tab-content { padding-top:12px; }.posyandu-page .pos-main-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr); gap:12px; }.posyandu-page .pos-column { display:grid; align-content:start; gap:12px; }
-    .posyandu-page .pos-card { border:1px solid var(--pos-border); border-radius:14px; background:var(--pos-surface); padding:13px; color:var(--pos-text); overflow:hidden; }.posyandu-page .pos-card-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }.posyandu-page .pos-card-head h5 { margin:0; font-size:.94rem; color:var(--pos-text); }.posyandu-page .pos-card-head h5 i { color:var(--accent,#f6d860); margin-right:6px; }.posyandu-page .pos-card-head .form-select,.posyandu-page .pos-card-head .form-control { width:min(220px,48%); }
-    .posyandu-page .pos-chart-wrap { position:relative; height:280px; max-height:280px; }.posyandu-page .pos-chart-meta { min-height:24px; padding-top:7px; font-size:.78rem; color:var(--pos-muted); }.posyandu-page .pos-empty { padding:18px; color:var(--pos-muted); text-align:center; }
-    .posyandu-page .pos-table-scroll { max-height:310px; overflow:auto; }.posyandu-page .pos-large-table-scroll { max-height:390px; overflow:auto; }.posyandu-page .table { color:var(--pos-text); font-size:.78rem; }.posyandu-page .table thead { position:sticky; top:0; z-index:1; }.posyandu-page .table th { background:var(--pos-raised)!important; color:var(--pos-text)!important; }.posyandu-page .pos-pagination { display:flex; justify-content:flex-end; align-items:center; gap:9px; padding-top:9px; font-size:.75rem; color:var(--pos-muted); }
-    .posyandu-page .pos-compact-list { max-height:245px; overflow-y:auto; padding-right:3px; }.posyandu-page .pos-list-item,.posyandu-page .pos-visit { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--pos-border); }.posyandu-page .pos-list-item:last-child,.posyandu-page .pos-visit:last-child { border-bottom:0; }.posyandu-page .pos-list-item time { width:42px; height:42px; display:grid; place-content:center; text-align:center; border-radius:9px; background:var(--pos-raised); }.posyandu-page .pos-list-item time strong { font-size:1rem; line-height:1; }.posyandu-page .pos-list-item time span,.posyandu-page .pos-list-item div span,.posyandu-page .pos-visit span { display:block; color:var(--pos-muted); font-size:.72rem; }.posyandu-page .pos-list-item > div { flex:1; min-width:0; }.posyandu-page .pos-list-item > div strong,.posyandu-page .pos-visit strong { display:block; font-size:.8rem; color:var(--pos-text); }
-    .posyandu-page .pos-count { padding:2px 7px; border-radius:999px; background:var(--pos-raised); font-size:.72rem; }.posyandu-page .pos-queue-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }.posyandu-page .pos-queue-grid div { padding:8px; border-radius:9px; text-align:center; background:var(--pos-raised); }.posyandu-page .pos-queue-grid strong { display:block; font-size:1.1rem; }.posyandu-page .pos-queue-grid span,.posyandu-page .pos-help { color:var(--pos-muted); font-size:.68rem; }.posyandu-page .pos-help { display:block; margin-top:8px; }
-    .posyandu-page .visit-list { max-height:218px; }.posyandu-page .immun-list { max-height:330px; }.posyandu-page .pos-info-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }.posyandu-page .pos-tip { display:flex; gap:12px; align-items:flex-start; }.posyandu-page .pos-tip > i,.posyandu-page .pos-gallery > i { font-size:1.35rem; color:var(--accent,#f6d860); }.posyandu-page .pos-tip h5 { margin:0 0 4px; font-size:.92rem; }.posyandu-page .pos-tip p,.posyandu-page .pos-gallery span { margin:0; color:var(--pos-muted); font-size:.78rem; }.posyandu-page .pos-gallery { min-height:130px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:7px; text-align:center; }
-    .posyandu-page .modal .form-label { font-size:.78rem; margin-bottom:3px; }
-    html[data-bs-theme="light"] .posyandu-page .pos-icon.blue { color:#1d4ed8; } html[data-bs-theme="light"] .posyandu-page .pos-icon.purple { color:#7e22ce; } html[data-bs-theme="light"] .posyandu-page .pos-icon.amber { color:#92400e; } html[data-bs-theme="light"] .posyandu-page .pos-icon.green { color:#166534; }
-    @media(max-width:1100px){.posyandu-page .pos-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.posyandu-page .pos-main-grid{grid-template-columns:1fr;}.posyandu-page .pos-info-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-    @media(max-width:576px){.posyandu-page{padding-left:8px!important;padding-right:8px!important}.posyandu-page .pos-head{align-items:flex-start}.posyandu-page .pos-head p{display:none}.posyandu-page .pos-summary-grid{grid-template-columns:1fr 1fr;gap:7px}.posyandu-page .pos-summary-card{min-height:68px;padding:9px}.posyandu-page .nutrition-card{grid-column:1/-1}.posyandu-page .pos-icon{display:none}.posyandu-page .pos-card-head{align-items:flex-start;flex-direction:column}.posyandu-page .pos-card-head .form-select,.posyandu-page .pos-card-head .form-control{width:100%}.posyandu-page .pos-chart-wrap{height:250px}.posyandu-page .pos-info-grid{grid-template-columns:1fr}.posyandu-page .pos-quick-actions{flex-wrap:nowrap;overflow-x:auto}.posyandu-page .pos-quick-actions .btn{white-space:nowrap}}
-</style>
 @endsection
 
 @push('scripts')
@@ -423,22 +684,67 @@ document.addEventListener('DOMContentLoaded', function () {
     let growthChart = null;
 
     function chartColors() {
-        const styles = getComputedStyle(document.documentElement);
-        const get = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
-        return { label:get('--chart-label','#37443b'), grid:get('--chart-grid','rgba(55,68,59,.24)'), weight:get('--chart-income','#166534'), weightFill:get('--chart-income-fill','rgba(22,101,52,.14)'), height:get('--chart-secondary','#075985'), heightFill:get('--chart-secondary-fill','rgba(7,89,133,.12)'), point:get('--chart-point-border','#f5f7f2') };
+        return { 
+            label: '#758078', 
+            grid: 'rgba(233, 238, 234, 0.8)', 
+            weight: '#147A45', 
+            weightFill: 'rgba(20, 122, 69, 0.12)', 
+            height: '#3985E8', 
+            heightFill: 'rgba(57, 133, 232, 0.12)', 
+            point: '#ffffff' 
+        };
     }
 
     function showSelectedChild() {
         if (!select || !canvas || typeof Chart === 'undefined') return;
         const child = growthData[select.value];
         const hasData = child && child.labels.length;
-        empty.classList.toggle('d-none', !!hasData);
-        canvas.parentElement.classList.toggle('d-none', !hasData);
-        meta.textContent = child ? `${child.name} · Orang tua: ${child.parent} · Status: ${child.status}` : '';
+        if (empty) empty.classList.toggle('d-none', !!hasData);
+        if (canvas.parentElement) canvas.parentElement.classList.toggle('d-none', !hasData);
+        if (meta) meta.textContent = child ? `${child.name} · Orang tua: ${child.parent} · Status: ${child.status}` : '';
         if (!hasData) return;
         const colors = chartColors();
         if (!growthChart) {
-            growthChart = new Chart(canvas.getContext('2d'), { type:'line', data:{ labels:child.labels, datasets:[{label:'Berat Badan (kg)',data:child.weight,borderColor:colors.weight,backgroundColor:colors.weightFill,pointBackgroundColor:colors.weight,pointBorderColor:colors.point,tension:.35,fill:true},{label:'Tinggi Badan (cm)',data:child.height,borderColor:colors.height,backgroundColor:colors.heightFill,pointBackgroundColor:colors.height,pointBorderColor:colors.point,tension:.35,fill:true}] }, options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:colors.label,usePointStyle:true}}},scales:{x:{ticks:{color:colors.label,maxRotation:0},grid:{color:colors.grid}},y:{beginAtZero:true,ticks:{color:colors.label},grid:{color:colors.grid}}}} });
+            growthChart = new Chart(canvas.getContext('2d'), { 
+                type:'line', 
+                data:{ 
+                    labels:child.labels, 
+                    datasets:[
+                        {
+                            label:'Berat Badan (kg)',
+                            data:child.weight,
+                            borderColor:colors.weight,
+                            backgroundColor:colors.weightFill,
+                            pointBackgroundColor:colors.weight,
+                            pointBorderColor:colors.point,
+                            tension:.35,
+                            fill:true
+                        },
+                        {
+                            label:'Tinggi Badan (cm)',
+                            data:child.height,
+                            borderColor:colors.height,
+                            backgroundColor:colors.heightFill,
+                            pointBackgroundColor:colors.height,
+                            pointBorderColor:colors.point,
+                            tension:.35,
+                            fill:true
+                        }
+                    ] 
+                }, 
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    interaction:{mode:'index',intersect:false},
+                    plugins:{
+                        legend:{labels:{color:colors.label,usePointStyle:true}}
+                    },
+                    scales:{
+                        x:{ticks:{color:colors.label,maxRotation:0},grid:{color:colors.grid}},
+                        y:{beginAtZero:true,ticks:{color:colors.label},grid:{color:colors.grid}}
+                    }
+                } 
+            });
         } else {
             growthChart.data.labels = child.labels;
             growthChart.data.datasets[0].data = child.weight;
@@ -449,29 +755,28 @@ document.addEventListener('DOMContentLoaded', function () {
     select?.addEventListener('change', showSelectedChild);
     showSelectedChild();
 
-    window.addEventListener('themechange', function () {
-        if (!growthChart) return;
-        const colors = chartColors();
-        Object.assign(growthChart.data.datasets[0], {borderColor:colors.weight,backgroundColor:colors.weightFill,pointBackgroundColor:colors.weight,pointBorderColor:colors.point});
-        Object.assign(growthChart.data.datasets[1], {borderColor:colors.height,backgroundColor:colors.heightFill,pointBackgroundColor:colors.height,pointBorderColor:colors.point});
-        growthChart.options.plugins.legend.labels.color = colors.label;
-        growthChart.options.scales.x.ticks.color = colors.label; growthChart.options.scales.x.grid.color = colors.grid;
-        growthChart.options.scales.y.ticks.color = colors.label; growthChart.options.scales.y.grid.color = colors.grid;
-        growthChart.update();
-    });
-
     const search = document.getElementById('childSearch');
     const rows = Array.from(document.querySelectorAll('#childTable tbody tr'));
-    const prev = document.getElementById('childPrev'); const next = document.getElementById('childNext'); const info = document.getElementById('childPageInfo');
-    let page = 1; const perPage = 8;
+    const prev = document.getElementById('childPrev'); 
+    const next = document.getElementById('childNext'); 
+    const info = document.getElementById('childPageInfo');
+    let page = 1; 
+    const perPage = 8;
     function renderRows() {
         const term = (search?.value || '').toLowerCase();
         const filtered = rows.filter(row => row.textContent.toLowerCase().includes(term));
-        const pages = Math.max(1, Math.ceil(filtered.length / perPage)); page = Math.min(page, pages);
-        rows.forEach(row => row.style.display = 'none'); filtered.slice((page-1)*perPage,page*perPage).forEach(row => row.style.display = '');
-        info.textContent = `${page} / ${pages}`; prev.disabled = page <= 1; next.disabled = page >= pages;
+        const pages = Math.max(1, Math.ceil(filtered.length / perPage)); 
+        page = Math.min(page, pages);
+        rows.forEach(row => row.style.display = 'none'); 
+        filtered.slice((page-1)*perPage,page*perPage).forEach(row => row.style.display = '');
+        if (info) info.textContent = `${page} / ${pages}`; 
+        if (prev) prev.disabled = page <= 1; 
+        if (next) next.disabled = page >= pages;
     }
-    search?.addEventListener('input', () => { page=1; renderRows(); }); prev?.addEventListener('click', () => { if(page>1){page--;renderRows();} }); next?.addEventListener('click', () => { page++;renderRows(); }); renderRows();
+    search?.addEventListener('input', () => { page=1; renderRows(); }); 
+    prev?.addEventListener('click', () => { if(page>1){page--;renderRows();} }); 
+    next?.addEventListener('click', () => { page++;renderRows(); }); 
+    renderRows();
 });
 </script>
 @endpush

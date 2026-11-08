@@ -1,118 +1,90 @@
 @extends('layouts.app')
 
+@section('title', 'Laporan Pembayaran Warga')
+
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="text-white animate__animated animate__fadeInLeft">
-                <i class="fas fa-user"></i> Laporan Pembayaran Warga
-            </h2>
-            <p class="text-white-50 animate__animated animate__fadeInLeft animate__delay-1s">
-                Nama: <strong class="text-primary">{{ $user->name }}</strong> | 
-                Periode: <strong class="text-info">{{ date('d/m/Y', strtotime($request->periode_awal)) }} - {{ date('d/m/Y', strtotime($request->periode_akhir)) }}</strong>
+<div class="content-container">
+    {{-- Page Header --}}
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{{ route('laporan.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <h1 class="page-title mb-0">Laporan Pembayaran Warga</h1>
+            </div>
+            <p class="page-subtitle">
+                Nama: <strong class="text-dark">{{ $user->name }}</strong> | 
+                Periode: <strong class="text-emerald">{{ date('d/m/Y', strtotime($request->periode_awal)) }} – {{ date('d/m/Y', strtotime($request->periode_akhir)) }}</strong>
             </p>
         </div>
-    </div>
-
-    <div class="card animate__animated animate__fadeInUp">
-        <div class="card-header bg-primary">
-            <h5 class="mb-0 text-white"><i class="fas fa-receipt"></i> Detail Pembayaran</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Tanggal Bayar</th>
-                            <th>Jenis Iuran</th>
-                            <th class="text-end">Jumlah Bayar</th>
-                            <th>Metode</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pembayaran as $index => $item)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ date('d/m/Y', strtotime($item->tanggal_bayar)) }}</td>
-                            <td>{{ $item->iuran->nama_iuran }}</td>
-                            <td class="text-end text-success fw-bold">Rp {{ number_format($item->jumlah_bayar, 0, ',', '.') }}</td>
-                            <td>
-                                @if($item->metode_bayar == 'tunai')
-                                    <span class="badge bg-info">Tunai</span>
-                                @else
-                                    <span class="badge bg-primary">Transfer</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($item->status == 'lunas')
-                                    <span class="badge bg-success">Lunas</span>
-                                @else
-                                    <span class="badge bg-warning">Pending</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-4">
-                                <i class="fas fa-inbox fa-2x text-secondary mb-2 d-block"></i>
-                                <span class="text-secondary">Belum ada riwayat pembayaran</span>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                    <tfoot class="table-active">
-                        <tr>
-                            <th colspan="3" class="text-end">Total Pembayaran:</th>
-                            <th class="text-end text-success fw-bold">Rp {{ number_format($pembayaran->sum('jumlah_bayar'), 0, ',', '.') }}</th>
-                            <th colspan="2"></th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-        <div class="card-footer bg-transparent text-end">
-            <a href="{{ route('laporan.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
+        <div>
             @if(request()->has('export_excel'))
-                <a href="{{ route('laporan.index') }}" class="btn btn-success">
-                    <i class="fas fa-download"></i> Download Excel
+                <a href="{{ route('laporan.index') }}" class="btn btn-emerald text-white">
+                    <i class="fas fa-download me-1"></i> Download Excel
                 </a>
             @endif
         </div>
     </div>
+
+    <div class="saas-card overflow-hidden">
+        <div class="card-header bg-white border-bottom p-3">
+            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-receipt text-emerald me-2"></i> Detail Pembayaran Iuran</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table-saas">
+                <thead>
+                    <tr>
+                        <th width="45">No</th>
+                        <th>Tanggal Bayar</th>
+                        <th>Jenis Iuran</th>
+                        <th class="text-end">Jumlah Bayar</th>
+                        <th>Metode</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($pembayaran as $index => $item)
+                    <tr>
+                        <td class="text-secondary">{{ $index + 1 }}</td>
+                        <td class="text-secondary small">{{ date('d/m/Y', strtotime($item->tanggal_bayar)) }}</td>
+                        <td class="text-dark fw-medium">{{ $item->iuran->nama_iuran }}</td>
+                        <td class="text-end text-emerald fw-bold">Rp {{ number_format($item->jumlah_bayar, 0, ',', '.') }}</td>
+                        <td>
+                            @if($item->metode_bayar == 'tunai')
+                                <span class="badge-soft-info">Tunai</span>
+                            @else
+                                <span class="badge-soft-primary">Transfer</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($item->status == 'lunas')
+                                <span class="badge-soft-emerald">Lunas</span>
+                            @else
+                                <span class="badge-soft-warning">Pending</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-secondary">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3 d-block opacity-50"></i>
+                            Belum ada riwayat pembayaran pada periode ini.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+                @if($pembayaran->count() > 0)
+                <tfoot class="bg-light border-top">
+                    <tr>
+                        <th colspan="3" class="text-end text-dark fw-bold">Total Pembayaran:</th>
+                        <th class="text-end text-emerald fw-bold fs-6">Rp {{ number_format($pembayaran->sum('jumlah_bayar'), 0, ',', '.') }}</th>
+                        <th colspan="2"></th>
+                    </tr>
+                </tfoot>
+                @endif
+            </table>
+        </div>
+    </div>
 </div>
-
-<style>
-.card {
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(96, 165, 250, 0.1);
-}
-
-.table-dark {
-    background: transparent;
-}
-
-.table-dark th {
-    border-bottom-color: rgba(96, 165, 250, 0.2);
-    color: #94a3b8;
-    font-weight: 500;
-}
-
-.table-dark td {
-    border-bottom-color: rgba(96, 165, 250, 0.05);
-    color: #f1f5f9;
-}
-
-.table-active {
-    background: rgba(15, 23, 42, 0.8);
-}
-
-.text-white {
-    color: #f1f5f9 !important;
-}
-</style>
 @endsection

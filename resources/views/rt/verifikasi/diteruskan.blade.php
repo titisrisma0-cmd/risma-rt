@@ -3,71 +3,76 @@
 @section('title', 'Pengajuan yang Diteruskan ke RW')
 
 @section('content')
-<div class="container-fluid px-4 py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+<div class="content-container">
+    {{-- Page Header --}}
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <a href="{{ route('rt.verifikasi.permohonan') }}" class="btn btn-sm btn-outline-light">
+                <a href="{{ route('rt.verifikasi.permohonan') }}" class="btn btn-sm btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> Permohonan RT
                 </a>
-                <h1 class="h3 text-white mb-0">Pengajuan yang Diteruskan ke RW</h1>
+                <h1 class="page-title mb-0">Pengajuan yang Diteruskan ke RW</h1>
             </div>
-            <p class="text-white-50 mb-0">Status permohonan warga RT {{ $user->getRtKode() ?? '01' }} yang sedang atau telah diproses oleh Pengurus RW</p>
+            <p class="page-subtitle">Status permohonan warga RT {{ $user->getRtKode() ?? '01' }} yang sedang atau telah diproses oleh Pengurus RW</p>
         </div>
 
         <div>
-            <a href="{{ route('rt.verifikasi.riwayat') }}" class="btn btn-outline-light">
+            <a href="{{ route('rt.verifikasi.riwayat') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-history me-1"></i> Riwayat Selesai
             </a>
         </div>
     </div>
 
-    <div class="card border-0" style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px; overflow: hidden;">
+    <div class="saas-card overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-white">
-                <thead style="background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <table class="table-saas">
+                <thead>
                     <tr>
-                        <th class="py-3 px-3">No. Pengajuan</th>
-                        <th class="py-3 px-3">Pemohon</th>
-                        <th class="py-3 px-3">Jenis Layanan</th>
-                        <th class="py-3 px-3">Catatan RT</th>
-                        <th class="py-3 px-3">Keputusan & Catatan RW</th>
-                        <th class="py-3 px-3 text-center">Status</th>
+                        <th>No. Pengajuan</th>
+                        <th>Pemohon</th>
+                        <th>Jenis Layanan</th>
+                        <th>Catatan RT</th>
+                        <th>Keputusan & Catatan RW</th>
+                        <th class="text-center">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($pengajuans as $p)
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <td class="py-3 px-3 font-monospace text-emerald-400 small">{{ $p->nomor_pengajuan }}</td>
-                            <td class="py-3 px-3">
-                                <div class="fw-bold text-white">{{ optional($p->user)->name }}</div>
+                        <tr>
+                            <td class="font-monospace fw-bold text-emerald">{{ $p->nomor_pengajuan }}</td>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ optional($p->user)->name }}</div>
                             </td>
-                            <td class="py-3 px-3">
-                                <span class="badge bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                            <td>
+                                <span class="badge-soft-info">
                                     {{ optional($p->jenisSurat)->nama }}
                                 </span>
                             </td>
-                            <td class="py-3 px-3 text-white-50 small" style="max-width: 250px;">
+                            <td class="text-secondary small" style="max-width: 250px;">
                                 {{ $p->catatan_rt ?? '-' }}
                             </td>
-                            <td class="py-3 px-3 text-white-50 small" style="max-width: 250px;">
+                            <td class="text-secondary small" style="max-width: 250px;">
                                 @if($p->catatan_rw)
-                                    <div class="text-white">{{ $p->catatan_rw }}</div>
-                                    <small class="text-white-50">Oleh: {{ optional($p->rwApprover)->name ?? 'RW' }}</small>
+                                    <div class="text-dark fw-medium">{{ $p->catatan_rw }}</div>
+                                    <small class="text-secondary">Oleh: {{ optional($p->rwApprover)->name ?? 'RW' }}</small>
                                 @else
-                                    <span class="text-white-50 font-italic">Menunggu telaah Pengurus RW</span>
+                                    <span class="text-muted fst-italic">Menunggu telaah Pengurus RW</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-3 text-center">
-                                <span class="badge {{ $p->status_badge }} px-2 py-1">
-                                    {{ $p->status_label }}
-                                </span>
+                            <td class="text-center">
+                                @if(in_array($p->status, ['disetujui', 'selesai', 'siap_diambil']))
+                                    <span class="badge-soft-emerald">{{ $p->status_label }}</span>
+                                @elseif($p->status === 'ditolak')
+                                    <span class="badge-soft-danger">{{ $p->status_label }}</span>
+                                @else
+                                    <span class="badge-soft-warning">{{ $p->status_label }}</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-white-50">
-                                <i class="fas fa-paper-plane fa-3x mb-3 text-white-50 d-block"></i>
+                            <td colspan="6" class="text-center py-5 text-secondary">
+                                <i class="fas fa-paper-plane fa-3x mb-3 text-muted d-block opacity-50"></i>
                                 Belum ada permohonan yang diteruskan ke RW.
                             </td>
                         </tr>
@@ -77,7 +82,7 @@
         </div>
 
         @if($pengajuans->hasPages())
-            <div class="p-3 border-top border-white-10">
+            <div class="p-3 border-top bg-white">
                 {{ $pengajuans->links() }}
             </div>
         @endif

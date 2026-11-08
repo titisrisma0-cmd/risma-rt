@@ -1,389 +1,239 @@
 @extends('layouts.app')
 
+@section('title', Auth::user()->hasRole('warga') ? 'Riwayat Pembayaran Saya' : 'Manajemen Pembayaran')
+
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="text-white">
-                        <i class="fas fa-hand-holding-usd"></i> 
-                        @if(Auth::user()->hasRole('warga'))
-                            Riwayat Pembayaran Saya
-                        @else
-                            Manajemen Pembayaran
-                        @endif
-                    </h2>
-                    <p class="text-white-50">
-                        @if(Auth::user()->hasRole('warga'))
-                            Lihat histori pembayaran iuran Anda
-                        @else
-                            Kelola dan verifikasi pembayaran iuran warga
-                        @endif
-                    </p>
-                </div>
-                <div>
-                    @if(Auth::user()->hasRole('warga'))
-                        <a href="{{ route('pembayaran.create') }}" class="btn btn-gradient">
-                            <i class="fas fa-plus-circle"></i> Bayar Iuran
-                        </a>
-                    @else
-                        <a href="{{ route('pembayaran.create') }}" class="btn btn-gradient">
-                            <i class="fas fa-plus-circle"></i> Catat Pembayaran
-                        </a>
-                    @endif
-                </div>
-            </div>
+<div class="content-container">
+    {{-- Page Header --}}
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-hand-holding-usd text-emerald me-2"></i> 
+                @if(Auth::user()->hasRole('warga'))
+                    Riwayat Pembayaran Saya
+                @else
+                    Manajemen Pembayaran
+                @endif
+            </h1>
+            <p class="page-subtitle">
+                @if(Auth::user()->hasRole('warga'))
+                    Lihat histori pembayaran iuran Anda
+                @else
+                    Kelola dan verifikasi pembayaran iuran warga
+                @endif
+            </p>
+        </div>
+        <div>
+            @if(Auth::user()->hasRole('warga'))
+                <a href="{{ route('pembayaran.create') }}" class="btn btn-emerald text-white">
+                    <i class="fas fa-plus-circle me-1"></i> Bayar Iuran
+                </a>
+            @else
+                <a href="{{ route('pembayaran.create') }}" class="btn btn-emerald text-white">
+                    <i class="fas fa-plus-circle me-1"></i> Catat Pembayaran
+                </a>
+            @endif
         </div>
     </div>
 
     @if(Auth::user()->hasRole('warga'))
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0 text-white"><i class="fas fa-file-invoice-dollar"></i> Tagihan Iuran</h5>
+        <div class="saas-card p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-file-invoice-dollar text-emerald me-2"></i>Tagihan Iuran Warga</h6>
+            
+            @if($tagihanGroups->isNotEmpty())
+                <div class="row g-3 mb-4" role="tablist" aria-label="Pilih periode tagihan">
+                    @foreach($tagihanGroups as $group)
+                        <div class="col-md-6 col-lg-4">
+                            <button type="button" class="period-btn w-100 text-start saas-card p-3 border {{ $loop->first ? 'active border-primary' : '' }}" data-period-target="tagihan-period-{{ $loop->index }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}" style="{{ $loop->first ? 'background-color: #F0FDF4; border: 1.5px solid var(--primary-green) !important;' : 'background-color: #FAFCFA;' }}">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-dark fs-6">{{ $group->period->label }}</span>
+                                    <span class="badge-soft-warning">{{ $group->unpaid_count }} belum bayar</span>
+                                </div>
+                                <div class="text-secondary small">{{ $group->period->month_label }}</div>
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            @forelse($tagihanGroups as $group)
+                <section id="tagihan-period-{{ $loop->index }}" class="tagihan-group period-panel {{ $loop->first ? 'active' : '' }}" style="display: {{ $loop->first ? 'block' : 'none' }};">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2 pb-2 border-bottom">
+                        <div>
+                            <span class="badge-soft-info mb-1 d-inline-block">{{ $group->period->label }}</span>
+                            <h6 class="text-dark fw-bold mb-0">{{ $group->period->month_label }}</h6>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge-soft-emerald"><i class="fas fa-check-circle me-1"></i> {{ $group->paid_count }} lunas</span>
+                            <span class="badge-soft-warning"><i class="fas fa-clock me-1"></i> {{ $group->pending_count }} proses</span>
+                            <span class="badge-soft-danger"><i class="fas fa-wallet me-1"></i> {{ $group->unpaid_count }} belum</span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        @if($tagihanGroups->isNotEmpty())
-                            <div class="period-switcher mb-3" role="tablist" aria-label="Pilih periode tagihan">
-                                @foreach($tagihanGroups as $group)
-                                    <button type="button" class="period-btn {{ $loop->first ? 'active' : '' }}" data-period-target="tagihan-period-{{ $loop->index }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
-                                        <span class="period-title">{{ $group->period->label }}</span>
-                                        <span class="period-month">{{ $group->period->month_label }}</span>
-                                        <span class="period-count">{{ $group->unpaid_count }} belum bayar</span>
-                                    </button>
-                                @endforeach
-                            </div>
-                        @endif
 
-                        @forelse($tagihanGroups as $group)
-                            <section id="tagihan-period-{{ $loop->index }}" class="tagihan-group period-panel {{ $loop->first ? 'active' : '' }}">
-                                <div class="tagihan-group-header">
+                    <div class="row g-3">
+                        @forelse($group->items as $item)
+                            <div class="col-lg-6">
+                                <div class="saas-card p-3 border h-100 d-flex flex-column justify-content-between">
                                     <div>
-                                        <span class="badge {{ $group->period->badge_class }} mb-2">{{ $group->period->label }}</span>
-                                        <h6 class="text-white mb-0">{{ $group->period->month_label }}</h6>
-                                    </div>
-                                    <div class="tagihan-summary">
-                                        <span class="summary-pill paid"><i class="fas fa-check-circle"></i> {{ $group->paid_count }} lunas</span>
-                                        <span class="summary-pill pending"><i class="fas fa-clock"></i> {{ $group->pending_count }} proses</span>
-                                        <span class="summary-pill unpaid"><i class="fas fa-wallet"></i> {{ $group->unpaid_count }} belum</span>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3">
-                                    @forelse($group->items as $item)
-                                        <div class="col-lg-6">
-                                            <div class="card h-100 border-secondary tagihan-card">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
-                                                        <div>
-                                                            <h6 class="text-white mb-1">{{ $item->iuran->nama_iuran }}</h6>
-                                                            <small class="text-secondary">{{ ucfirst($item->iuran->periode) }} - {{ $item->bulan_tahun }}</small>
-                                                        </div>
-                                                        @php
-                                                            if ($item->status == 'lunas') {
-                                                                $statusLabel = 'Lunas';
-                                                                $statusClass = 'bg-success';
-                                                            } elseif ($item->status == 'pending') {
-                                                                $statusLabel = 'Menunggu Verifikasi';
-                                                                $statusClass = 'bg-warning text-dark';
-                                                            } elseif ($item->status == 'gagal') {
-                                                                $statusLabel = 'Gagal';
-                                                                $statusClass = 'bg-danger';
-                                                            } else {
-                                                                $statusLabel = 'Belum Dibayar';
-                                                                $statusClass = 'bg-secondary';
-                                                            }
-                                                        @endphp
-                                                        <span class="badge {{ $statusClass }}">{{ $statusLabel }}</span>
-                                                    </div>
-                                                    <p class="text-white mb-2">Jumlah Tagihan: <strong>Rp {{ number_format($item->iuran->nominal, 0, ',', '.') }}</strong></p>
-                                                    <p class="text-secondary mb-3">Jatuh tempo: {{ $item->iuran->due_day ?? 10 }} {{ \Carbon\Carbon::parse($item->bulan_tahun . '-01')->locale('id')->translatedFormat('F Y') }}</p>
-                                                    @if($item->status == 'pending')
-                                                        <button type="button" class="btn btn-warning btn-sm w-100" disabled>
-                                                            <i class="fas fa-clock"></i> Menunggu Verifikasi
-                                                        </button>
-                                                    @elseif($item->status !== 'lunas')
-                                                        <a href="{{ route('pembayaran.create', ['iuran_id' => $item->iuran->id, 'bulan_tahun' => $item->bulan_tahun]) }}" class="btn btn-gradient btn-sm w-100">
-                                                            <i class="fas fa-wallet"></i> Bayar
-                                                        </a>
-                                                    @else
-                                                        <button type="button" class="btn btn-secondary btn-sm w-100" disabled>
-                                                            <i class="fas fa-check-circle"></i> Sudah Lunas
-                                                        </button>
-                                                    @endif
-                                                </div>
+                                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                            <div>
+                                                <h6 class="text-dark fw-bold mb-1">{{ $item->iuran->nama_iuran }}</h6>
+                                                <small class="text-secondary">{{ ucfirst($item->iuran->periode) }} - {{ $item->bulan_tahun }}</small>
                                             </div>
+                                            @php
+                                                if ($item->status == 'lunas') {
+                                                    $statusBadge = 'badge-soft-emerald';
+                                                    $statusLabel = 'Lunas';
+                                                } elseif ($item->status == 'pending') {
+                                                    $statusBadge = 'badge-soft-warning';
+                                                    $statusLabel = 'Menunggu Verifikasi';
+                                                } elseif ($item->status == 'gagal') {
+                                                    $statusBadge = 'badge-soft-danger';
+                                                    $statusLabel = 'Gagal';
+                                                } else {
+                                                    $statusBadge = 'badge-soft-secondary';
+                                                    $statusLabel = 'Belum Dibayar';
+                                                }
+                                            @endphp
+                                            <span class="{{ $statusBadge }}">{{ $statusLabel }}</span>
                                         </div>
-                                    @empty
-                                        <div class="col-12">
-                                            <div class="alert alert-info mb-0">Tidak ada tagihan untuk periode ini.</div>
-                                        </div>
-                                    @endforelse
+                                        <div class="h5 text-emerald fw-bold mb-1">Rp {{ number_format($item->iuran->nominal, 0, ',', '.') }}</div>
+                                        <p class="text-secondary small mb-3">Jatuh tempo: {{ $item->iuran->due_day ?? 10 }} {{ \Carbon\Carbon::parse($item->bulan_tahun . '-01')->locale('id')->translatedFormat('F Y') }}</p>
+                                    </div>
+                                    <div>
+                                        @if($item->status == 'pending')
+                                            <button type="button" class="btn btn-outline-warning btn-sm w-100" disabled>
+                                                <i class="fas fa-clock me-1"></i> Menunggu Verifikasi
+                                            </button>
+                                        @elseif($item->status !== 'lunas')
+                                            <a href="{{ route('pembayaran.create', ['iuran_id' => $item->iuran->id, 'bulan_tahun' => $item->bulan_tahun]) }}" class="btn btn-emerald btn-sm w-100 text-white">
+                                                <i class="fas fa-wallet me-1"></i> Bayar Sekarang
+                                            </a>
+                                        @else
+                                            <button type="button" class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                                <i class="fas fa-check-circle me-1 text-emerald"></i> Sudah Lunas
+                                            </button>
+                                        @endif
+                                    </div>
                                 </div>
-                            </section>
+                            </div>
                         @empty
-                            <div class="alert alert-info mb-0">Tidak ada tagihan aktif saat ini.</div>
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">Tidak ada tagihan untuk periode ini.</div>
+                            </div>
                         @endforelse
                     </div>
-                </div>
-            </div>
+                </section>
+            @empty
+                <div class="alert alert-info mb-0">Tidak ada tagihan aktif saat ini.</div>
+            @endforelse
         </div>
     @endif
 
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0 text-white"><i class="fas fa-list"></i> Daftar Pembayaran</h5>
+    <div class="saas-card overflow-hidden">
+        <div class="card-header bg-white border-bottom p-3">
+            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-list text-emerald me-2"></i> Daftar Pembayaran</h6>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>No. Transaksi</th>
-                            @if(!Auth::user()->hasRole('warga'))
-                                <th>Warga</th>
+        <div class="table-responsive">
+            <table class="table-saas">
+                <thead>
+                    <tr>
+                        <th>No. Transaksi</th>
+                        @if(!Auth::user()->hasRole('warga'))
+                            <th>Warga</th>
+                        @endif
+                        <th>Jenis Iuran</th>
+                        <th>Tanggal Bayar</th>
+                        <th>Jumlah</th>
+                        <th>Metode</th>
+                        <th>Bukti Transfer</th>
+                        <th>Status</th>
+                        @if(!Auth::user()->hasRole('warga'))
+                            <th>Aksi</th>
+                        @endif
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($pembayaran as $item)
+                    <tr>
+                        <td>
+                            <strong class="text-dark font-monospace">{{ $item->no_transaksi }}</strong>
+                            <br>
+                            <small class="text-secondary">{{ $item->created_at->format('d/m/Y H:i') }}</small>
+                        </td>
+                        @if(!Auth::user()->hasRole('warga'))
+                            <td class="text-dark fw-medium">{{ $item->user->name }}</td>
+                        @endif
+                        <td class="text-dark">{{ $item->iuran->nama_iuran }}</td>
+                        <td class="text-secondary small">{{ date('d/m/Y', strtotime($item->tanggal_bayar)) }}</td>
+                        <td class="text-emerald fw-bold">Rp {{ number_format($item->jumlah_bayar, 0, ',', '.') }}</td>
+                        <td>
+                            @if($item->metode_bayar == 'tunai')
+                                <span class="badge-soft-info">Tunai</span>
+                            @elseif($item->metode_bayar == 'transfer')
+                                <span class="badge-soft-primary">Transfer</span>
+                            @elseif($item->metode_bayar == 'ewallet')
+                                <span class="badge-soft-warning">E-Wallet</span>
+                            @elseif($item->metode_bayar == 'qris')
+                                <span class="badge-soft-emerald">QRIS</span>
+                            @else
+                                <span class="badge-soft-secondary">{{ ucfirst($item->metode_bayar) }}</span>
                             @endif
-                            <th>Jenis Iuran</th>
-                            <th>Tanggal Bayar</th>
-                            <th>Jumlah</th>
-                            <th>Metode</th>
-                            <th>Bukti Transfer</th>
-                            <th>Status</th>
-                            @if(!Auth::user()->hasRole('warga'))
-                                <th>Aksi</th>
+                        </td>
+                        <td>
+                            @if($item->bukti_transfer)
+                                <a href="{{ asset('storage/' . $item->bukti_transfer) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-image text-emerald me-1"></i> Lihat
+                                </a>
+                            @else
+                                <span class="text-muted small">-</span>
                             @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pembayaran as $item)
-                        <tr>
-                            <td>
-                                <strong class="text-white">{{ $item->no_transaksi }}</strong>
-                                <br>
-                                <small class="text-secondary">{{ $item->created_at->format('d/m/Y H:i') }}</small>
-                            </td>
-                            @if(!Auth::user()->hasRole('warga'))
-                                <td class="text-white">{{ $item->user->name }}</td>
+                        </td>
+                        <td>
+                            @if($item->status == 'lunas')
+                                <span class="badge-soft-emerald">Lunas</span>
+                            @elseif($item->status == 'pending')
+                                <span class="badge-soft-warning">Menunggu Verifikasi</span>
+                            @else
+                                <span class="badge-soft-danger">Gagal</span>
                             @endif
-                            <td class="text-white">{{ $item->iuran->nama_iuran }}</td>
-                            <td class="text-white">{{ date('d/m/Y', strtotime($item->tanggal_bayar)) }}</td>
-                            <td class="text-success fw-bold">Rp {{ number_format($item->jumlah_bayar, 0, ',', '.') }}</td>
+                        </td>
+                        @if(!Auth::user()->hasRole('warga'))
                             <td>
-                                @if($item->metode_bayar == 'tunai')
-                                    <span class="badge bg-info">Tunai</span>
-                                @elseif($item->metode_bayar == 'transfer')
-                                    <span class="badge bg-primary">Transfer</span>
-                                @elseif($item->metode_bayar == 'ewallet')
-                                    <span class="badge bg-warning text-dark">E-Wallet</span>
-                                @elseif($item->metode_bayar == 'qris')
-                                    <span class="badge bg-success">QRIS</span>
-                                @else
-                                    <span class="badge bg-secondary">{{ ucfirst($item->metode_bayar) }}</span>
-                                @endif
+                                <div class="btn-group btn-group-sm" role="group">
+                                    @if($item->status == 'pending')
+                                        <form action="{{ route('pembayaran.verifikasi', $item->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-success" onclick="return confirm('Verifikasi pembayaran ini?')" title="Verifikasi">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <button onclick="confirmDelete('{{ route('pembayaran.destroy', $item->id) }}', 'pembayaran {{ $item->no_transaksi }}')" class="btn btn-outline-danger" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
-                            <td>
-                                @if($item->bukti_transfer)
-                                    <a href="{{ asset('storage/' . $item->bukti_transfer) }}" target="_blank" class="btn btn-sm btn-info">
-                                        <i class="fas fa-image"></i> Lihat
-                                    </a>
-                                @else
-                                    <span class="text-secondary">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($item->status == 'lunas')
-                                    <span class="badge bg-success">Lunas</span>
-                                @elseif($item->status == 'pending')
-                                    <span class="badge bg-warning">Menunggu Verifikasi</span>
-                                @else
-                                    <span class="badge bg-danger">Gagal</span>
-                                @endif
-                            </td>
-                            @if(!Auth::user()->hasRole('warga'))
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        @if($item->status == 'pending')
-                                            <form action="{{ route('pembayaran.verifikasi', $item->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Verifikasi pembayaran ini?')">
-                                                    <i class="fas fa-check"></i> Verifikasi
-                                                </button>
-                                            </form>
-                                        @endif
-                                        <button onclick="confirmDelete('{{ route('pembayaran.destroy', $item->id) }}', 'pembayaran {{ $item->no_transaksi }}')" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
+                        @endif
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="{{ Auth::user()->hasRole('warga') ? '8' : '9' }}" class="text-center py-5 text-secondary">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3 d-block opacity-50"></i>
+                            <p class="text-secondary mb-2">Belum ada data pembayaran</p>
+                            @if(Auth::user()->hasRole('warga'))
+                                <a href="{{ route('pembayaran.create') }}" class="btn btn-emerald text-white mt-1">
+                                    <i class="fas fa-plus-circle me-1"></i> Bayar Iuran Sekarang
+                                </a>
                             @endif
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="{{ Auth::user()->hasRole('warga') ? '8' : '9' }}" class="text-center py-5">
-                                <i class="fas fa-inbox fa-3x text-secondary mb-3 d-block"></i>
-                                <p class="text-secondary">Belum ada data pembayaran</p>
-                                @if(Auth::user()->hasRole('warga'))
-                                    <a href="{{ route('pembayaran.create') }}" class="btn btn-gradient mt-2">
-                                        <i class="fas fa-plus-circle"></i> Bayar Iuran Sekarang
-                                    </a>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<style>
-.card {
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(96, 165, 250, 0.1);
-}
-.card-header {
-    background: rgba(15, 23, 42, 0.5);
-    border-bottom: 1px solid rgba(96, 165, 250, 0.1);
-}
-.period-switcher {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-.period-btn {
-    background: rgba(15, 23, 42, 0.48);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    border-radius: 14px;
-    color: #cbd5e1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-height: 88px;
-    padding: 14px 16px;
-    text-align: left;
-    transition: all 0.2s ease;
-}
-.period-btn:hover {
-    border-color: rgba(96, 165, 250, 0.45);
-    color: #f1f5f9;
-}
-.period-btn.active {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.34), rgba(139, 92, 246, 0.28));
-    border-color: rgba(96, 165, 250, 0.6);
-    box-shadow: 0 10px 24px rgba(59, 130, 246, 0.16);
-    color: #f8fafc;
-}
-.period-title {
-    font-size: 1rem;
-    font-weight: 700;
-}
-.period-month {
-    color: #94a3b8;
-    font-size: 0.85rem;
-}
-.period-btn.active .period-month {
-    color: #dbeafe;
-}
-.period-count {
-    color: #fde68a;
-    font-size: 0.78rem;
-    font-weight: 700;
-}
-.tagihan-group {
-    border: 1px solid rgba(148, 163, 184, 0.14);
-    border-radius: 16px;
-    padding: 16px;
-    background: rgba(15, 23, 42, 0.22);
-}
-.period-panel {
-    display: none;
-}
-.period-panel.active {
-    display: block;
-}
-.tagihan-group-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-.tagihan-summary {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
-}
-.summary-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 6px 10px;
-}
-.summary-pill.paid {
-    background: rgba(34, 197, 94, 0.16);
-    color: #86efac;
-}
-.summary-pill.pending {
-    background: rgba(234, 179, 8, 0.16);
-    color: #fde68a;
-}
-.summary-pill.unpaid {
-    background: rgba(148, 163, 184, 0.16);
-    color: #cbd5e1;
-}
-.tagihan-card {
-    border-radius: 14px;
-}
-.table-dark {
-    background: transparent;
-}
-.table-dark th {
-    border-bottom-color: rgba(96, 165, 250, 0.2);
-    color: #94a3b8;
-    font-weight: 500;
-}
-.table-dark td {
-    border-bottom-color: rgba(96, 165, 250, 0.05);
-    color: #f1f5f9;
-}
-.btn-gradient {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    color: white;
-    border: none;
-    transition: all 0.3s;
-}
-.btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59,130,246,0.4);
-    color: white;
-}
-.text-white {
-    color: #f1f5f9 !important;
-}
-.text-white-50 {
-    color: rgba(255, 255, 255, 0.5) !important;
-}
-@media (max-width: 768px) {
-    .period-switcher {
-        grid-template-columns: 1fr;
-    }
-    .tagihan-group-header {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-    .tagihan-summary {
-        justify-content: flex-start;
-    }
-}
-</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -396,93 +246,25 @@
                 const targetPanel = document.getElementById(targetId);
 
                 periodButtons.forEach(function (item) {
-                    item.classList.remove('active');
+                    item.classList.remove('active', 'border-primary');
+                    item.style.backgroundColor = '#FAFCFA';
+                    item.style.border = '1px solid var(--border-color)';
                     item.setAttribute('aria-selected', 'false');
                 });
 
                 periodPanels.forEach(function (panel) {
-                    panel.classList.remove('active');
+                    panel.style.display = 'none';
                 });
 
-                button.classList.add('active');
+                button.classList.add('active', 'border-primary');
+                button.style.backgroundColor = '#F0FDF4';
+                button.style.border = '1.5px solid var(--primary-green)';
                 button.setAttribute('aria-selected', 'true');
 
                 if (targetPanel) {
-                    targetPanel.classList.add('active');
+                    targetPanel.style.display = 'block';
                 }
             });
-        });
-    });
-
-    function formatRupiah(value) {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(value);
-    }
-
-    function updatePaymentMethod(method) {
-        $('#bankInfo').toggleClass('d-none', method !== 'transfer');
-        $('#ewalletInfo').toggleClass('d-none', method !== 'ewallet');
-        $('#qrisInfo').toggleClass('d-none', method !== 'qris');
-
-        if (method === 'transfer' || method === 'ewallet' || method === 'qris') {
-            $('#buktiPembayaranDiv').show();
-            $('#modal_bukti_transfer').prop('required', true);
-        } else {
-            $('#buktiPembayaranDiv').hide();
-            $('#modal_bukti_transfer').prop('required', false);
-        }
-
-        if (method !== 'ewallet') {
-            $('#modal_ewallet_provider').val('');
-        }
-
-        if (method === 'qris') {
-            const iuranName = $('#modal_iuran_nama').text();
-            const amount = $('#modal_jumlah_bayar').val();
-            const period = $('#modal_bulan_tahun').val();
-            const qrData = `Pembayaran ${iuranName} - ${period} - Rp ${amount}`;
-            const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
-            $('#modal_qris_code').attr('src', qrSrc);
-        }
-    }
-
-    $(document).ready(function () {
-        $('.bayar-tagihan-btn').on('click', function () {
-            const button = $(this);
-            const iuranId = button.data('iuran-id');
-            const iuranNama = button.data('iuran-nama');
-            const iuranNominal = Number(button.data('iuran-nominal')) || 0;
-            const bulanTahun = button.data('bulan-tahun');
-
-            $('#modal_iuran_id').val(iuranId);
-            $('#modal_iuran_nama').text(iuranNama);
-            $('#modal_jumlah_text').text(formatRupiah(iuranNominal));
-            $('#modal_jumlah_bayar').val(iuranNominal);
-            $('#modal_bulan_tahun').text(bulanTahun);
-            $('#modal_bulan_tahun').val(bulanTahun);
-            $('#modal_metode_bayar').val('transfer');
-            updatePaymentMethod('transfer');
-            $('#modal_preview_bukti').html('');
-        });
-
-        $('#modal_metode_bayar').on('change', function () {
-            updatePaymentMethod($(this).val());
-        });
-
-        $('#modal_bukti_transfer').on('change', function () {
-            const file = this.files[0];
-            if (!file) {
-                $('#modal_preview_bukti').html('');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                $('#modal_preview_bukti').html(`<img src="${e.target.result}" class="img-fluid rounded" style="max-height: 180px;">`);
-            };
-            reader.readAsDataURL(file);
         });
     });
 </script>
