@@ -401,9 +401,7 @@
                     <div class="brand-panel">
                         <div>
                             <a href="{{ url('/') }}" class="brand-header">
-                                <div class="brand-logo-icon">
-                                    <i class="fas fa-layer-group"></i>
-                                </div>
+                                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART" width="42" height="42" class="rounded-3 shadow-sm bg-white p-1">
                                 <span>RW SMART</span>
                             </a>
                             

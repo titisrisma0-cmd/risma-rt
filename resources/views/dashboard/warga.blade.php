@@ -122,7 +122,7 @@
             <span class="badge badge-soft-primary">Akses Cepat</span>
         </div>
         <div class="row g-3">
-            <div class="col-6 col-md-4 col-xl-2">
+            <div class="col-6 col-md-4 col-xl">
                 <a href="{{ route('layanan.surat.index') }}" class="quick-service-card">
                     <div class="quick-service-icon bg-primary bg-opacity-10 text-primary">
                         <i class="fas fa-file-signature"></i>
@@ -131,7 +131,7 @@
                     <span class="quick-service-desc">Ajukan Surat</span>
                 </a>
             </div>
-            <div class="col-6 col-md-4 col-xl-2">
+            <div class="col-6 col-md-4 col-xl">
                 <a href="{{ route('pembayaran.index') }}" class="quick-service-card">
                     <div class="quick-service-icon bg-success bg-opacity-10 text-success">
                         <i class="fas fa-credit-card"></i>
@@ -140,7 +140,16 @@
                     <span class="quick-service-desc">Tagihan & Bayar</span>
                 </a>
             </div>
-            <div class="col-6 col-md-4 col-xl-2">
+            <div class="col-6 col-md-4 col-xl">
+                <a href="{{ route('layanan.ronda.index') }}" class="quick-service-card">
+                    <div class="quick-service-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <span class="quick-service-title">Ronda Malam</span>
+                    <span class="quick-service-desc">Jadwal & Presensi</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-xl">
                 <a href="{{ route('bank-sampah.index') }}" class="quick-service-card">
                     <div class="quick-service-icon bg-success bg-opacity-10 text-success">
                         <i class="fas fa-recycle"></i>
@@ -149,7 +158,7 @@
                     <span class="quick-service-desc">Tabungan Sampah</span>
                 </a>
             </div>
-            <div class="col-6 col-md-4 col-xl-2">
+            <div class="col-6 col-md-4 col-xl">
                 <a href="{{ route('layanan.umkm.index') }}" class="quick-service-card">
                     <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
                         <i class="fas fa-store"></i>
@@ -158,7 +167,7 @@
                     <span class="quick-service-desc">Pasar Tetangga</span>
                 </a>
             </div>
-            <div class="col-6 col-md-4 col-xl-2">
+            <div class="col-6 col-md-4 col-xl">
                 <a href="{{ route('layanan.posyandu.index') }}" class="quick-service-card">
                     <div class="quick-service-icon bg-danger bg-opacity-10 text-danger">
                         <i class="fas fa-baby"></i>
@@ -167,7 +176,7 @@
                     <span class="quick-service-desc">Tumbuh Kembang</span>
                 </a>
             </div>
-            <div class="col-6 col-md-4 col-xl-2">
+            <div class="col-6 col-md-4 col-xl">
                 <a href="{{ route('aspirasi.index') }}" class="quick-service-card">
                     <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
                         <i class="fas fa-bullhorn"></i>
@@ -178,6 +187,38 @@
             </div>
         </div>
     </div>
+
+    {{-- Widget Ronda Malam Warga --}}
+    @if(isset($rondaSayaTerdekat) && $rondaSayaTerdekat)
+        <div class="saas-card p-3 p-md-4 mb-4 border-start border-4 border-success">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon-wrapper stat-icon-green flex-shrink-0" style="width: 52px; height: 52px; font-size: 1.4rem;">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="fw-bold text-dark mb-0 fs-6">Jadwal Tugas Ronda Malam Anda</h6>
+                            <span class="badge badge-soft-success">Shift {{ ucfirst($rondaSayaTerdekat->shift) }}</span>
+                        </div>
+                        <div class="text-secondary small mt-1">
+                            <i class="fas fa-calendar-day me-1 text-success"></i>
+                            <strong>{{ \Carbon\Carbon::parse($rondaSayaTerdekat->tanggal)->isoFormat('dddd, D MMMM Y') }}</strong>
+                            <span class="mx-2">&bull;</span>
+                            <i class="fas fa-map-marker-alt me-1 text-success"></i>
+                            {{ $rondaSayaTerdekat->lokasi_pos ?? 'Pos Ronda RT' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ route('layanan.ronda.index') }}" class="btn btn-emerald text-white btn-sm px-3 shadow-xs">
+                        <i class="fas fa-calendar-check me-1"></i> Buka Modul Ronda
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- Dua Kolom: Permohonan Surat Saya & Pengumuman --}}
     <div class="row g-4">

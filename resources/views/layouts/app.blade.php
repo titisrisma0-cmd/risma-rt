@@ -59,10 +59,8 @@
 
         <!-- Sidebar Header / Brand -->
         <div class="sidebar-header">
-            <a href="{{ route('dashboard') }}" class="sidebar-brand-link">
-                <div class="sidebar-brand-icon">
-                    <i class="fas {{ $brandIcon }}"></i>
-                </div>
+            <a href="{{ route('dashboard') }}" class="sidebar-brand-link d-flex align-items-center gap-2">
+                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="34" height="34" class="flex-shrink-0">
                 <div class="sidebar-brand-text">
                     <span class="sidebar-brand-title">RW SMART</span>
                     <span class="sidebar-brand-badge">{{ $roleLabel }}</span>
@@ -612,7 +610,132 @@
             });
         }
 
-        // Generic SweetAlert Delete confirmation
+        // =========================================================================
+        // MODERN TOAST & CONFIRMATION MODALS (REPLACING BROWSER ALERTS/CONFIRMS)
+        // =========================================================================
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        window.showToast = function(message, type = 'success') {
+            Toast.fire({
+                icon: type,
+                title: message
+            });
+        };
+
+        // Automatic flash message toasts from Laravel Session
+        @if(session('success'))
+            window.showToast(@json(session('success')), 'success');
+        @endif
+        @if(session('error'))
+            window.showToast(@json(session('error')), 'error');
+        @endif
+        @if(session('warning'))
+            window.showToast(@json(session('warning')), 'warning');
+        @endif
+        @if(session('info'))
+            window.showToast(@json(session('info')), 'info');
+        @endif
+
+        // Safe graceful override of native browser window.alert
+        window.alert = function (message) {
+            Swal.fire({
+                title: 'Informasi',
+                text: message,
+                icon: 'info',
+                confirmButtonColor: '#147A45',
+                confirmButtonText: 'Mengerti',
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0',
+                    confirmButton: 'btn btn-emerald text-white rounded-pill px-4 py-2 font-weight-semibold'
+                }
+            });
+        };
+
+        // Universal data-confirm handler for buttons and forms
+        document.addEventListener('click', function (e) {
+            const trigger = e.target.closest('[data-confirm]');
+            if (!trigger) return;
+
+            e.preventDefault();
+            const message = trigger.getAttribute('data-confirm') || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+            const title = trigger.getAttribute('data-confirm-title') || 'Konfirmasi Tindakan';
+            const btnText = trigger.getAttribute('data-confirm-btn') || 'Ya, Lanjutkan';
+            const isDanger = trigger.classList.contains('btn-danger') || trigger.classList.contains('btn-outline-danger') || trigger.classList.contains('text-danger') || /hapus|keluarkan|batalkan|tolak/i.test(message);
+            const confirmColor = isDanger ? '#E65353' : '#147A45';
+            const icon = isDanger ? 'warning' : 'question';
+
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: icon,
+                showCancelButton: true,
+                confirmButtonColor: confirmColor,
+                cancelButtonColor: '#758078',
+                confirmButtonText: btnText,
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0',
+                    confirmButton: 'btn rounded-pill px-4 py-2 font-weight-semibold shadow-xs',
+                    cancelButton: 'btn btn-light rounded-pill px-4 py-2 font-weight-semibold shadow-xs'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = trigger.closest('form');
+                    if (form) {
+                        form.submit();
+                    } else if (trigger.tagName === 'A' && trigger.href) {
+                        window.location.href = trigger.href;
+                    }
+                }
+            });
+        }, true);
+
+        // Intercept forms with data-confirm
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (form.hasAttribute('data-confirm') && !form.dataset.confirmed) {
+                e.preventDefault();
+                const message = form.getAttribute('data-confirm');
+                const title = form.getAttribute('data-confirm-title') || 'Konfirmasi Tindakan';
+                const btnText = form.getAttribute('data-confirm-btn') || 'Ya, Lanjutkan';
+                const isDanger = /hapus|keluarkan|batalkan|tolak/i.test(message);
+
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: isDanger ? 'warning' : 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: isDanger ? '#E65353' : '#147A45',
+                    cancelButtonColor: '#758078',
+                    confirmButtonText: btnText,
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-4 shadow-lg border-0',
+                        confirmButton: 'btn rounded-pill px-4 py-2 font-weight-semibold shadow-xs',
+                        cancelButton: 'btn btn-light rounded-pill px-4 py-2 font-weight-semibold shadow-xs'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.dataset.confirmed = 'true';
+                        form.submit();
+                    }
+                });
+            }
+        });
+
+        // Generic SweetAlert Delete confirmation helper
         function confirmDelete(url, name) {
             Swal.fire({
                 title: 'Konfirmasi Hapus',
@@ -622,7 +745,11 @@
                 confirmButtonColor: '#E65353',
                 cancelButtonColor: '#758078',
                 confirmButtonText: 'Ya, Hapus',
-                cancelButtonText: 'Batal'
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     const form = document.createElement('form');

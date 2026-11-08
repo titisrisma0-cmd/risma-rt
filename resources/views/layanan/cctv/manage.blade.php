@@ -171,7 +171,7 @@
                                         <i class="fas fa-power-off"></i>
                                     </button>
                                 </form>
-                                <form method="POST" class="d-inline" action="{{ route('layanan.ronda.cctv.cameras.destroy', $camera) }}" onsubmit="return confirm('Hapus kamera beserta arsip demonya?')">
+                                <form method="POST" class="d-inline" action="{{ route('layanan.ronda.cctv.cameras.destroy', $camera) }}" data-confirm="Hapus kamera beserta arsip demonya?" data-confirm-title="Hapus Kamera CCTV" data-confirm-btn="Ya, Hapus">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-outline-saas btn-sm text-danger" title="Hapus">

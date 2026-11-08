@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Keamanan & Ronda RT')
+@section('title', 'Keamanan & Ronda Lingkungan RT')
 
 @php
+    $user = Auth::user();
     $absensiStats = $wargas->map(function ($warga) use ($jadwals) {
         $absensi = $jadwals->flatMap(fn ($jadwal) => $jadwal->absensi)->where('user_id', $warga->id);
 
@@ -14,8 +15,9 @@
         ];
     })->sortByDesc('hadir')->values();
 
-    $jadwalSaya = $jadwals->filter(fn ($j) => $j->petugas->contains('user_id', Auth::id()))->values();
-    $activePanics = $panicReports->where('status', 'aktif');
+    $jadwalSaya = $jadwals->filter(fn ($j) => $j->petugas->contains('user_id', $user->id))->values();
+    $upcomingJadwalSaya = $jadwalSaya->where('tanggal', '>=', now()->startOfDay())->sortBy('tanggal')->first();
+    $activePanics = $panicReports->whereIn('status', ['aktif', 'baru']);
 @endphp
 
 @section('content')
@@ -31,12 +33,12 @@
                 </ol>
             </nav>
             <h1 class="page-title">
-                <i class="fas fa-shield-halved text-success me-2"></i>Keamanan & Ronda RT
+                <i class="fas fa-shield-halved text-success me-2"></i>Keamanan & Siskamling RT
                 @if(isset($myRtId) && $isRt)
                     <span class="badge badge-soft-success fs-6 ms-1">RT {{ str_pad($myRtId, 2, '0', STR_PAD_LEFT) }}</span>
                 @endif
             </h1>
-            <p class="page-subtitle">Jadwal ronda malam, pertukaran giliran tugas, rekap absensi kehadiran, dan sistem tanggap darurat warga.</p>
+            <p class="page-subtitle">Pusat tata kelola jadwal siskamling malam, kalender regu ronda, presensi digital, dan penanganan darurat warga.</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
             @if($isPengurus)
@@ -44,14 +46,22 @@
                     <i class="fas fa-calendar-plus me-1"></i>Buat Jadwal Ronda
                 </button>
                 <button class="btn btn-outline-saas" data-bs-toggle="modal" data-bs-target="#modalAbsensiRonda">
-                    <i class="fas fa-user-check me-1"></i>Catat Absensi
+                    <i class="fas fa-user-check me-1"></i>Catat Presensi
                 </button>
                 <a href="{{ route('layanan.ronda.cctv.live') }}" class="btn btn-outline-saas text-danger border-danger">
                     <i class="fas fa-video me-1"></i>Live CCTV
                 </a>
             @else
+                @if($upcomingJadwalSaya)
+                    <button class="btn btn-saas-primary" data-bs-toggle="modal" data-bs-target="#modalCheckinSaya">
+                        <i class="fas fa-fingerprint me-1"></i>Presensi Hadir
+                    </button>
+                    <button class="btn btn-outline-saas text-secondary" data-bs-toggle="modal" data-bs-target="#modalIzinSaya">
+                        <i class="fas fa-envelope-open-text me-1"></i>Ajukan Izin
+                    </button>
+                @endif
                 <button class="btn btn-outline-saas text-warning border-warning" data-bs-toggle="modal" data-bs-target="#modalTukarJadwal">
-                    <i class="fas fa-repeat me-1"></i>Ajukan Tukar Jadwal
+                    <i class="fas fa-repeat me-1"></i>Ajukan Tukar Shift
                 </button>
             @endif
             <a href="{{ route('dashboard') }}" class="btn btn-outline-saas">
@@ -82,21 +92,31 @@
                     <i class="fas fa-triangle-exclamation fa-beat"></i>
                 </div>
                 <div>
-                    <h5 class="text-danger fw-bold mb-0">PERINGATAN DARURAT AKTIF ({{ $activePanics->count() }} Laporan)</h5>
+                    <h5 class="text-danger fw-bold mb-0">PERINGATAN DARURAT AKTIF ({{ $activePanics->count() }} Laporan Masuk)</h5>
                     <p class="text-muted small mb-0">
-                        {{ $activePanics->first()->user->name ?? 'Warga' }}: {{ $activePanics->first()->deskripsi ?: 'Segera koordinasi ke lokasi!' }} ({{ $activePanics->first()->created_at->diffForHumans() }})
+                        {{ $activePanics->first()->user->name ?? 'Warga' }}: {{ $activePanics->first()->deskripsi ?: 'Segera koordinasi tanggap darurat ke lokasi!' }} ({{ $activePanics->first()->created_at->diffForHumans() }})
                     </p>
                 </div>
             </div>
             @if($isPengurus)
-                <form method="POST" action="{{ route('ronda.panic.status', $activePanics->first()) }}" class="d-inline">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="sedang_ditangani">
-                    <button type="submit" class="btn btn-danger btn-sm fw-semibold shadow-sm">
-                        <i class="fas fa-person-running me-1"></i>Tandai Ditangani
-                    </button>
-                </form>
+                <div class="d-flex gap-2">
+                    <form method="POST" action="{{ route('ronda.panic.status', $activePanics->first()) }}" class="d-inline">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="sedang_ditangani">
+                        <button type="submit" class="btn btn-danger btn-sm fw-semibold shadow-sm">
+                            <i class="fas fa-person-running me-1"></i>Tandai Ditangani
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('ronda.panic.status', $activePanics->first()) }}" class="d-inline">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="selesai">
+                        <button type="submit" class="btn btn-success btn-sm fw-semibold shadow-sm">
+                            <i class="fas fa-check me-1"></i>Selesai
+                        </button>
+                    </form>
+                </div>
             @endif
         </div>
     @endif
@@ -111,7 +131,7 @@
                 <div class="stat-info">
                     <span class="stat-label">Total Jadwal Shift</span>
                     <h3 class="stat-value">{{ $jadwals->count() }}</h3>
-                    <span class="stat-desc">Shift terdaftar di sistem</span>
+                    <span class="stat-desc">Shift terdata di sistem</span>
                 </div>
             </div>
         </div>
@@ -123,7 +143,7 @@
                 <div class="stat-info">
                     <span class="stat-label">Jadwal Tugas Saya</span>
                     <h3 class="stat-value">{{ $jadwalSaya->count() }}</h3>
-                    <span class="stat-desc">Giliran penugasan pribadi</span>
+                    <span class="stat-desc">{{ $upcomingJadwalSaya ? 'Tugas terdekat: ' . $upcomingJadwalSaya->tanggal->format('d/m') : 'Belum ada giliran' }}</span>
                 </div>
             </div>
         </div>
@@ -133,9 +153,9 @@
                     <i class="fas fa-repeat"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-label">Pengajuan Tukar</span>
+                    <span class="stat-label">Tukar Shift</span>
                     <h3 class="stat-value">{{ $tukarJadwals->where('status', 'menunggu')->count() }}</h3>
-                    <span class="stat-desc">Menunggu persetujuan RT</span>
+                    <span class="stat-desc">Menunggu persetujuan</span>
                 </div>
             </div>
         </div>
@@ -147,23 +167,57 @@
                 <div class="stat-info">
                     <span class="stat-label">Kontak Darurat</span>
                     <h3 class="stat-value">{{ $kontaks->count() }}</h3>
-                    <span class="stat-desc">Nomor tanggap darurat</span>
+                    <span class="stat-desc">Nomor siaga tanggap darurat</span>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- BANNER TUGAS SAYA (UNTUK WARGA) --}}
+    @if(!$isPengurus && $upcomingJadwalSaya)
+        <div class="saas-card mb-4 border border-success border-opacity-25 bg-white p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon-wrapper bg-success-soft text-success p-3 rounded-circle">
+                        <i class="fas fa-user-clock fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="badge badge-soft-success mb-1">JADWAL TUGAS BERIKUTNYA</div>
+                        <h5 class="fw-bold text-dark mb-1">{{ $upcomingJadwalSaya->tanggal->isoFormat('dddd, D MMMM Y') }} — Shift {{ $upcomingJadwalSaya->shift }}</h5>
+                        <p class="text-secondary small mb-0">
+                            <i class="fas fa-location-dot text-danger me-1"></i>{{ $upcomingJadwalSaya->lokasi_pos }} • 
+                            <i class="fas fa-users text-primary ms-2 me-1"></i>Rekan Regu: {{ $upcomingJadwalSaya->petugas->where('user_id', '!=', $user->id)->pluck('user.name')->join(', ') ?: 'Bertugas Tunggal' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-saas-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCheckinSaya">
+                        <i class="fas fa-fingerprint me-1"></i> Konfirmasi Hadir
+                    </button>
+                    <button class="btn btn-outline-saas btn-sm text-secondary" data-bs-toggle="modal" data-bs-target="#modalIzinSaya">
+                        <i class="fas fa-envelope-open-text me-1"></i> Izin Tidak Hadir
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- TABS NAVIGATION --}}
     <div class="saas-card mb-4 p-2">
         <ul class="nav nav-tabs-saas" role="tablist">
             <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-jadwal" type="button">
-                    <i class="fas fa-calendar-alt me-1"></i>Jadwal Penugasan
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kalender" type="button">
+                    <i class="fas fa-calendar-alt me-1"></i>Kalender Regu Ronda
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jadwal" type="button">
+                    <i class="fas fa-list-check me-1"></i>Daftar Jadwal Shift
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-tukar" type="button">
-                    <i class="fas fa-repeat me-1"></i>Pertukaran Jadwal
+                    <i class="fas fa-repeat me-1"></i>Pertukaran Shift
                     @if($tukarJadwals->where('status', 'menunggu')->count() > 0)
                         <span class="badge badge-soft-warning ms-1">{{ $tukarJadwals->where('status', 'menunggu')->count() }}</span>
                     @endif
@@ -171,7 +225,7 @@
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-absensi" type="button">
-                    <i class="fas fa-chart-simple me-1"></i>Rekap Kehadiran
+                    <i class="fas fa-chart-simple me-1"></i>Rekap Presensi
                 </button>
             </li>
             <li class="nav-item">
@@ -192,43 +246,52 @@
 
     {{-- TABS CONTENT --}}
     <div class="tab-content">
-        {{-- TAB 1: JADWAL RONDA --}}
-        <div class="tab-pane fade show active" id="tab-jadwal">
-            @if(!$isPengurus && $jadwalSaya->count() > 0)
-                <div class="saas-card mb-4 border border-primary border-opacity-25">
-                    <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
-                        <h6 class="mb-0 fw-bold text-primary">
-                            <i class="fas fa-user-shield me-2"></i>Jadwal Ronda Saya Bulan Ini
-                        </h6>
-                        <span class="badge badge-soft-primary">{{ $jadwalSaya->count() }} Giliran Tugas</span>
+        {{-- ==================== TAB 0: KALENDER INTERAKTIF ==================== --}}
+        <div class="tab-pane fade show active" id="tab-kalender">
+            <div class="saas-card p-4 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1"><i class="fas fa-calendar-days text-success me-2"></i>Kalender Jadwal Siskamling</h5>
+                        <p class="text-secondary small mb-0">Klik tanggal untuk melihat daftar petugas regu yang bertugas.</p>
                     </div>
-                    <div class="card-body p-4">
-                        <div class="row g-3">
-                            @foreach($jadwalSaya as $myJ)
-                                <div class="col-md-6 col-lg-4">
-                                    <div class="p-3 border rounded-3 bg-light">
-                                        <div class="fw-bold text-dark">{{ $myJ->tanggal->isoFormat('dddd, D MMMM Y') }}</div>
-                                        <small class="text-secondary d-block mt-1">
-                                            <i class="fas fa-clock text-muted me-1"></i>{{ $myJ->shift }} • <i class="fas fa-location-dot text-muted ms-1 me-1"></i>{{ $myJ->lokasi_pos }}
-                                        </small>
-                                        <div class="mt-2 pt-2 border-top">
-                                            <span class="badge badge-soft-secondary">
-                                                Rekan: {{ $myJ->petugas->where('user_id', '!=', Auth::id())->pluck('user.name')->join(', ') ?: 'Bertugas Tunggal' }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-saas btn-sm" id="calPrevBtn"><i class="fas fa-chevron-left"></i></button>
+                        <h6 class="fw-bold text-dark mb-0 px-2" id="calCurrentMonthTitle">Bulan Ini</h6>
+                        <button class="btn btn-outline-saas btn-sm" id="calNextBtn"><i class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
-            @endif
 
+                {{-- Interactive Calendar Grid --}}
+                <div class="calendar-wrapper">
+                    <div class="calendar-header-row mb-2">
+                        <div class="cal-day-header text-danger">Min</div>
+                        <div class="cal-day-header">Sen</div>
+                        <div class="cal-day-header">Sel</div>
+                        <div class="cal-day-header">Rab</div>
+                        <div class="cal-day-header">Kam</div>
+                        <div class="cal-day-header">Jum</div>
+                        <div class="cal-day-header text-primary">Sab</div>
+                    </div>
+                    <div class="calendar-days-grid" id="calendarDaysGrid">
+                        {{-- Injected dynamically by JS based on actual $jadwals data --}}
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-3 pt-3 border-top small text-secondary">
+                    <span class="d-flex align-items-center gap-1"><span class="badge badge-soft-success p-1">●</span> Jadwal Ronda Regu</span>
+                    <span class="d-flex align-items-center gap-1"><span class="badge badge-soft-primary p-1">●</span> Jadwal Tugas Saya</span>
+                    <span class="d-flex align-items-center gap-1"><span class="badge badge-soft-secondary p-1">●</span> Hari Ini</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- ==================== TAB 1: DAFTAR JADWAL SHIFT ==================== --}}
+        <div class="tab-pane fade" id="tab-jadwal">
             <div class="saas-card">
                 <div class="card-header bg-white py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom">
                     <div>
                         <h6 class="mb-0 fw-bold text-dark">
-                            <i class="fas fa-calendar-check text-success me-2"></i>Daftar Jadwal Penugasan Ronda Malam RT
+                            <i class="fas fa-calendar-check text-success me-2"></i>Daftar Penugasan Ronda Malam RT
                         </h6>
                     </div>
                     <span class="badge badge-soft-secondary">{{ $jadwals->count() }} Shift Terjadwal</span>
@@ -237,21 +300,26 @@
                     <table class="table table-saas align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>Tanggal</th>
+                                <th>Tanggal & Waktu</th>
                                 <th>Shift & Pos</th>
-                                <th>Petugas Ronda Warga</th>
-                                <th>Status Absensi</th>
-                                @if($isPengurus)
-                                    <th class="text-end">Aksi Pengurus</th>
-                                @endif
+                                <th>Petugas Regu Warga</th>
+                                <th>Presensi Kehadiran</th>
+                                <th class="text-end">Aksi Tindakan</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($jadwals as $j)
+                                @php
+                                    $isMyJadwal = $j->petugas->contains('user_id', $user->id);
+                                    $myAbsen = $j->absensi->where('user_id', $user->id)->first();
+                                @endphp
                                 <tr>
                                     <td>
                                         <div class="fw-semibold text-dark">{{ $j->tanggal->isoFormat('dddd, D MMMM Y') }}</div>
-                                        <small class="text-muted">{{ $j->tanggal->isToday() ? 'Malam Ini' : $j->tanggal->diffForHumans() }}</small>
+                                        <small class="text-muted">{{ $j->tanggal->isToday() ? 'Hari Ini / Malam Ini' : $j->tanggal->diffForHumans() }}</small>
+                                        @if($isMyJadwal)
+                                            <span class="badge badge-soft-primary ms-1 small">Tugas Saya</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <span class="badge badge-soft-info">{{ ucfirst($j->shift) }}</span>
@@ -261,7 +329,9 @@
                                         @if($j->petugas->count() > 0)
                                             <div class="d-flex flex-wrap gap-1">
                                                 @foreach($j->petugas as $p)
-                                                    <span class="badge badge-soft-secondary">{{ $p->user->name ?? 'Warga' }}</span>
+                                                    <span class="badge {{ $p->user_id === $user->id ? 'badge-soft-success fw-bold' : 'badge-soft-secondary' }}">
+                                                        {{ $p->user->name ?? 'Warga' }}
+                                                    </span>
                                                 @endforeach
                                             </div>
                                         @else
@@ -275,35 +345,57 @@
                                             <span class="badge badge-soft-danger">{{ $j->absensi->where('status', 'alpa')->count() }} Alpa</span>
                                         </div>
                                     </td>
-                                    @if($isPengurus)
-                                        <td class="text-end">
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-saas btn-sm text-info" data-bs-toggle="modal" data-bs-target="#modalAbsensiRonda" data-jadwal="{{ $j->id }}" title="Catat Absensi">
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            @if($isPengurus)
+                                                {{-- Tombol Pengingat Regu Terpadu --}}
+                                                <form method="POST" action="{{ route('ronda.jadwal.ingatkan', $j) }}" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-saas btn-sm text-primary" title="Kirim Pengingat Regu ke Seluruh Petugas" data-confirm="Kirimkan notifikasi pengingat ronda kepada seluruh anggota regu ini?">
+                                                        <i class="fas fa-paper-plane me-1"></i>Ingatkan
+                                                    </button>
+                                                </form>
+                                                <button class="btn btn-outline-saas btn-sm text-info" data-bs-toggle="modal" data-bs-target="#modalAbsensiRonda" data-jadwal="{{ $j->id }}" title="Catat Presensi">
                                                     <i class="fas fa-check-double me-1"></i>Absen
                                                 </button>
                                                 <button class="btn btn-outline-saas btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditJadwalRonda{{ $j->id }}" title="Edit Jadwal">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <form method="POST" action="{{ route('ronda.jadwal.destroy', $j) }}" class="d-inline" onsubmit="return confirm('Hapus jadwal ronda shift ini?');">
+                                                <form method="POST" action="{{ route('ronda.jadwal.destroy', $j) }}" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-outline-saas btn-sm text-danger" title="Hapus">
+                                                    <button type="submit" class="btn btn-outline-saas btn-sm text-danger" title="Hapus Jadwal" data-confirm="Hapus jadwal ronda shift tanggal {{ $j->tanggal->format('d/m/Y') }}?">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
-                                            </div>
-                                        </td>
-                                    @endif
+                                            @else
+                                                @if($isMyJadwal)
+                                                    @if(!$myAbsen || $myAbsen->status !== 'hadir')
+                                                        <form method="POST" action="{{ route('ronda.absensi.store') }}" class="d-inline">
+                                                            @csrf
+                                                            <input type="hidden" name="jadwal_ronda_id" value="{{ $j->id }}">
+                                                            <input type="hidden" name="status" value="hadir">
+                                                            <button type="submit" class="btn btn-saas-primary btn-sm">
+                                                                <i class="fas fa-check me-1"></i>Absen Hadir
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <span class="badge badge-soft-success py-2"><i class="fas fa-check-circle me-1"></i>Telah Hadir</span>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted small">Bukan giliran tugas</span>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $isPengurus ? 5 : 4 }}" class="text-center py-5">
+                                    <td colspan="5" class="text-center py-5">
                                         <div class="empty-state">
-                                            <div class="empty-state-icon">
-                                                <i class="fas fa-shield-halved"></i>
-                                            </div>
+                                            <div class="empty-state-icon"><i class="fas fa-shield-halved"></i></div>
                                             <h6 class="empty-state-title">Belum Ada Jadwal Ronda</h6>
-                                            <p class="empty-state-desc">Belum ada jadwal ronda aktif di wilayah ini.</p>
+                                            <p class="empty-state-desc">Belum ada penugasan siskamling aktif di wilayah RT ini.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -314,7 +406,7 @@
             </div>
         </div>
 
-        {{-- TAB 2: TUKAR JADWAL --}}
+        {{-- ==================== TAB 2: PERTUKARAN SHIFT ==================== --}}
         <div class="tab-pane fade" id="tab-tukar">
             <div class="saas-card mb-4">
                 <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
@@ -331,10 +423,10 @@
                             <tr>
                                 <th>Pemohon</th>
                                 <th>Jadwal Asal</th>
-                                <th>Jadwal / Warga Pengganti</th>
+                                <th>Jadwal / Pengganti</th>
                                 <th>Alasan</th>
-                                <th>Status</th>
-                                <th class="text-end">Aksi</th>
+                                <th>Status Persetujuan</th>
+                                <th class="text-end">Aksi Keputusan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -352,12 +444,12 @@
                                         @if($tj->targetJadwalRonda)
                                             <div>{{ $tj->targetJadwalRonda->tanggal->format('d/m/Y') }} ({{ $tj->targetJadwalRonda->shift }})</div>
                                         @endif
-                                        <small class="text-muted">Target: {{ $tj->targetUser->name ?? 'Belum ditentukan' }}</small>
+                                        <small class="text-muted">Target: {{ $tj->targetUser->name ?? 'Bebas / Ditentukan RT' }}</small>
                                     </td>
                                     <td class="small text-muted">{{ $tj->alasan }}</td>
                                     <td>
                                         @if($tj->status === 'disetujui')
-                                            <span class="badge badge-soft-success">Disetujui</span>
+                                            <span class="badge badge-soft-success">Disetujui RT</span>
                                         @elseif($tj->status === 'ditolak')
                                             <span class="badge badge-soft-danger">Ditolak</span>
                                         @else
@@ -369,6 +461,10 @@
                                             <button class="btn btn-outline-saas btn-sm text-success" data-bs-toggle="modal" data-bs-target="#modalResponTukar{{ $tj->id }}">
                                                 <i class="fas fa-gavel me-1"></i>Putuskan RT
                                             </button>
+                                        @elseif((int) $tj->target_user_id === (int) $user->id && $tj->status === 'menunggu')
+                                            <button class="btn btn-saas-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalResponTukar{{ $tj->id }}">
+                                                <i class="fas fa-check me-1"></i>Respon Warga
+                                            </button>
                                         @endif
                                     </td>
                                 </tr>
@@ -376,9 +472,7 @@
                                 <tr>
                                     <td colspan="6" class="text-center py-5">
                                         <div class="empty-state">
-                                            <div class="empty-state-icon">
-                                                <i class="fas fa-repeat"></i>
-                                            </div>
+                                            <div class="empty-state-icon"><i class="fas fa-repeat"></i></div>
                                             <h6 class="empty-state-title">Belum Ada Pengajuan Tukar</h6>
                                             <p class="empty-state-desc">Belum ada pengajuan pertukaran jadwal ronda tercatat.</p>
                                         </div>
@@ -391,7 +485,7 @@
             </div>
         </div>
 
-        {{-- TAB 3: REKAP ABSENSI --}}
+        {{-- ==================== TAB 3: REKAP PRESENSI ==================== --}}
         <div class="tab-pane fade" id="tab-absensi">
             <div class="saas-card mb-4">
                 <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
@@ -400,7 +494,7 @@
                     </h6>
                     @if($isPengurus)
                         <button class="btn btn-outline-saas btn-sm text-info border-info" data-bs-toggle="modal" data-bs-target="#modalAbsensiRonda">
-                            <i class="fas fa-plus me-1"></i>Input Absensi
+                            <i class="fas fa-plus me-1"></i>Input Presensi Manual
                         </button>
                     @endif
                 </div>
@@ -429,7 +523,7 @@
                                         @if($stat['hadir'] >= 3)
                                             <span class="badge badge-soft-success"><i class="fas fa-star me-1"></i>Sangat Aktif</span>
                                         @elseif($stat['alpa'] > $stat['hadir'])
-                                            <span class="badge badge-soft-danger">Perlu Ditegur</span>
+                                            <span class="badge badge-soft-danger">Perlu Perhatian</span>
                                         @else
                                             <span class="badge badge-soft-secondary">Cukup</span>
                                         @endif
@@ -439,10 +533,8 @@
                                 <tr>
                                     <td colspan="5" class="text-center py-5">
                                         <div class="empty-state">
-                                            <div class="empty-state-icon">
-                                                <i class="fas fa-chart-simple"></i>
-                                            </div>
-                                            <h6 class="empty-state-title">Belum Ada Rekap Absensi</h6>
+                                            <div class="empty-state-icon"><i class="fas fa-chart-simple"></i></div>
+                                            <h6 class="empty-state-title">Belum Ada Rekap Presensi</h6>
                                             <p class="empty-state-desc">Belum ada data absensi ronda warga yang tercatat.</p>
                                         </div>
                                     </td>
@@ -454,7 +546,7 @@
             </div>
         </div>
 
-        {{-- TAB 4: LAPORAN DARURAT & PANIC BUTTON --}}
+        {{-- ==================== TAB 4: LAPORAN DARURAT & PANIC BUTTON ==================== --}}
         <div class="tab-pane fade" id="tab-darurat">
             <div class="saas-card mb-4">
                 <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
@@ -467,11 +559,11 @@
                     <table class="table table-saas align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>Waktu</th>
+                                <th>Waktu Kejadian</th>
                                 <th>Pelapor</th>
-                                <th>Lokasi Kejadian</th>
+                                <th>Lokasi / Patokan</th>
                                 <th>Keterangan / Laporan</th>
-                                <th>Status</th>
+                                <th>Status Penanganan</th>
                                 @if($isPengurus)
                                     <th class="text-end">Tindak Lanjut RT</th>
                                 @endif
@@ -486,37 +578,61 @@
                                     </td>
                                     <td>
                                         <div class="fw-semibold text-dark">{{ $pr->user->name ?? 'Warga' }}</div>
-                                        <small class="text-muted">{{ $pr->user->profile?->telepon ?? '-' }}</small>
+                                        <small class="text-muted"><i class="fas fa-phone me-1"></i>{{ $pr->user->profile?->no_hp ?? '-' }}</small>
                                     </td>
                                     <td>{{ $pr->lokasi ?: 'Wilayah RT' }}</td>
-                                    <td>{{ $pr->deskripsi ?: 'Laporan bahaya / darurat' }}</td>
+                                    <td>{{ $pr->deskripsi ?: 'Panggilan bahaya / darurat lingkungan' }}</td>
                                     <td>
-                                        @if($pr->status === 'aktif')
-                                            <span class="badge badge-soft-danger fa-beat">🚨 Aktif</span>
-                                        @elseif($pr->status === 'sedang_ditangani')
-                                            <span class="badge badge-soft-warning">Sedang Ditangani</span>
+                                        @if(in_array($pr->status, ['aktif', 'baru']))
+                                            <span class="badge badge-soft-danger fa-beat">🚨 Baru / Aktif</span>
+                                        @elseif(in_array($pr->status, ['sedang_ditangani', 'ditangani']))
+                                            <span class="badge badge-soft-warning"><i class="fas fa-person-running me-1"></i>Sedang Ditangani</span>
+                                        @elseif($pr->status === 'selesai')
+                                            <span class="badge badge-soft-success"><i class="fas fa-check-circle me-1"></i>Selesai</span>
+                                        @elseif($pr->status === 'false_alarm' || $pr->status === 'ditolak')
+                                            <span class="badge badge-soft-danger"><i class="fas fa-ban me-1"></i>False Alarm</span>
+                                        @elseif($pr->status === 'diarsipkan')
+                                            <span class="badge badge-soft-secondary"><i class="fas fa-box-archive me-1"></i>Diarsipkan</span>
                                         @else
-                                            <span class="badge badge-soft-success">Selesai Ditangani</span>
+                                            <span class="badge badge-soft-secondary">{{ ucfirst($pr->status) }}</span>
                                         @endif
                                     </td>
                                     @if($isPengurus)
                                         <td class="text-end">
-                                            @if($pr->status !== 'selesai')
-                                                <form method="POST" action="{{ route('ronda.panic.status', $pr) }}" class="d-inline">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    @if($pr->status === 'aktif')
-                                                        <button type="submit" name="status" value="sedang_ditangani" class="btn btn-outline-saas btn-sm text-warning border-warning">
+                                            <div class="btn-group btn-group-sm">
+                                                @if(in_array($pr->status, ['aktif', 'baru']))
+                                                    <form method="POST" action="{{ route('ronda.panic.status', $pr) }}" class="d-inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" value="sedang_ditangani">
+                                                        <button type="submit" class="btn btn-outline-saas btn-sm text-warning border-warning" title="Mulai Tangani">
                                                             <i class="fas fa-person-running me-1"></i>Tangani
                                                         </button>
-                                                    @endif
-                                                    <button type="submit" name="status" value="selesai" class="btn btn-saas-primary btn-sm" onclick="return confirm('Tandai laporan darurat ini selesai dan aman?');">
-                                                        <i class="fas fa-check me-1"></i>Selesai
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <span class="small text-muted"><i class="fas fa-circle-check text-success me-1"></i>Ditutup ({{ $pr->handler?->name ?? 'RT' }})</span>
-                                            @endif
+                                                    </form>
+                                                @endif
+
+                                                @if($pr->status !== 'selesai' && $pr->status !== 'diarsipkan')
+                                                    <form method="POST" action="{{ route('ronda.panic.status', $pr) }}" class="d-inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" value="selesai">
+                                                        <button type="submit" class="btn btn-saas-primary btn-sm" data-confirm="Tandai laporan darurat ini telah selesai dan wilayah telah aman?">
+                                                            <i class="fas fa-check me-1"></i>Selesai
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                @if($pr->status === 'selesai')
+                                                    <form method="POST" action="{{ route('ronda.panic.status', $pr) }}" class="d-inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="status" value="diarsipkan">
+                                                        <button type="submit" class="btn btn-outline-saas btn-sm text-secondary" title="Arsipkan Laporan">
+                                                            <i class="fas fa-box-archive me-1"></i>Tutup / Arsipkan
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     @endif
                                 </tr>
@@ -524,11 +640,9 @@
                                 <tr>
                                     <td colspan="{{ $isPengurus ? 6 : 5 }}" class="text-center py-5">
                                         <div class="empty-state">
-                                            <div class="empty-state-icon">
-                                                <i class="fas fa-bell"></i>
-                                            </div>
+                                            <div class="empty-state-icon"><i class="fas fa-bell"></i></div>
                                             <h6 class="empty-state-title">Tidak Ada Laporan Darurat</h6>
-                                            <p class="empty-state-desc">Kondisi lingkungan aman dan kondusif.</p>
+                                            <p class="empty-state-desc">Kondisi lingkungan aman, tentram, dan kondusif.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -539,7 +653,7 @@
             </div>
         </div>
 
-        {{-- TAB 5: KONTAK DARURAT --}}
+        {{-- ==================== TAB 5: KONTAK DARURAT ==================== --}}
         <div class="tab-pane fade" id="tab-kontak">
             <div class="row g-3">
                 @forelse($kontaks as $kontak)
@@ -572,6 +686,73 @@
     </div>
 
     {{-- MODALS SECTION --}}
+    {{-- MODAL CHECK-IN PRESENSI SAYA (WARGA) --}}
+    @if($upcomingJadwalSaya)
+        <div class="modal fade" id="modalCheckinSaya" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <form method="POST" action="{{ route('ronda.absensi.store') }}">
+                        @csrf
+                        <input type="hidden" name="jadwal_ronda_id" value="{{ $upcomingJadwalSaya->id }}">
+                        <input type="hidden" name="status" value="hadir">
+                        <div class="modal-header border-bottom py-3 px-4">
+                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-fingerprint text-success me-2"></i>Konfirmasi Hadir Ronda</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4 text-center">
+                            <div class="stat-icon-wrapper bg-success-soft text-success mx-auto mb-3" style="width: 56px; height: 56px; display: grid; place-items: center; border-radius: 16px;">
+                                <i class="fas fa-check-double fs-3"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark">Konfirmasi Kehadiran Tugas Ronda</h6>
+                            <p class="text-secondary small mb-3">
+                                Anda akan mencatat presensi hadir untuk jadwal <strong>{{ $upcomingJadwalSaya->tanggal->isoFormat('dddd, D MMMM Y') }}</strong> (Shift {{ $upcomingJadwalSaya->shift }}).
+                            </p>
+                            <div class="text-start mb-3">
+                                <label class="form-label-saas">Catatan Kehadiran (Opsional)</label>
+                                <input type="text" name="catatan" class="form-control-saas" placeholder="Contoh: Hadir di Pos Ronda jam 22.00">
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top py-3 px-4">
+                            <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-saas-primary"><i class="fas fa-check me-1"></i>Catat Hadir Sekarang</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- MODAL IZIN SAYA (WARGA) --}}
+        <div class="modal fade" id="modalIzinSaya" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <form method="POST" action="{{ route('ronda.absensi.store') }}">
+                        @csrf
+                        <input type="hidden" name="jadwal_ronda_id" value="{{ $upcomingJadwalSaya->id }}">
+                        <input type="hidden" name="status" value="izin">
+                        <div class="modal-header border-bottom py-3 px-4">
+                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-envelope-open-text text-warning me-2"></i>Pengajuan Izin Tidak Hadir</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4 text-start">
+                            <div class="alert alert-saas alert-saas-warning mb-3 small">
+                                Izin disampaikan untuk jadwal <strong>{{ $upcomingJadwalSaya->tanggal->isoFormat('dddd, D MMMM Y') }}</strong>. Harap berikan alasan yang jelas kepada Ketua RT.
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label-saas">Alasan Tidak Dapat Bertugas <span class="text-danger">*</span></label>
+                                <textarea name="catatan" rows="3" class="form-control-saas" placeholder="Contoh: Sedang dinas luar kota / ada keperluan keluarga mendesak..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top py-3 px-4">
+                            <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-saas-primary"><i class="fas fa-paper-plane me-1"></i>Kirim Pengajuan Izin</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- MODALS PENGURUS RT/RW --}}
     @if($isPengurus)
         {{-- MODAL BUAT JADWAL RONDA --}}
         <div class="modal fade" id="modalTambahJadwal" tabindex="-1">
@@ -631,7 +812,7 @@
                         </div>
                         <div class="modal-footer border-top py-3 px-4">
                             <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-saas-primary"><i class="fas fa-save me-1"></i>Simpan & Kirim Notifikasi</button>
+                            <button type="submit" class="btn btn-saas-primary"><i class="fas fa-save me-1"></i>Simpan Jadwal</button>
                         </div>
                     </form>
                 </div>
@@ -646,7 +827,7 @@
                         @csrf
                         <div class="modal-header border-bottom py-3 px-4">
                             <h5 class="modal-title fw-bold text-dark">
-                                <i class="fas fa-user-check text-info me-2"></i>Pencatatan Absensi Ronda
+                                <i class="fas fa-user-check text-info me-2"></i>Pencatatan Presensi Ronda
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
@@ -682,7 +863,7 @@
                         </div>
                         <div class="modal-footer border-top py-3 px-4">
                             <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-saas-primary"><i class="fas fa-check me-1"></i>Simpan Kehadiran</button>
+                            <button type="submit" class="btn btn-saas-primary"><i class="fas fa-check me-1"></i>Simpan Presensi</button>
                         </div>
                     </form>
                 </div>
@@ -759,7 +940,7 @@
                             @method('PATCH')
                             <div class="modal-header border-bottom py-3 px-4">
                                 <h5 class="modal-title fw-bold text-dark">
-                                    <i class="fas fa-gavel text-warning me-2"></i>Persetujuan Pertukaran Jadwal Ronda
+                                    <i class="fas fa-gavel text-warning me-2"></i>Persetujuan Pertukaran Shift Ronda
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
@@ -769,14 +950,14 @@
                                     <br>Alasan: <em>"{{ $tjResp->alasan }}"</em>.
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label-saas">Keputusan Ketua RT <span class="text-danger">*</span></label>
+                                    <label class="form-label-saas">Keputusan <span class="text-danger">*</span></label>
                                     <select name="status" class="form-select-saas" required>
-                                        <option value="disetujui">Setujui Pertukaran Jadwal</option>
-                                        <option value="ditolak">Tolak Pertukaran Jadwal</option>
+                                        <option value="disetujui">Setujui Pertukaran Shift</option>
+                                        <option value="ditolak">Tolak Pertukaran Shift</option>
                                     </select>
                                 </div>
                                 <div class="mb-2">
-                                    <label class="form-label-saas">Catatan Pengurus</label>
+                                    <label class="form-label-saas">Catatan Pengurus / Rekan</label>
                                     <textarea name="catatan_rt" class="form-control-saas" rows="2" placeholder="Catatan persetujuan / alasan jika ditolak..."></textarea>
                                 </div>
                             </div>
@@ -791,7 +972,7 @@
         @endforeach
     @endif
 
-    {{-- MODAL AJUKAN TUKAR JADWAL (UNTUK WARGA) --}}
+    {{-- MODAL AJUKAN TUKAR JADWAL (WARGA & UMUM) --}}
     <div class="modal fade" id="modalTukarJadwal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4">
@@ -814,10 +995,10 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label-saas">Pilih Warga Pengganti / Rekan Bertukar</label>
+                            <label class="form-label-saas">Pilih Rekan Bertukar (Opsional)</label>
                             <select name="target_user_id" class="form-select-saas">
                                 <option value="">-- Bebas (Ditentukan Pengurus RT) --</option>
-                                @foreach($wargas->where('id', '!=', Auth::id()) as $tw)
+                                @foreach($wargas->where('id', '!=', $user->id) as $tw)
                                     <option value="{{ $tw->id }}">{{ $tw->name }}</option>
                                 @endforeach
                             </select>
@@ -833,7 +1014,7 @@
                         </div>
                         <div class="mb-2">
                             <label class="form-label-saas">Alasan Penukaran Jadwal <span class="text-danger">*</span></label>
-                            <textarea name="alasan" class="form-control-saas" rows="2" placeholder="Contoh: Ada tugas luar kota / urusan keluarga mendadak" required></textarea>
+                            <textarea name="alasan" class="form-control-saas" rows="2" placeholder="Contoh: Ada tugas dinas luar kota / urusan keluarga mendadak" required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer border-top py-3 px-4">
@@ -846,8 +1027,87 @@
     </div>
 </div>
 
+<style>
+.calendar-wrapper {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+}
+.calendar-header-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.calendar-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+}
+.cal-day-cell {
+    min-height: 85px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px;
+    background: #FAFCFA;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.cal-day-cell:hover {
+    background: var(--soft-green);
+    border-color: var(--primary-green);
+}
+.cal-day-cell.other-month {
+    opacity: 0.35;
+    background: #F3F4F6;
+}
+.cal-day-cell.today {
+    border-color: var(--primary-green);
+    background: #FFFFFF;
+    box-shadow: 0 0 0 2px rgba(20, 122, 69, 0.2);
+}
+.cal-day-num {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--main-text);
+}
+.cal-day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 4px;
+}
+.cal-event-pill {
+    font-size: 0.68rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    line-height: 1.2;
+}
+@media (max-width: 768px) {
+    .cal-day-cell {
+        min-height: 60px;
+        padding: 3px;
+    }
+    .cal-event-pill {
+        font-size: 0.6rem;
+    }
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Mode toggle acak vs manual
     const modeSelect = document.getElementById('modeJadwalSelect');
     const acakParams = document.getElementById('acakParams');
     if (modeSelect && acakParams) {
@@ -855,6 +1115,87 @@ document.addEventListener('DOMContentLoaded', function () {
             acakParams.style.display = this.value === 'acak' ? 'flex' : 'none';
         });
     }
+
+    // Dynamic Calendar Implementation
+    const rawJadwals = @json($jadwals->map(function($j) use ($user) {
+        return [
+            'id' => $j->id,
+            'tanggal' => $j->tanggal->format('Y-m-d'),
+            'shift' => $j->shift,
+            'lokasi' => $j->lokasi_pos,
+            'petugas' => $j->petugas->map(fn($p) => $p->user->name ?? 'Warga')->toArray(),
+            'is_mine' => $j->petugas->contains('user_id', $user->id),
+        ];
+    }));
+
+    let currentCalDate = new Date();
+
+    function renderCalendar(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        
+        const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        document.getElementById('calCurrentMonthTitle').textContent = `${monthNames[month]} ${year}`;
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        const prevLastDay = new Date(year, month, 0).getDate();
+
+        const grid = document.getElementById('calendarDaysGrid');
+        grid.innerHTML = '';
+
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+        // Previous month filler days
+        for (let i = firstDayIndex; i > 0; i--) {
+            const dayNum = prevLastDay - i + 1;
+            const cell = document.createElement('div');
+            cell.className = 'cal-day-cell other-month';
+            cell.innerHTML = `<span class="cal-day-num">${dayNum}</span>`;
+            grid.appendChild(cell);
+        }
+
+        // Current month days
+        for (let i = 1; i <= lastDay; i++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const isToday = dateStr === todayStr;
+            const dayJadwals = rawJadwals.filter(j => j.tanggal === dateStr);
+
+            const cell = document.createElement('div');
+            cell.className = `cal-day-cell ${isToday ? 'today' : ''}`;
+
+            let eventsHtml = '';
+            dayJadwals.forEach(j => {
+                const pillClass = j.is_mine ? 'badge badge-soft-primary' : 'badge badge-soft-success';
+                const officerNames = j.petugas.length ? j.petugas.slice(0, 2).join(', ') : 'Belum ada';
+                eventsHtml += `<span class="cal-event-pill ${pillClass}" title="Pos: ${j.lokasi} | Petugas: ${j.petugas.join(', ')}">
+                    <i class="fas fa-shield-alt me-1"></i>${j.shift}: ${officerNames}
+                </span>`;
+            });
+
+            cell.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="cal-day-num ${isToday ? 'text-success' : ''}">${i}</span>
+                    ${isToday ? '<span class="badge badge-soft-secondary" style="font-size:0.6rem;">Hari Ini</span>' : ''}
+                </div>
+                <div class="cal-day-events">${eventsHtml}</div>
+            `;
+            grid.appendChild(cell);
+        }
+    }
+
+    renderCalendar(currentCalDate);
+
+    document.getElementById('calPrevBtn').addEventListener('click', () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() - 1);
+        renderCalendar(currentCalDate);
+    });
+
+    document.getElementById('calNextBtn').addEventListener('click', () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() + 1);
+        renderCalendar(currentCalDate);
+    });
 });
 </script>
 @endsection

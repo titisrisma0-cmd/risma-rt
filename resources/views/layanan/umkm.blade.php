@@ -320,7 +320,7 @@
                                     <td class="text-end">
                                         <div class="btn-group btn-group-sm" role="group">
                                             <button type="button" class="btn btn-outline-warning edit-product-btn" data-bs-toggle="modal" data-bs-target="#modalEditProduk" data-action="{{ route('layanan.umkm.produk.update', $item) }}" data-name="{{ $item->nama_produk }}" data-category="{{ $item->kategori }}" data-price="{{ $item->harga }}" data-stock="{{ $item->stok }}" data-unit="{{ $item->satuan }}" data-description="{{ $item->deskripsi }}"><i class="fas fa-edit"></i></button>
-                                            <form method="POST" action="{{ route('layanan.umkm.produk.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
+                                            <form method="POST" action="{{ route('layanan.umkm.produk.destroy', $item) }}" class="d-inline" data-confirm="Hapus produk ini?" data-confirm-title="Hapus Produk UMKM" data-confirm-btn="Ya, Hapus">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-outline-danger"><i class="fas fa-trash"></i></button>

@@ -77,6 +77,13 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // Ronda Saya Terdekat
+        $rondaSayaTerdekat = \App\Models\JadwalRonda::whereHas('petugas', fn ($q) => $q->where('user_id', $user->id))
+            ->whereDate('tanggal', '>=', \Carbon\Carbon::today())
+            ->with(['petugas.user', 'absensi'])
+            ->orderBy('tanggal', 'asc')
+            ->first();
+
         return view('dashboard.warga', compact(
             'user',
             'rtKode',
@@ -86,7 +93,8 @@ class DashboardController extends Controller
             'riwayatPembayaran',
             'suratSaya',
             'pengumumanRt',
-            'notifikasis'
+            'notifikasis',
+            'rondaSayaTerdekat'
         ));
     }
 
@@ -169,6 +177,16 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // Ronda & Panic Monitoring RT
+        $rondaMalamHariIni = \App\Models\JadwalRonda::where('rt_id', $rtId)
+            ->whereDate('tanggal', \Carbon\Carbon::today())
+            ->with(['petugas.user', 'absensi'])
+            ->first();
+
+        $panicAktifCount = \App\Models\PanicReport::where('rt_id', $rtId)
+            ->whereIn('status', ['aktif', 'baru', 'sedang_ditangani'])
+            ->count();
+
         return view('dashboard.rt', compact(
             'user',
             'rt',
@@ -191,7 +209,9 @@ class DashboardController extends Controller
             'wargaTerbaru',
             'aspirasiWarga',
             'recentPengeluaran',
-            'notifikasis'
+            'notifikasis',
+            'rondaMalamHariIni',
+            'panicAktifCount'
         ));
     }
 

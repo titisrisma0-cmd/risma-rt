@@ -214,7 +214,7 @@
                                             </li>
                                             <li><hr class="dropdown-divider my-1"></li>
                                             <li>
-                                                <form method="POST" action="{{ route('rts.ketua.toggle-status', [$rt, $ketua]) }}" onsubmit="return confirm('Ubah status akun Ketua RT {{ $rt->kode_rt }}?')">
+                                                <form method="POST" action="{{ route('rts.ketua.toggle-status', [$rt, $ketua]) }}" data-confirm="Ubah status akun Ketua RT {{ $rt->kode_rt }}?" data-confirm-title="Ubah Status Akun" data-confirm-btn="Ya, Ubah">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit" class="dropdown-item rounded-2 py-1.5 {{ $status === 'aktif' ? 'text-danger' : 'text-success' }}">

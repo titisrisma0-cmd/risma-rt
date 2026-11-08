@@ -353,7 +353,7 @@ function previewImage(event) {
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-        alert('Format file tidak valid. Gunakan JPG, PNG, atau GIF.');
+        window.showToast('Format file tidak valid. Gunakan JPG, PNG, atau GIF.', 'error');
         input.value = '';
         preview.style.display = 'none';
         filenameText.style.display = 'none';
@@ -361,7 +361,7 @@ function previewImage(event) {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-        alert('Ukuran file terlalu besar. Maksimal 2MB.');
+        window.showToast('Ukuran file terlalu besar. Maksimal 2MB.', 'error');
         input.value = '';
         preview.style.display = 'none';
         filenameText.style.display = 'none';

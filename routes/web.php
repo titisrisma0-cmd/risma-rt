@@ -23,7 +23,18 @@ use App\Http\Controllers\RtVerifikasiController;
 use App\Http\Controllers\PengumumanController;
 
 Route::get('/', function () {
-    return view('welcome');
+    try {
+        $statRt = \App\Models\Rt::count();
+        $statWarga = \App\Models\Warga::count();
+        $statKk = \App\Models\KartuKeluarga::count();
+        $statUmkm = \App\Models\Umkm::count();
+    } catch (\Throwable $e) {
+        $statRt = 8;
+        $statWarga = 0;
+        $statKk = 0;
+        $statUmkm = 0;
+    }
+    return view('welcome', compact('statRt', 'statWarga', 'statKk', 'statUmkm'));
 });
 
 Route::get('/register', function () {
@@ -177,6 +188,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/posyandu/pemeriksaan', [LayananMasyarakatController::class, 'storePemeriksaanBalita'])->name('posyandu.pemeriksaan.store');
         Route::get('/ronda', [LayananMasyarakatController::class, 'ronda'])->name('ronda.index');
         Route::post('/ronda/jadwal', [LayananMasyarakatController::class, 'storeJadwalRonda'])->name('ronda.jadwal.store');
+        Route::post('/ronda/jadwal/{jadwal}/ingatkan', [LayananMasyarakatController::class, 'kirimPengingatRonda'])->name('ronda.jadwal.ingatkan');
         Route::put('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalRonda'])->name('ronda.jadwal.update');
         Route::delete('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalRonda'])->name('ronda.jadwal.destroy');
         Route::post('/ronda/absensi', [LayananMasyarakatController::class, 'storeAbsensiRonda'])->name('ronda.absensi.store');
@@ -196,6 +208,7 @@ Route::middleware(['auth'])->group(function () {
     // ==================== ALIASES ROUTE OPERASIONAL RT ====================
     Route::get('/ronda', function () { return redirect()->route('layanan.ronda.index'); })->name('ronda.index');
     Route::post('/ronda/jadwal', [LayananMasyarakatController::class, 'storeJadwalRonda'])->name('ronda.jadwal.store');
+    Route::post('/ronda/jadwal/{jadwal}/ingatkan', [LayananMasyarakatController::class, 'kirimPengingatRonda'])->name('ronda.jadwal.ingatkan');
     Route::put('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalRonda'])->name('ronda.jadwal.update');
     Route::delete('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalRonda'])->name('ronda.jadwal.destroy');
     Route::post('/ronda/absensi', [LayananMasyarakatController::class, 'storeAbsensiRonda'])->name('ronda.absensi.store');

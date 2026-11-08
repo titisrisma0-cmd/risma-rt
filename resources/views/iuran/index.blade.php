@@ -56,7 +56,7 @@
                             <form action="{{ route('iuran.destroy', $item->id) }}" method="POST" class="flex-fill m-0">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Hapus iuran {{ $item->nama_iuran }}?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" data-confirm="Hapus iuran {{ $item->nama_iuran }}?" data-confirm-title="Hapus Iuran" data-confirm-btn="Ya, Hapus">
                                     <i class="fas fa-trash me-1"></i> Hapus
                                 </button>
                             </form>
@@ -111,7 +111,7 @@
                             <form action="{{ route('iuran.destroy', $item->id) }}" method="POST" class="flex-fill m-0">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Hapus iuran {{ $item->nama_iuran }}?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" data-confirm="Hapus iuran {{ $item->nama_iuran }}?" data-confirm-title="Hapus Iuran" data-confirm-btn="Ya, Hapus">
                                     <i class="fas fa-trash me-1"></i> Hapus
                                 </button>
                             </form>

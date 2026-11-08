@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 460" width="100%" height="100%" fill="none">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EBF7F0"/>
+      <stop offset="60%" stop-color="#F7FAF8"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="greenPrimaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#147A45"/>
+      <stop offset="100%" stop-color="#0D5737"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F2C94C"/>
+      <stop offset="100%" stop-color="#D6AA55"/>
+    </linearGradient>
+    <linearGradient id="softLawn" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E8F5EC"/>
+      <stop offset="100%" stop-color="#D1EBD9"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0D5737" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="600" height="460" rx="20" fill="url(#skyGrad)"/>
+
+  <!-- Soft Geometric Sun / Ambient Light -->
+  <circle cx="500" cy="90" r="60" fill="#FDF7EA" opacity="0.8"/>
+  <circle cx="500" cy="90" r="42" fill="#FCEECB" opacity="0.9"/>
+
+  <!-- Clouds -->
+  <path d="M70 85 Q85 70 105 70 Q120 70 130 80 Q145 80 150 95 Q150 110 135 110 L80 110 Q65 110 65 95 Q65 87 70 85 Z" fill="#FFFFFF" opacity="0.75"/>
+  <path d="M420 60 Q432 48 448 48 Q460 48 468 56 Q480 56 484 68 Q484 80 472 80 L428 80 Q416 80 416 68 Q416 62 420 60 Z" fill="#FFFFFF" opacity="0.6"/>
+
+  <!-- Distant Hill & Green Canopy -->
+  <path d="M0 310 Q140 250 300 270 Q460 290 600 240 L600 460 L0 460 Z" fill="#E2F2E7" opacity="0.6"/>
+  <path d="M0 330 Q160 300 320 315 Q480 330 600 295 L600 460 L0 460 Z" fill="url(#softLawn)"/>
+
+  <!-- Background Houses -->
+  <!-- House 1 (Left - Modern Minimalist Villa) -->
+  <g id="house-left">
+    <rect x="70" y="210" width="130" height="130" rx="4" fill="#FFFFFF" stroke="#E0EBE3" stroke-width="2"/>
+    <!-- Roof with solar panels -->
+    <path d="M60 210 L135 155 L210 210 Z" fill="#0D5737"/>
+    <polygon points="90,195 135,162 180,195 135,200" fill="#147A45" opacity="0.7"/>
+    <!-- Windows -->
+    <rect x="88" y="225" width="38" height="42" rx="3" fill="#D7EDDF"/>
+    <line x1="107" y1="225" x2="107" y2="267" stroke="#FFFFFF" stroke-width="2"/>
+    <line x1="88" y1="246" x2="126" y2="246" stroke="#FFFFFF" stroke-width="2"/>
+    <rect x="145" y="225" width="40" height="42" rx="3" fill="#D7EDDF"/>
+    <line x1="165" y1="225" x2="165" y2="267" stroke="#FFFFFF" stroke-width="2"/>
+    <line x1="145" y1="246" x2="185" y2="246" stroke="#FFFFFF" stroke-width="2"/>
+    <!-- Modern Wooden Door -->
+    <rect x="115" y="290" width="36" height="50" rx="2" fill="#D6AA55"/>
+    <circle cx="143" cy="315" r="2.5" fill="#FFFFFF"/>
+    <!-- Small Balcony -->
+    <rect x="82" y="272" width="106" height="4" fill="#C8DED0"/>
+  </g>
+
+  <!-- House 2 (Center - RT Office & Community Center) -->
+  <g id="house-center">
+    <rect x="220" y="185" width="165" height="155" rx="6" fill="#FFFFFF" stroke="#D3E5D9" stroke-width="2.5"/>
+    <!-- Modern Flat Box Upper Floor -->
+    <rect x="235" y="150" width="135" height="45" rx="4" fill="#147A45"/>
+    <!-- Green Accent Band -->
+    <rect x="220" y="195" width="165" height="10" fill="#20A464"/>
+    <!-- Large Glass Front -->
+    <rect x="238" y="215" width="58" height="55" rx="4" fill="#D2EBE1"/>
+    <rect x="310" y="215" width="58" height="55" rx="4" fill="#D2EBE1"/>
+    <!-- Office Double Doors -->
+    <rect x="278" y="285" width="48" height="55" rx="2" fill="#0D5737"/>
+    <rect x="283" y="290" width="18" height="45" fill="#E8F5EC" opacity="0.8"/>
+    <rect x="303" y="290" width="18" height="45" fill="#E8F5EC" opacity="0.8"/>
+    <!-- Pos Ronda / Office Signboard -->
+    <rect x="260" y="160" width="85" height="24" rx="12" fill="#FFFFFF"/>
+    <text x="302" y="176" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="bold" fill="#0D5737" text-anchor="middle">BALAI RW 01</text>
+    <!-- Flagpole -->
+    <line x1="395" y1="180" x2="395" y2="340" stroke="#758078" stroke-width="2.5"/>
+    <polygon points="395,182 425,192 395,202" fill="#E65353"/>
+  </g>
+
+  <!-- House 3 (Right - Townhouse) -->
+  <g id="house-right">
+    <rect x="410" y="220" width="120" height="120" rx="4" fill="#FFFFFF" stroke="#E0EBE3" stroke-width="2"/>
+    <path d="M400 220 L470 170 L540 220 Z" fill="#0D5737"/>
+    <rect x="430" y="235" width="35" height="40" rx="3" fill="#D7EDDF"/>
+    <rect x="478" y="235" width="35" height="40" rx="3" fill="#D7EDDF"/>
+    <rect x="452" y="295" width="32" height="45" rx="2" fill="#D6AA55"/>
+  </g>
+
+  <!-- Trees & Greenery -->
+  <!-- Left Tree -->
+  <rect x="45" y="280" width="10" height="60" rx="3" fill="#755B3E"/>
+  <circle cx="50" cy="265" r="30" fill="#20A464"/>
+  <circle cx="40" cy="245" r="22" fill="#147A45"/>
+  <circle cx="62" cy="250" r="24" fill="#29B46E"/>
+
+  <!-- Center Right Tree -->
+  <rect x="395" y="295" width="12" height="45" rx="3" fill="#755B3E"/>
+  <circle cx="401" cy="275" r="26" fill="#147A45"/>
+  <circle cx="415" cy="265" r="20" fill="#20A464"/>
+
+  <!-- Right Lush Bush -->
+  <circle cx="545" cy="335" r="24" fill="#20A464"/>
+  <circle cx="560" cy="330" r="28" fill="#147A45"/>
+
+  <!-- Clean Paver Walkway Foreground -->
+  <path d="M0 375 Q200 360 400 370 Q500 375 600 365 L600 460 L0 460 Z" fill="#F4F8F5"/>
+  <line x1="0" y1="375" x2="600" y2="365" stroke="#E5EDE7" stroke-width="2"/>
+  
+  <!-- Modern Clean Paving Lines -->
+  <path d="M120 460 L180 370" stroke="#E5EDE7" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <path d="M280 460 L310 370" stroke="#E5EDE7" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <path d="M440 460 L430 370" stroke="#E5EDE7" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+  <!-- Friendly Characters -->
+  <!-- Character 1: Pak RT / Pengurus (Left Center - Holding Tablet/Clipboard) -->
+  <g id="char-rt" transform="translate(180, 310)">
+    <!-- Shadow -->
+    <ellipse cx="20" cy="118" rx="16" ry="5" fill="#0D5737" opacity="0.18"/>
+    <!-- Legs -->
+    <rect x="13" y="70" width="6" height="48" rx="3" fill="#17221C"/>
+    <rect x="22" y="70" width="6" height="48" rx="3" fill="#17221C"/>
+    <!-- Shoes -->
+    <ellipse cx="15" cy="118" rx="6" ry="3" fill="#3B443F"/>
+    <ellipse cx="26" cy="118" rx="6" ry="3" fill="#3B443F"/>
+    <!-- Torso / Green Polo Shirt -->
+    <rect x="8" y="28" width="25" height="45" rx="6" fill="#147A45"/>
+    <!-- Collar & ID Badge -->
+    <polygon points="17,28 20,38 23,28" fill="#FFFFFF"/>
+    <rect x="17" y="42" width="8" height="12" rx="2" fill="#D6AA55"/>
+    <!-- Head & Hair -->
+    <circle cx="20" cy="14" r="12" fill="#F5CBA7"/>
+    <path d="M9 12 Q20 2 31 12 Q31 5 20 4 Q9 5 9 12 Z" fill="#2C3E50"/>
+    <!-- Friendly Glasses -->
+    <rect x="14" y="11" width="5" height="4" rx="1" stroke="#2C3E50" stroke-width="1.2" fill="none"/>
+    <rect x="22" y="11" width="5" height="4" rx="1" stroke="#2C3E50" stroke-width="1.2" fill="none"/>
+    <line x1="19" y1="13" x2="22" y2="13" stroke="#2C3E50" stroke-width="1"/>
+    <!-- Arms holding Digital Tablet -->
+    <path d="M8 35 L0 48 L14 54" stroke="#147A45" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <rect x="0" y="44" width="20" height="16" rx="2" fill="#FFFFFF" stroke="#0D5737" stroke-width="1.5"/>
+    <rect x="3" y="47" width="14" height="10" fill="#20A464" opacity="0.3"/>
+  </g>
+
+  <!-- Character 2: Petugas Ronda / Satpam Lingkungan (Right Center - Siskamling Uniform) -->
+  <g id="char-ronda" transform="translate(345, 305)">
+    <!-- Shadow -->
+    <ellipse cx="20" cy="122" rx="16" ry="5" fill="#0D5737" opacity="0.18"/>
+    <!-- Legs -->
+    <rect x="13" y="74" width="6" height="48" rx="3" fill="#2C3E50"/>
+    <rect x="22" y="74" width="6" height="48" rx="3" fill="#2C3E50"/>
+    <!-- Shoes -->
+    <ellipse cx="14" cy="122" rx="7" ry="3.5" fill="#17221C"/>
+    <ellipse cx="26" cy="122" rx="7" ry="3.5" fill="#17221C"/>
+    <!-- Vest Uniform with High-Vis Ribbon -->
+    <rect x="7" y="28" width="27" height="48" rx="6" fill="#0D5737"/>
+    <rect x="7" y="46" width="27" height="6" fill="#D6AA55"/>
+    <!-- Security Shield Badge on Chest -->
+    <path d="M12 36 L16 34 L20 36 L20 42 L16 45 L12 42 Z" fill="#D6AA55"/>
+    <!-- Head & Cap -->
+    <circle cx="20" cy="14" r="12" fill="#E0A96D"/>
+    <!-- Security Officer Cap -->
+    <path d="M8 12 Q20 4 32 12 L34 14 L6 14 Z" fill="#0D5737"/>
+    <rect x="6" y="13" width="28" height="3" rx="1.5" fill="#D6AA55"/>
+    <!-- Friendly Smile -->
+    <path d="M17 19 Q20 22 23 19" stroke="#784A22" stroke-width="1.2" fill="none"/>
+    <!-- Arm Waving Warmly -->
+    <path d="M34 35 L48 20 L54 22" stroke="#0D5737" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <circle cx="55" cy="20" r="4" fill="#E0A96D"/>
+  </g>
+
+  <!-- Character 3: Warga Digital (Family/Resident with smartphone) -->
+  <g id="char-warga" transform="translate(450, 320)">
+    <!-- Shadow -->
+    <ellipse cx="18" cy="110" rx="14" ry="4" fill="#0D5737" opacity="0.15"/>
+    <!-- Skirt / Pants -->
+    <rect x="11" y="65" width="5.5" height="44" rx="2.5" fill="#5F7065"/>
+    <rect x="19" y="65" width="5.5" height="44" rx="2.5" fill="#5F7065"/>
+    <ellipse cx="13" cy="109" rx="5" ry="2.5" fill="#FFFFFF"/>
+    <ellipse cx="22" cy="109" rx="5" ry="2.5" fill="#FFFFFF"/>
+    <!-- Outfit -->
+    <rect x="7" y="26" width="22" height="40" rx="6" fill="#E8F5EC" stroke="#147A45" stroke-width="1.5"/>
+    <!-- Head & Ponytail -->
+    <circle cx="18" cy="14" r="10.5" fill="#F5CBA7"/>
+    <path d="M8 14 Q18 4 28 14 Q28 6 18 5 Q8 6 8 14 Z" fill="#4A3525"/>
+    <path d="M25 12 Q34 16 32 24" stroke="#4A3525" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <!-- Holding Smartphone -->
+    <rect x="1" y="38" width="10" height="18" rx="2" fill="#17221C"/>
+    <rect x="2" y="40" width="8" height="14" rx="1" fill="#20A464"/>
+  </g>
+
+  <!-- Street Lamp with Soft Glow -->
+  <line x1="140" y1="280" x2="140" y2="395" stroke="#758078" stroke-width="3"/>
+  <path d="M135 280 L145 280 L142 270 L138 270 Z" fill="#2C3E50"/>
+  <circle cx="140" cy="275" r="7" fill="#FDEAA8" opacity="0.9"/>
+  <circle cx="140" cy="275" r="18" fill="#FDEAA8" opacity="0.25"/>
+
+  <!-- Live Pulse Dot (Smart CCTV / Connectivity) -->
+  <g transform="translate(290, 192)">
+    <circle cx="10" cy="10" r="7" fill="#20A464" opacity="0.25">
+      <animate attributeName="r" values="6;11;6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="10" cy="10" r="4" fill="#20A464"/>
+  </g>
+</svg>

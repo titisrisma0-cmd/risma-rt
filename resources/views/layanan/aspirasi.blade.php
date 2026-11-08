@@ -203,7 +203,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="selesai">
-                                                <button type="submit" class="btn btn-outline-saas btn-sm text-success" title="Tandai Selesai Ditangani" onclick="return confirm('Tandai aspirasi ini telah selesai ditindaklanjuti?')">
+                                                <button type="submit" class="btn btn-outline-saas btn-sm text-success" title="Tandai Selesai Ditangani" data-confirm="Tandai aspirasi ini telah selesai ditindaklanjuti?" data-confirm-title="Tindak Lanjut Aspirasi" data-confirm-btn="Ya, Selesai">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             </form>

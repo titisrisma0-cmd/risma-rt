@@ -89,7 +89,7 @@
                         <form method="POST" action="{{ route('kegiatan.destroy', $kegiatan) }}" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-saas btn-sm text-warning border-warning" onclick="return confirm('Apakah Anda yakin ingin membatalkan kegiatan {{ addslashes($kegiatan->judul) }}?')">
+                            <button type="submit" class="btn btn-outline-saas btn-sm text-warning border-warning" data-confirm="Apakah Anda yakin ingin membatalkan kegiatan {{ $kegiatan->judul }}?" data-confirm-title="Batalkan Kegiatan" data-confirm-btn="Ya, Batalkan">
                                 <i class="fas fa-times me-1"></i> Batalkan
                             </button>
                         </form>

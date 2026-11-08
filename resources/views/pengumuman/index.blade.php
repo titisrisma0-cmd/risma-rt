@@ -110,7 +110,7 @@
                                     <a href="{{ route('pengumuman.edit', $p) }}" class="btn btn-outline-saas btn-sm text-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form method="POST" action="{{ route('pengumuman.destroy', $p) }}" onsubmit="return confirm('Hapus pengumuman ini secara permanen?');" class="d-inline">
+                                    <form method="POST" action="{{ route('pengumuman.destroy', $p) }}" data-confirm="Hapus pengumuman ini secara permanen?" data-confirm-title="Hapus Pengumuman" data-confirm-btn="Ya, Hapus" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-outline-saas btn-sm text-danger" title="Hapus">

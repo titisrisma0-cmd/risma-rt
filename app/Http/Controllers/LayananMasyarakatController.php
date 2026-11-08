@@ -1053,19 +1053,30 @@ class LayananMasyarakatController extends Controller
     public function storeAbsensiRonda(Request $request)
     {
         $user = Auth::user();
-        abort_unless($user->isAdminRt() || $user->isAdminRw() || $user->hasRole('admin'), 403);
+        $isPengurus = $user->isAdminRt() || $user->isAdminRw() || $user->hasRole('admin');
 
         $validated = $request->validate([
             'jadwal_ronda_id' => ['required', 'exists:jadwal_rondas,id'],
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['nullable', 'exists:users,id'],
             'status' => ['required', 'in:hadir,izin,alpa'],
-            'catatan' => ['nullable', 'string'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $jadwal = JadwalRonda::findOrFail($validated['jadwal_ronda_id']);
+
+        if (! $isPengurus) {
+            // Warga self-check-in / pengajuan izin
+            $isAssigned = $jadwal->petugas()->where('user_id', $user->id)->exists();
+            abort_unless($isAssigned, 403, 'Anda tidak terdaftar sebagai petugas pada jadwal shift ronda ini.');
+            $targetUserId = $user->id;
+        } else {
+            $targetUserId = $validated['user_id'] ?? $user->id;
+        }
 
         AbsensiRonda::updateOrCreate(
             [
-                'jadwal_ronda_id' => $validated['jadwal_ronda_id'],
-                'user_id' => $validated['user_id'],
+                'jadwal_ronda_id' => $jadwal->id,
+                'user_id' => $targetUserId,
             ],
             [
                 'status' => $validated['status'],
@@ -1075,7 +1086,53 @@ class LayananMasyarakatController extends Controller
             ]
         );
 
-        return back()->with('success', 'Absensi ronda berhasil dicatat.');
+        $msg = $validated['status'] === 'hadir'
+            ? 'Presensi kehadiran ronda Anda berhasil dicatat.'
+            : ($validated['status'] === 'izin' ? 'Pengajuan izin ronda berhasil disimpan dan diteruskan ke Ketua RT.' : 'Absensi ronda berhasil diperbarui.');
+
+        return back()->with('success', $msg);
+    }
+
+    public function kirimPengingatRonda(JadwalRonda $jadwal)
+    {
+        $user = Auth::user();
+        abort_unless($user->isAdminRt() || $user->isAdminRw() || $user->hasRole('admin'), 403);
+
+        $petugas = $jadwal->petugas()->with('user')->get();
+        if ($petugas->isEmpty()) {
+            return back()->with('error', 'Belum ada petugas warga yang ditugaskan pada jadwal ronda ini.');
+        }
+
+        $namaAnggota = $petugas->pluck('user.name')->filter()->join(', ');
+        $tanggalFmt = $jadwal->tanggal->isoFormat('dddd, D MMMM Y');
+        $terkirim = 0;
+
+        foreach ($petugas as $p) {
+            if (! $p->user_id) continue;
+
+            $recent = Notifikasi::where('user_id', $p->user_id)
+                ->where('tipe', 'ronda')
+                ->where('created_at', '>=', now()->subMinutes(30))
+                ->exists();
+
+            if (! $recent) {
+                Notifikasi::create([
+                    'user_id' => $p->user_id,
+                    'from_user_id' => $user->id,
+                    'tipe' => 'ronda',
+                    'judul' => 'Pengingat Tugas Ronda Malam RT',
+                    'pesan' => "PENGINGAT RONDA: Anda bertugas pada {$tanggalFmt} ({$jadwal->shift}) di {$jadwal->lokasi_pos}. Rekan regu: {$namaAnggota}. Harap hadir dan konfirmasi absensi melalui aplikasi.",
+                    'dibaca' => false,
+                ]);
+                $terkirim++;
+            }
+        }
+
+        if ($terkirim === 0) {
+            return back()->with('warning', 'Pengingat untuk petugas pada jadwal ini baru saja dikirimkan dalam 30 menit terakhir.');
+        }
+
+        return back()->with('success', "Pengingat jadwal ronda berhasil dikirimkan kepada {$terkirim} petugas regu ronda.");
     }
 
     public function requestTukarRonda(Request $request)
@@ -1236,14 +1293,38 @@ class LayananMasyarakatController extends Controller
         abort_unless($user->isAdminRt() || $user->isAdminRw() || $user->hasRole('admin'), 403);
 
         $validated = $request->validate([
-            'status' => ['required', 'in:aktif,sedang_ditangani,selesai'],
+            'status' => ['required', 'in:aktif,baru,sedang_ditangani,ditangani,selesai,false_alarm,ditolak,diarsipkan'],
         ]);
 
+        $status = $validated['status'];
+        if ($status === 'ditangani') {
+            $status = 'sedang_ditangani';
+        }
+
         $panicReport->update([
-            'status' => $validated['status'],
+            'status' => $status,
             'handled_by' => $user->id,
             'handled_at' => now(),
         ]);
+
+        if ($panicReport->user_id) {
+            $statusLabel = match($status) {
+                'sedang_ditangani', 'ditangani' => 'Sedang Ditangani oleh Pengurus RT/RW',
+                'selesai' => 'Telah Selesai Ditangani dan Lingkungan Aman',
+                'ditolak' => 'Ditolak / Laporan Tidak Valid',
+                'diarsipkan' => 'Telah Diarsipkan',
+                default => ucfirst(str_replace('_', ' ', $status)),
+            };
+
+            \App\Models\Notifikasi::create([
+                'user_id' => $panicReport->user_id,
+                'from_user_id' => $user->id,
+                'tipe' => 'darurat',
+                'judul' => 'Update Status Laporan Darurat',
+                'pesan' => "Laporan darurat \"{$panicReport->judul}\" sekarang berstatus: {$statusLabel}.",
+                'dibaca' => false,
+            ]);
+        }
 
         return back()->with('success', 'Status laporan darurat berhasil diperbarui.');
     }

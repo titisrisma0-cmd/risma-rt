@@ -459,6 +459,107 @@
         </div>
     </div>
 
+    <!-- Monitoring Siskamling & Keamanan RT -->
+    <div class="saas-card p-4 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div>
+                <h5 class="card-title-saas mb-1">
+                    <i class="fas fa-shield-halved text-danger"></i> Monitoring Keamanan & Siskamling RT {{ $rtKode }}
+                </h5>
+                <small class="text-secondary">Pantau kesiapan regu ronda malam dan respon sinyal darurat warga</small>
+            </div>
+            <div class="d-flex gap-2">
+                @if(($panicAktifCount ?? 0) > 0)
+                    <span class="badge badge-soft-danger px-3 py-1.5 fs-7 animate__animated animate__pulse animate__infinite">
+                        <i class="fas fa-triangle-exclamation me-1"></i> {{ $panicAktifCount }} Alarm Darurat Aktif!
+                    </span>
+                @else
+                    <span class="badge badge-soft-success px-3 py-1.5">
+                        <i class="fas fa-shield-check me-1"></i> Situasi Lingkungan Aman
+                    </span>
+                @endif
+                <a href="{{ route('layanan.ronda.index') }}" class="btn btn-sm btn-outline-saas">
+                    Buka Modul Ronda <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-7">
+                <div class="p-3 rounded-3 border bg-light bg-opacity-40 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-dark text-uppercase tracking-wider">
+                            <i class="fas fa-moon text-warning me-1"></i> Regu Tugas Malam Ini
+                        </span>
+                        <span class="small text-secondary">{{ \Carbon\Carbon::today()->isoFormat('dddd, D MMMM Y') }}</span>
+                    </div>
+
+                    @if(isset($rondaMalamHariIni) && $rondaMalamHariIni)
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0 fs-6">Shift {{ ucfirst($rondaMalamHariIni->shift) }} &bull; {{ $rondaMalamHariIni->lokasi_pos ?? 'Pos Ronda' }}</h6>
+                                <small class="text-secondary">
+                                    <i class="fas fa-calendar-day text-emerald me-1"></i>{{ \Carbon\Carbon::parse($rondaMalamHariIni->tanggal)->isoFormat('dddd, D MMMM Y') }}
+                                </small>
+                            </div>
+                            <form method="POST" action="{{ route('ronda.jadwal.ingatkan', $rondaMalamHariIni) }}" class="d-inline" data-confirm="Kirim notifikasi pengingat ke seluruh petugas regu malam ini?" data-confirm-title="Pengingat Ronda" data-confirm-btn="Ya, Kirim">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-emerald text-white">
+                                    <i class="fas fa-paper-plane me-1"></i> Ingatkan Regu
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-1.5 mt-2">
+                            @forelse($rondaMalamHariIni->petugas as $p)
+                                <span class="badge bg-white text-dark border px-2 py-1 small fw-normal">
+                                    <i class="fas fa-user me-1 text-secondary"></i>{{ optional($p->user)->name ?? '-' }}
+                                    @if($p->peran === 'koordinator')
+                                        <span class="badge bg-emerald text-white ms-1" style="font-size: 0.65rem;">Koor</span>
+                                    @endif
+                                </span>
+                            @empty
+                                <span class="text-secondary small">Belum ada anggota yang didaftarkan ke regu ini.</span>
+                            @endforelse
+                        </div>
+                    @else
+                        <div class="py-3 text-center text-secondary small">
+                            <i class="fas fa-calendar-xmark text-secondary mb-1 fs-5 d-block"></i>
+                            Tidak ada jadwal tugas ronda yang diagendakan untuk malam hari ini.
+                            <div class="mt-2">
+                                <a href="{{ route('layanan.ronda.index') }}" class="btn btn-sm btn-light border">
+                                    <i class="fas fa-plus me-1"></i> Atur Jadwal Ronda
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="p-3 rounded-3 border bg-light bg-opacity-40 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <span class="small fw-bold text-dark text-uppercase tracking-wider d-block mb-2">
+                            <i class="fas fa-tower-broadcast text-danger me-1"></i> Respon Cepat & CCTV RT {{ $rtKode }}
+                        </span>
+                        <p class="small text-secondary mb-2" style="font-size: 0.82rem;">
+                            Seluruh riwayat sinyal Panic Button dari warga dan integrasi pengawasan CCTV digital dapat dipantau langsung dalam satu kendali.
+                        </p>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <a href="{{ route('layanan.ronda.index') }}#panic-reports" class="btn btn-sm btn-outline-danger flex-fill">
+                            <i class="fas fa-triangle-exclamation me-1"></i> Laporan Darurat
+                        </a>
+                        <a href="{{ route('layanan.ronda.cctv.index') }}" class="btn btn-sm btn-outline-secondary flex-fill">
+                            <i class="fas fa-video me-1"></i> Pantau CCTV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bagian 5 & 6: Aspirasi & Pengeluaran Kas RT -->
     <div class="row g-4 mb-4">
         <!-- Aspirasi Warga RT -->

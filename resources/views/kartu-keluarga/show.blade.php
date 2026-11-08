@@ -181,7 +181,7 @@
                                         <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalPindahKK{{ $anggota->id }}" title="Pindahkan ke KK Lain">
                                             <i class="fas fa-exchange-alt"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('kartu-keluarga.anggota.destroy', [$kartuKeluarga, $anggota]) }}" class="d-inline" onsubmit="return confirm('Keluarkan anggota {{ addslashes($anggota->nama_lengkap) }} dari KK ini?');">
+                                        <form method="POST" action="{{ route('kartu-keluarga.anggota.destroy', [$kartuKeluarga, $anggota]) }}" class="d-inline" data-confirm="Keluarkan anggota {{ $anggota->nama_lengkap }} dari KK ini?" data-confirm-title="Keluarkan Anggota Keluarga" data-confirm-btn="Ya, Keluarkan">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-outline-danger" title="Hapus dari KK">

@@ -204,7 +204,7 @@
                                     @if($item->status == 'pending')
                                         <form action="{{ route('pembayaran.verifikasi', $item->id) }}" method="POST" class="d-inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-outline-success" onclick="return confirm('Verifikasi pembayaran ini?')" title="Verifikasi">
+                                            <button type="submit" class="btn btn-outline-success" data-confirm="Verifikasi pembayaran ini?" data-confirm-title="Verifikasi Pembayaran" data-confirm-btn="Ya, Verifikasi" title="Verifikasi">
                                                 <i class="fas fa-check"></i>
                                             </button>
                                         </form>

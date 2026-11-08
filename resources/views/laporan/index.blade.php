@@ -198,7 +198,7 @@
                                 <a href="{{ route('laporan.show', $item->id) }}" class="btn btn-sm btn-outline-secondary me-1" title="Lihat">
                                     <i class="fas fa-eye text-emerald"></i>
                                 </a>
-                                <form action="{{ route('laporan.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus riwayat laporan ini?')">
+                                <form action="{{ route('laporan.destroy', $item->id) }}" method="POST" class="d-inline" data-confirm="Hapus riwayat laporan ini?" data-confirm-title="Hapus Riwayat Laporan" data-confirm-btn="Ya, Hapus">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">

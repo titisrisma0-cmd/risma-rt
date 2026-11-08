@@ -46,7 +46,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="siap_diambil">
-                                        <button type="submit" class="btn btn-sm btn-emerald text-white" title="Setujui dan Terbitkan Surat RT" onclick="return confirm('Setujui langsung permohonan surat ini tingkat RT?');">
+                                        <button type="submit" class="btn btn-sm btn-emerald text-white" title="Setujui dan Terbitkan Surat RT" data-confirm="Setujui langsung permohonan surat ini tingkat RT?" data-confirm-title="Persetujuan Surat RT" data-confirm-btn="Ya, Setujui">
                                             <i class="fas fa-check me-1"></i>Setujui RT
                                         </button>
                                     </form>

@@ -239,7 +239,7 @@
                                             <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditJadwalPosyandu{{ $jadwal->id }}" title="Edit Jadwal">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <form method="POST" action="{{ route('layanan.posyandu.jadwal.destroy', $jadwal) }}" class="d-inline" onsubmit="return confirm('Hapus jadwal posyandu ini?');">
+                                            <form method="POST" action="{{ route('layanan.posyandu.jadwal.destroy', $jadwal) }}" class="d-inline" data-confirm="Hapus jadwal posyandu ini?" data-confirm-title="Hapus Jadwal Posyandu" data-confirm-btn="Ya, Hapus">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
