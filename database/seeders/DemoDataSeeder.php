@@ -49,14 +49,40 @@ class DemoDataSeeder extends Seeder
             ['nama_lengkap' => 'Bendahara RW', 'status' => 'aktif', 'role_id' => $bendaharaRole->id]
         );
         
+        // Buat Warga Utama (Demo)
+        $wargaDemo = User::updateOrCreate(
+            ['email' => 'warga@rw-smart.test'],
+            [
+                'name' => 'Warga RW Smart',
+                'password' => Hash::make('password123'),
+                'role_id' => $wargaRole->id,
+                'jenis_kelamin' => 'L',
+            ]
+        );
+        UserProfile::updateOrCreate(
+            ['user_id' => $wargaDemo->id],
+            [
+                'nama_lengkap' => 'Warga RW Smart',
+                'nik' => '1234567890123400',
+                'no_kk' => '9876543210987600',
+                'no_hp' => '081234567800',
+                'alamat' => 'Jl. Contoh No. 0, RT 01/RW 02',
+                'status' => 'aktif',
+                'role_id' => $wargaRole->id,
+                'jenis_kelamin' => 'L',
+            ]
+        );
+
         // Buat 5 Warga
         for ($i = 1; $i <= 5; $i++) {
+            $jk = $i % 2 === 0 ? 'P' : 'L';
             $warga = User::updateOrCreate(
                 ['email' => "warga$i@rw-smart.test"],
                 [
                     'name' => "Warga $i",
                     'password' => Hash::make('password123'),
-                    'role_id' => $wargaRole->id
+                    'role_id' => $wargaRole->id,
+                    'jenis_kelamin' => $jk,
                 ]
             );
             UserProfile::updateOrCreate(
@@ -68,7 +94,8 @@ class DemoDataSeeder extends Seeder
                     'no_hp' => "08123456789$i",
                     'alamat' => "Jl. Contoh No. $i, RT 01/RW 02",
                     'status' => 'aktif',
-                    'role_id' => $wargaRole->id
+                    'role_id' => $wargaRole->id,
+                    'jenis_kelamin' => $jk,
                 ]
             );
         }

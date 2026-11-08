@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Umkm extends Model
 {
     protected $fillable = [
-        'user_id', 'nama_usaha', 'kategori', 'deskripsi', 'alamat', 'whatsapp',
+        'user_id', 'rt_id', 'cakupan', 'nama_usaha', 'kategori', 'deskripsi', 'alamat', 'whatsapp',
         'foto_toko', 'latitude', 'longitude', 'status', 'moderated_by', 'moderated_at', 'catatan_moderasi',
     ];
 
@@ -16,6 +16,11 @@ class Umkm extends Model
     public function pemilik()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function rt()
+    {
+        return $this->belongsTo(Rt::class, 'rt_id');
     }
 
     public function produk()

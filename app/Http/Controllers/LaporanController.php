@@ -9,6 +9,7 @@ use App\Models\Laporan;
 use App\Models\Kas;
 use App\Models\User;
 use App\Models\Iuran;
+use App\Models\Rt;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LaporanExport;
 use App\Exports\PembayaranExport;
@@ -20,13 +21,28 @@ class LaporanController extends Controller
 {
     public function index()
     {
-        $laporan = Laporan::with('creator')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        $warga = User::whereHas('role', function($q) {
-            $q->where('nama_role', 'warga');
-        })->get();
+        $user = Auth::user();
+
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $laporan = Laporan::with('creator')
+                ->where('created_by', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            $warga = User::whereHas('role', function ($q) {
+                $q->where('nama_role', 'warga');
+            })->whereHas('profile', function ($q) use ($rtId) {
+                $q->where('rt_id', $rtId);
+            })->get();
+        } else {
+            $laporan = Laporan::with('creator')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // RW does not manage per-citizen report directly
+            $warga = collect();
+        }
         
         $iuran = Iuran::dedupeCollection(
             Iuran::where('status', 'aktif')
@@ -35,29 +51,41 @@ class LaporanController extends Controller
                 ->orderBy('periode')
                 ->get()
         );
+
+        $rts = Rt::activeRt()->orderBy('kode_rt')->get();
         
-        return view('laporan.index', compact('laporan', 'warga', 'iuran'));
+        return view('laporan.index', compact('laporan', 'warga', 'iuran', 'rts', 'user'));
     }
     
     public function generate(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
             'jenis_laporan' => 'required',
             'periode_awal' => 'required|date',
             'periode_akhir' => 'required|date|after_or_equal:periode_awal',
+            'rt_id' => 'nullable|exists:rts,id',
         ]);
         
         $periodeAwal = $request->periode_awal;
         $periodeAkhir = $request->periode_akhir;
+        $rtId = $request->rt_id;
         
-        $pemasukan = Kas::where('jenis', 'masuk')
-            ->whereBetween('tanggal', [$periodeAwal, $periodeAkhir])
-            ->sum('nominal');
+        $queryMasuk = Kas::where('jenis', 'masuk')->whereBetween('tanggal', [$periodeAwal, $periodeAkhir]);
+        $queryKeluar = Kas::where('jenis', 'keluar')->whereBetween('tanggal', [$periodeAwal, $periodeAkhir]);
+
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $queryMasuk->where('rt_id', $rtId);
+            $queryKeluar->where('rt_id', $rtId);
+        } elseif ($rtId) {
+            $queryMasuk->where('rt_id', $rtId);
+            $queryKeluar->where('rt_id', $rtId);
+        }
         
-        $pengeluaran = Kas::where('jenis', 'keluar')
-            ->whereBetween('tanggal', [$periodeAwal, $periodeAkhir])
-            ->sum('nominal');
-        
+        $pemasukan = $queryMasuk->sum('nominal');
+        $pengeluaran = $queryKeluar->sum('nominal');
         $saldoAkhir = $pemasukan - $pengeluaran;
         
         $kodeLaporan = 'LAP' . date('YmdHis');
@@ -74,39 +102,66 @@ class LaporanController extends Controller
         ]);
         
         if ($request->has('export_excel')) {
-            return $this->exportExcel($periodeAwal, $periodeAkhir, $request->jenis_laporan);
+            return $this->exportExcel($periodeAwal, $periodeAkhir, $request->jenis_laporan, $rtId);
         } elseif ($request->has('export_pdf')) {
-            return $this->exportPdf($periodeAwal, $periodeAkhir, $request->jenis_laporan);
+            return $this->exportPdf($periodeAwal, $periodeAkhir, $request->jenis_laporan, $rtId);
         }
         
-        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil digenerate');
+        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dibuat.');
     }
     
-    public function exportExcel($periodeAwal, $periodeAkhir, $jenisLaporan)
+    public function exportExcel($periodeAwal, $periodeAkhir, $jenisLaporan, $rtId = null)
     {
-        $pembayaran = Pembayaran::with(['user', 'iuran'])
+        $user = Auth::user();
+        $query = Pembayaran::with(['user.profile', 'iuran'])
             ->whereBetween('tanggal_bayar', [$periodeAwal, $periodeAkhir])
-            ->where('status', 'lunas')
-            ->get();
+            ->where('status', 'lunas');
+
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $query->whereHas('user.profile', function ($q) use ($rtId) {
+                $q->where('rt_id', $rtId);
+            });
+        } elseif ($rtId) {
+            $query->whereHas('user.profile', function ($q) use ($rtId) {
+                $q->where('rt_id', $rtId);
+            });
+        }
+        
+        $pembayaran = $query->get();
         
         return Excel::download(new LaporanExport($pembayaran, $periodeAwal, $periodeAkhir, $jenisLaporan), 
-            'laporan_iuran_' . $periodeAwal . '_to_' . $periodeAkhir . '.xlsx');
+            'laporan_' . $jenisLaporan . '_' . $periodeAwal . '_to_' . $periodeAkhir . '.xlsx');
     }
     
-    public function exportPdf($periodeAwal, $periodeAkhir, $jenisLaporan)
+    public function exportPdf($periodeAwal, $periodeAkhir, $jenisLaporan, $rtId = null)
     {
-        $pembayaran = Pembayaran::with(['user', 'iuran'])
+        $user = Auth::user();
+        $queryBayar = Pembayaran::with(['user.profile', 'iuran'])
             ->whereBetween('tanggal_bayar', [$periodeAwal, $periodeAkhir])
-            ->where('status', 'lunas')
-            ->get();
-        
-        $pemasukan = Kas::where('jenis', 'masuk')
-            ->whereBetween('tanggal', [$periodeAwal, $periodeAkhir])
-            ->sum('nominal');
-        
-        $pengeluaran = Kas::where('jenis', 'keluar')
-            ->whereBetween('tanggal', [$periodeAwal, $periodeAkhir])
-            ->sum('nominal');
+            ->where('status', 'lunas');
+
+        $queryMasuk = Kas::where('jenis', 'masuk')->whereBetween('tanggal', [$periodeAwal, $periodeAkhir]);
+        $queryKeluar = Kas::where('jenis', 'keluar')->whereBetween('tanggal', [$periodeAwal, $periodeAkhir]);
+
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $queryBayar->whereHas('user.profile', function ($q) use ($rtId) {
+                $q->where('rt_id', $rtId);
+            });
+            $queryMasuk->where('rt_id', $rtId);
+            $queryKeluar->where('rt_id', $rtId);
+        } elseif ($rtId) {
+            $queryBayar->whereHas('user.profile', function ($q) use ($rtId) {
+                $q->where('rt_id', $rtId);
+            });
+            $queryMasuk->where('rt_id', $rtId);
+            $queryKeluar->where('rt_id', $rtId);
+        }
+
+        $pembayaran = $queryBayar->get();
+        $pemasukan = $queryMasuk->sum('nominal');
+        $pengeluaran = $queryKeluar->sum('nominal');
         
         $data = [
             'pembayaran' => $pembayaran,
@@ -119,16 +174,29 @@ class LaporanController extends Controller
         ];
         
         $pdf = Pdf::loadView('laporan.pdf', $data);
-        return $pdf->download('laporan_iuran_' . $periodeAwal . '.pdf');
+        return $pdf->download('laporan_' . $jenisLaporan . '_' . $periodeAwal . '.pdf');
     }
     
     public function laporanPerWarga(Request $request)
     {
+        $userAuth = Auth::user();
+
         $request->validate([
             'user_id' => 'required',
             'periode_awal' => 'required|date',
             'periode_akhir' => 'required|date|after_or_equal:periode_awal',
         ]);
+
+        $targetUser = User::with('profile')->findOrFail($request->user_id);
+
+        if ($userAuth->isAdminRt()) {
+            $rtId = $userAuth->managedRtId();
+            abort_if(
+                (int) optional($targetUser->profile)->rt_id !== (int) $rtId,
+                403,
+                'Akses ditolak - Warga tidak berada di wilayah RT Anda.'
+            );
+        }
         
         $pembayaran = Pembayaran::with(['iuran'])
             ->where('user_id', $request->user_id)
@@ -136,7 +204,7 @@ class LaporanController extends Controller
             ->where('status', 'lunas')
             ->get();
         
-        $user = User::find($request->user_id);
+        $user = $targetUser;
         
         if ($request->has('export_excel')) {
             return Excel::download(new PembayaranExport($pembayaran, $user, $request->periode_awal, $request->periode_akhir),

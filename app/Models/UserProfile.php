@@ -44,6 +44,11 @@ class UserProfile extends Model
         return $this->belongsTo(Rt::class, 'rt_id');
     }
 
+    public function rt()
+    {
+        return $this->belongsTo(Rt::class, 'rt_id');
+    }
+
     public function kartuKeluarga()
     {
         return $this->belongsTo(KartuKeluarga::class);

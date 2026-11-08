@@ -73,6 +73,13 @@
                         }
                     @endphp
 
+                    <li class="nav-item me-1">
+                        <button type="button" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-sm px-2 py-1 emergency-panic-btn" data-bs-toggle="modal" data-bs-target="#modalGlobalPanic" title="Tombol Darurat (Panic Button)" aria-label="Tombol Darurat">
+                            <i class="fas fa-triangle-exclamation fa-beat text-white"></i>
+                            <span class="d-none d-sm-inline fw-bold small text-white">DARURAT</span>
+                        </button>
+                    </li>
+
                     <li class="nav-item">
                         <button type="button" class="theme-toggle" id="themeToggleBtn" title="Ganti mode tampilan" aria-label="Ganti mode tampilan">
                             <i class="fas fa-moon" id="themeToggleIcon"></i>
@@ -149,116 +156,324 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="p-3 d-flex flex-column h-100">
-            <div class="sidebar-brand">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="sidebar-logo">
-                        <i class="fas fa-wallet fa-2x"></i>
-                    </div>
-                    <div>
-                        <h5 class="sidebar-title">KAS RW</h5>
-                        <p class="sidebar-subtitle">Keuangan RW</p>
+            @if(Auth::check() && Auth::user()->isAdminRt())
+                {{-- ==================== B. REVISI SIDEBAR RT ==================== --}}
+                <div class="sidebar-brand">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="sidebar-logo">
+                            <i class="fas fa-landmark fa-2x text-warning"></i>
+                        </div>
+                        <div>
+                            <h5 class="sidebar-title text-warning">RT {{ Auth::user()->getRtKode() ?? '01' }}</h5>
+                            <p class="sidebar-subtitle text-white-50">Pengurus Wilayah</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Utama</div>
-                <nav class="nav flex-column">
-                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a>
-                </nav>
-            </div>
+                {{-- 1. UTAMA --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">UTAMA</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard RT
+                        </a>
+                    </nav>
+                </div>
 
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Transaksi</div>
-                <nav class="nav flex-column">
-                    @if(Auth::check() && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara') || Auth::user()->hasRole('warga')))
+                {{-- 2. ADMINISTRASI WARGA --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">ADMINISTRASI WARGA</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('kartu-keluarga.*', 'warga.index', 'warga.show', 'warga.create', 'warga.edit') ? 'active' : '' }}" href="{{ route('kartu-keluarga.index') }}">
+                            <i class="fas fa-id-card"></i> Data Keluarga & Warga
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('warga.mutasi*') ? 'active' : '' }}" href="{{ route('warga.mutasi') }}">
+                            <i class="fas fa-exchange-alt"></i> Mutasi Warga
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 3. KEUANGAN RT --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">KEUANGAN RT</div>
+                    <nav class="nav flex-column">
                         <a class="nav-link {{ request()->routeIs('pembayaran.*') ? 'active' : '' }}" href="{{ route('pembayaran.index') }}">
-                            <i class="fas fa-hand-holding-usd"></i> Pembayaran
+                            <i class="fas fa-hand-holding-usd"></i> Pembayaran Iuran
                         </a>
-                    @endif
-                    @if(Auth::check() && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara')))
                         <a class="nav-link {{ request()->routeIs('pengeluaran.*') ? 'active' : '' }}" href="{{ route('pengeluaran.index') }}">
-                            <i class="fas fa-shopping-cart"></i> Pengeluaran
+                            <i class="fas fa-shopping-cart"></i> Pengeluaran RT
                         </a>
-                    @endif
-                    @if(Auth::check() && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara')))
                         <a class="nav-link {{ request()->routeIs('kas.*') ? 'active' : '' }}" href="{{ route('kas.index') }}">
-                            <i class="fas fa-chart-line"></i> Kas RW
+                            <i class="fas fa-chart-line"></i> Kas RT
                         </a>
-                    @endif
-                </nav>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Layanan Masyarakat</div>
-                @php
-                    $layananAktif = request()->routeIs(
-                        'bank-sampah.*', 'layanan.umkm.*', 'layanan.surat.*', 'layanan.posyandu.*',
-                        'layanan.ronda.*', 'kegiatan.*', 'aspirasi.*', 'kas.*', 'peta-wilayah.*'
-                    );
-                @endphp
-                <nav class="nav flex-column">
-                    <button class="nav-link service-menu-toggle {{ $layananAktif ? '' : 'collapsed' }} {{ $layananAktif ? 'active' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#layananSubmenu" aria-expanded="{{ $layananAktif ? 'true' : 'false' }}" aria-controls="layananSubmenu">
-                        <i class="fas fa-handshake-angle"></i> Layanan
-                        <i class="fas fa-chevron-down service-chevron"></i>
-                    </button>
-                    <div class="collapse service-submenu {{ $layananAktif ? 'show' : '' }}" id="layananSubmenu">
-                        <a class="nav-link {{ request()->routeIs('bank-sampah.*') ? 'active' : '' }}" href="{{ route('bank-sampah.index') }}"><i class="fas fa-recycle"></i> Bank Sampah</a>
-                        <a class="nav-link {{ request()->routeIs('layanan.umkm.*') ? 'active' : '' }}" href="{{ route('layanan.umkm.index') }}"><i class="fas fa-store"></i> UMKM</a>
-                        <a class="nav-link {{ request()->routeIs('layanan.surat.*') ? 'active' : '' }}" href="{{ route('layanan.surat.index') }}"><i class="fas fa-envelope-open-text"></i> Surat Menyurat</a>
-                        <a class="nav-link {{ request()->routeIs('layanan.posyandu.*') ? 'active' : '' }}" href="{{ route('layanan.posyandu.index') }}"><i class="fas fa-baby"></i> Posyandu</a>
-                        <a class="nav-link {{ request()->routeIs('layanan.ronda.*') ? 'active' : '' }}" href="{{ route('layanan.ronda.index') }}"><i class="fas fa-shield-halved"></i> Keamanan / Ronda</a>
-                        <a class="nav-link {{ request()->routeIs('kegiatan.*') ? 'active' : '' }}" href="{{ route('kegiatan.index') }}"><i class="fas fa-calendar-check"></i> Kegiatan</a>
-                        <a class="nav-link {{ request()->routeIs('peta-wilayah.*') ? 'active' : '' }}" href="{{ route('peta-wilayah.index') }}"><i class="fas fa-map-location-dot"></i> Peta Wilayah</a>
-                        <a class="nav-link {{ request()->routeIs('aspirasi.*') ? 'active' : '' }}" href="{{ route('aspirasi.index') }}"><i class="fas fa-comment-dots"></i> Aspirasi</a>
-                        <a class="nav-link {{ request()->routeIs('kas.*') ? 'active' : '' }}" href="{{ route('kas.index') }}"><i class="fas fa-wallet"></i> Kas</a>
-                    </div>
-                </nav>
-            </div>
-
-            <!-- BAGIAN YANG DI-RECOVERY DARI ERROR -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Master Data</div>
-                <nav class="nav flex-column">
-                    @if(Auth::check() && (Auth::user()->isAdminRw() || Auth::user()->isAdminRt()))
-                        <a class="nav-link {{ request()->routeIs('warga.*') ? 'active' : '' }}" href="{{ route('warga.index') }}">
-                            <i class="fas fa-users"></i> Data Warga
-                        </a>
-                    @endif
-                    @if(Auth::check() && Auth::user()->isAdminRw())
-                        <a class="nav-link {{ request()->routeIs('rts.*') ? 'active' : '' }}" href="{{ route('rts.index') }}">
-                            <i class="fas fa-sitemap"></i> Kelola RT
-                        </a>
-                    @endif
-                    @if(Auth::check() && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara')))
-                        <a class="nav-link {{ request()->routeIs('iuran.*') ? 'active' : '' }}" href="{{ route('iuran.index') }}">
-                            <i class="fas fa-money-bill-wave"></i> Kelola Iuran
-                        </a>
-                    @endif
-                </nav>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Laporan</div>
-                <nav class="nav flex-column">
-                    @if(Auth::check() && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara')))
                         <a class="nav-link {{ request()->routeIs('laporan.*') ? 'active' : '' }}" href="{{ route('laporan.index') }}">
-                            <i class="fas fa-file-alt"></i> Laporan
+                            <i class="fas fa-file-invoice-dollar"></i> Laporan Keuangan RT
                         </a>
-                    @endif
-                </nav>
-            </div>
+                    </nav>
+                </div>
 
-            <div class="sidebar-section mt-auto">
-                <div class="sidebar-section-title">Akun</div>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="{{ route('profile.index') }}">
-                        <i class="fas fa-user-circle"></i> Profil Saya
-                    </a>
-                </nav>
-            </div>
+                {{-- 4. PELAYANAN MASYARAKAT --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">PELAYANAN MASYARAKAT</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('bank-sampah.*') ? 'active' : '' }}" href="{{ route('bank-sampah.index') }}">
+                            <i class="fas fa-recycle"></i> Bank Sampah
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('layanan.umkm.*') ? 'active' : '' }}" href="{{ route('layanan.umkm.index') }}">
+                            <i class="fas fa-store"></i> UMKM RT
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('layanan.posyandu.*') ? 'active' : '' }}" href="{{ route('layanan.posyandu.index') }}">
+                            <i class="fas fa-baby"></i> Posyandu
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('layanan.ronda.*') ? 'active' : '' }}" href="{{ route('layanan.ronda.index') }}">
+                            <i class="fas fa-shield-halved"></i> Keamanan / Ronda
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('kegiatan.*') && request('tingkat') !== 'rw' ? 'active' : '' }}" href="{{ route('kegiatan.index') }}">
+                            <i class="fas fa-calendar-check"></i> Manajemen Kegiatan
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('aspirasi.*') ? 'active' : '' }}" href="{{ route('aspirasi.index') }}">
+                            <i class="fas fa-comment-dots"></i> Aspirasi Warga
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('rt.verifikasi.*') ? 'active' : '' }}" href="{{ route('rt.verifikasi.permohonan') }}">
+                            <i class="fas fa-file-signature"></i> Manajemen Permohonan
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 5. INFORMASI --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">INFORMASI</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('rt.informasi.pengumuman') ? 'active' : '' }}" href="{{ route('rt.informasi.pengumuman') }}">
+                            <i class="fas fa-bullhorn"></i> Pengumuman RW
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('kegiatan.index') && request('tingkat') === 'rw' ? 'active' : '' }}" href="{{ route('kegiatan.index', ['tingkat' => 'rw']) }}">
+                            <i class="fas fa-calendar-alt"></i> Agenda RW
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 6. AKUN --}}
+                <div class="sidebar-section mt-auto">
+                    <div class="sidebar-section-title">AKUN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
+                            <i class="fas fa-user-circle"></i> Profil Ketua RT
+                        </a>
+                    </nav>
+                </div>
+
+            @elseif(Auth::check() && Auth::user()->isWarga())
+                {{-- ==================== C. REVISI SIDEBAR WARGA ==================== --}}
+                <div class="sidebar-brand">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="sidebar-logo">
+                            <i class="fas fa-user-friends fa-2x text-emerald-400"></i>
+                        </div>
+                        <div>
+                            <h5 class="sidebar-title">PORTAL WARGA</h5>
+                            <p class="sidebar-subtitle text-white-50">Layanan Warga RT {{ Auth::user()->getRtKode() ?? '01' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 1. BERANDA --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">BERANDA</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard Warga
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 2. INFORMASI --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">INFORMASI</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('warga.pengumuman') && request('scope') === 'rt' ? 'active' : '' }}" href="{{ route('warga.pengumuman', ['scope' => 'rt']) }}">
+                            <i class="fas fa-bullhorn"></i> Pengumuman RT
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('warga.pengumuman') && request('scope') === 'rw' ? 'active' : '' }}" href="{{ route('warga.pengumuman', ['scope' => 'rw']) }}">
+                            <i class="fas fa-newspaper"></i> Pengumuman RW
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('kegiatan.*') ? 'active' : '' }}" href="{{ route('kegiatan.index') }}">
+                            <i class="fas fa-calendar-check"></i> Agenda Kegiatan
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 3. LAYANAN --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">LAYANAN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('layanan.surat.*') ? 'active' : '' }}" href="{{ route('layanan.surat.index') }}">
+                            <i class="fas fa-envelope-open-text"></i> Permohonan Surat
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('bank-sampah.*') ? 'active' : '' }}" href="{{ route('bank-sampah.index') }}">
+                            <i class="fas fa-recycle"></i> Bank Sampah
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('layanan.umkm.*') ? 'active' : '' }}" href="{{ route('layanan.umkm.index') }}">
+                            <i class="fas fa-store"></i> Info UMKM
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('layanan.posyandu.*') ? 'active' : '' }}" href="{{ route('layanan.posyandu.index') }}">
+                            <i class="fas fa-baby"></i> Info Posyandu
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('aspirasi.*') ? 'active' : '' }}" href="{{ route('aspirasi.index') }}">
+                            <i class="fas fa-comment-dots"></i> Aspirasi & Pengaduan
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 4. KEUANGAN --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">KEUANGAN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('pembayaran.index') ? 'active' : '' }}" href="{{ route('pembayaran.index') }}">
+                            <i class="fas fa-file-invoice"></i> Tagihan Iuran
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('pembayaran.create') ? 'active' : '' }}" href="{{ route('pembayaran.create') }}">
+                            <i class="fas fa-credit-card"></i> Pembayaran Iuran
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 5. PERMOHONAN SAYA --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">PERMOHONAN SAYA</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('layanan.surat.index') ? 'active' : '' }}" href="{{ route('layanan.surat.index') }}">
+                            <i class="fas fa-clipboard-list"></i> Status & Riwayat Permohonan
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 6. AKUN --}}
+                <div class="sidebar-section mt-auto">
+                    <div class="sidebar-section-title">AKUN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('kartu-keluarga.*') ? 'active' : '' }}" href="{{ route('kartu-keluarga.saya') }}">
+                            <i class="fas fa-id-card"></i> Data Keluarga Saya
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
+                            <i class="fas fa-user-circle"></i> Profil Saya
+                        </a>
+                    </nav>
+                </div>
+
+            @else
+                {{-- ==================== A. SIDEBAR RW ==================== --}}
+                <div class="sidebar-brand">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="sidebar-logo">
+                            <i class="fas fa-building fa-2x text-emerald-400"></i>
+                        </div>
+                        <div>
+                            <h5 class="sidebar-title">PENGURUS RW</h5>
+                            <p class="sidebar-subtitle text-white-50">Pengawas & Koordinator</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 1. UTAMA --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">UTAMA</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard RW
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 2. WILAYAH --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">WILAYAH</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('rts.*') ? 'active' : '' }}" href="{{ route('rts.index') }}">
+                            <i class="fas fa-sitemap"></i> Manajemen RT
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('rw.monitoring.warga') ? 'active' : '' }}" href="{{ route('rw.monitoring.warga') }}">
+                            <i class="fas fa-users-viewfinder"></i> Monitoring Warga
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 3. KEUANGAN --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">KEUANGAN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('rw.audit.*') && !request()->routeIs('rw.audit.riwayat') ? 'active' : '' }}" href="{{ route('rw.audit.index') }}">
+                            <i class="fas fa-wallet"></i> Keuangan dan Audit RT
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 4. KEGIATAN --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">KEGIATAN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('kegiatan.*') && (request('cakupan') === 'rw' || request('tingkat') === 'rw') ? 'active' : '' }}" href="{{ route('kegiatan.index', ['cakupan' => 'rw']) }}">
+                            <i class="fas fa-calendar-alt"></i> Kegiatan RW
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('rw.monitoring.kegiatan') ? 'active' : '' }}" href="{{ route('rw.monitoring.kegiatan') }}">
+                            <i class="fas fa-calendar-check"></i> Monitoring Kegiatan RT
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 5. LAYANAN --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">LAYANAN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('rw.monitoring.layanan') ? 'active' : '' }}" href="{{ route('rw.monitoring.layanan') }}">
+                            <i class="fas fa-handshake-angle"></i> Monitoring Layanan RT
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 6. KOORDINASI --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">KOORDINASI</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}" href="{{ route('pengumuman.index') }}">
+                            <i class="fas fa-bullhorn"></i> Pengumuman RW
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 7. PENGAWASAN --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">PENGAWASAN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('rw.pengawasan.persetujuan') ? 'active' : '' }}" href="{{ route('rw.pengawasan.persetujuan') }}">
+                            <i class="fas fa-stamp"></i> Persetujuan RW
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('rw.audit.riwayat') ? 'active' : '' }}" href="{{ route('rw.audit.riwayat') }}">
+                            <i class="fas fa-list-check"></i> Log Aktivitas & Audit Trail
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 8. LAPORAN --}}
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">LAPORAN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('laporan.*') ? 'active' : '' }}" href="{{ route('laporan.index') }}">
+                            <i class="fas fa-file-invoice"></i> Laporan RW
+                        </a>
+                    </nav>
+                </div>
+
+                {{-- 9. AKUN --}}
+                <div class="sidebar-section mt-auto">
+                    <div class="sidebar-section-title">AKUN</div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
+                            <i class="fas fa-user-circle"></i> Profil dan Pengaturan
+                        </a>
+                    </nav>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -485,6 +700,42 @@
             }
         });
     </script>
+    <!-- Global Panic Button Modal -->
+    <div class="modal fade" id="modalGlobalPanic" tabindex="-1" aria-labelledby="modalGlobalPanicLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger border-2 shadow-lg">
+                <form method="POST" action="{{ route('layanan.ronda.panic.store') }}">
+                    @csrf
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title fw-bold" id="modalGlobalPanicLabel">
+                            <i class="fas fa-triangle-exclamation fa-beat me-2"></i>PANGGILAN DARURAT (PANIC BUTTON)
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-tower-broadcast fa-3x text-danger animate-pulse"></i>
+                        </div>
+                        <h5 class="fw-bold text-danger mb-2">Peringatan Keadaan Darurat!</h5>
+                        <p class="small text-muted mb-3">
+                            Menekan tombol ini akan membunyikan alarm darurat dan mengirimkan sinyal bahaya beserta lokasi RT Anda kepada seluruh pengurus RT, petugas ronda malam, dan warga sekitar.
+                        </p>
+                        <div class="mb-3 text-start">
+                            <label class="form-label small fw-semibold">Deskripsi Kejadian Darurat <small class="text-muted">(Opsional / Cepat)</small></label>
+                            <input type="text" name="deskripsi" class="form-control" placeholder="Contoh: Ada kebakaran / pencurian / butuh ambulans segera">
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger btn-lg fw-bold px-4">
+                            <i class="fas fa-bell me-1"></i>KIRIM SINYAL DARURAT SEKARANG!
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     @stack('scripts')
     @include('partials.whatsapp-help')
 </body>

@@ -20,6 +20,16 @@ class KartuKeluarga extends Model
 
     public function anggota()
     {
-        return $this->hasMany(UserProfile::class);
+        return $this->hasMany(UserProfile::class, 'kartu_keluarga_id');
+    }
+
+    public function getNamaKepalaKeluargaAttribute(): string
+    {
+        if ($this->kepalaKeluarga) {
+            return $this->kepalaKeluarga->name;
+        }
+
+        $kepala = $this->anggota->firstWhere('status_hubungan_keluarga', 'Kepala Keluarga');
+        return $kepala ? $kepala->nama_lengkap : 'Belum Ditentukan';
     }
 }

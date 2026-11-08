@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kegiatan extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'rt_id', 'rw_id', 'cakupan', 'judul', 'kategori', 'tanggal_mulai',
-        'tanggal_selesai', 'lokasi', 'latitude', 'longitude', 'kuota_peserta', 'deskripsi', 'status', 'created_by', 'creator_role',
+        'tanggal_selesai', 'lokasi', 'latitude', 'longitude', 'kuota_peserta', 'deskripsi', 'status', 'created_by', 'creator_role', 'deleted_by',
     ];
 
     protected $casts = [
@@ -17,6 +20,11 @@ class Kegiatan extends Model
         'latitude' => 'float',
         'longitude' => 'float',
     ];
+
+    public function getNamaKegiatanAttribute(): string
+    {
+        return $this->attributes['judul'] ?? '';
+    }
 
     public function rsvps()
     {
@@ -41,5 +49,15 @@ class Kegiatan extends Model
     public function pembuat()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function creator()
+    {
+        return $this->pembuat();
+    }
+
+    public function deleter()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

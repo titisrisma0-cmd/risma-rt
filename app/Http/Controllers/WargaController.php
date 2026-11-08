@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\AuditLog;
+use App\Models\MutasiWarga;
 use App\Models\User;
 use App\Models\Warga;
 use App\Models\UserProfile;
@@ -28,6 +30,13 @@ class WargaController extends Controller
         }
         
         $query = Warga::where('role_id', $roleWarga->id)->with(['profile.wilayahRt']);
+
+        // Filter berdasarkan RT (Hanya untuk Admin RW)
+        if (Auth::user()->isAdminRw() && $request->filled('rt_id')) {
+            $query->whereHas('profile', function($q) use ($request) {
+                $q->where('rt_id', $request->rt_id);
+            });
+        }
         
         // Filter berdasarkan Nama
         if ($request->filled('nama')) {
@@ -98,16 +107,20 @@ class WargaController extends Controller
         $this->authorize('create', Warga::class);
 
         $request->validate([
-            'nama_lengkap' => 'required',
-            'email' => 'required|email|unique:users',
-            'nik' => 'required|unique:user_profiles',
-            'no_kk' => 'required|unique:user_profiles',
-            'tempat_lahir' => 'required',
+            'nama_lengkap' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'nik' => 'required|string|digits:16|unique:user_profiles,nik',
+            'no_kk' => 'required|string|digits:16',
+            'tempat_lahir' => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
-            'jenis_kelamin' => 'required',
-            'alamat' => 'required',
-            'no_hp' => 'required',
+            'jenis_kelamin' => 'required|in:L,P',
+            'alamat' => 'required|string|max:500',
+            'no_hp' => 'required|string|max:20',
             'rt_id' => Auth::user()->isAdminRw() ? 'required|exists:rts,id' : 'nullable',
+        ], [
+            'nik.digits' => 'NIK harus tepat 16 digit angka.',
+            'nik.unique' => 'NIK ini sudah terdaftar dalam sistem.',
+            'no_kk.digits' => 'Nomor KK harus tepat 16 digit angka.',
         ]);
         
         $roleWarga = Role::where('nama_role', 'warga')->first();
@@ -118,29 +131,45 @@ class WargaController extends Controller
         
         $rtId = $this->resolveRtId($request);
 
-        $user = Warga::create([
-            'name' => $request->nama_lengkap,
-            'email' => $request->email,
-            'password' => Hash::make('password123'),
-            'role_id' => $roleWarga->id,
-            'rt_id' => $rtId,
-        ]);
-        
-        UserProfile::updateOrCreate(['user_id' => $user->id], [
-            'user_id' => $user->id,
-            'role_id' => $roleWarga->id,
-            'rt_id' => $rtId,
-            'no_kk' => $request->no_kk,
-            'nik' => $request->nik,
-            'nama_lengkap' => $request->nama_lengkap,
-            'tempat_lahir' => $request->tempat_lahir,
-            'tanggal_lahir' => $request->tanggal_lahir,
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'alamat' => $request->alamat,
-            'no_hp' => $request->no_hp,
-            'pekerjaan' => $request->pekerjaan,
-            'status' => 'aktif'
-        ]);
+        DB::transaction(function () use ($request, $roleWarga, $rtId) {
+            $user = Warga::create([
+                'name' => $request->nama_lengkap,
+                'email' => $request->email,
+                'password' => Hash::make('password123'),
+                'role_id' => $roleWarga->id,
+                'rt_id' => $rtId,
+                'jenis_kelamin' => $request->jenis_kelamin,
+            ]);
+
+            // Cari atau hubungkan Kartu Keluarga yang ada
+            $kk = \App\Models\KartuKeluarga::firstOrCreate(
+                ['no_kk' => $request->no_kk],
+                [
+                    'rt_id' => $rtId,
+                    'alamat' => $request->alamat,
+                    'status_rumah' => 'tetap',
+                    'kepala_keluarga_user_id' => $user->id,
+                ]
+            );
+
+            UserProfile::updateOrCreate(['user_id' => $user->id], [
+                'user_id' => $user->id,
+                'kartu_keluarga_id' => $kk->id,
+                'role_id' => $roleWarga->id,
+                'rt_id' => $rtId,
+                'no_kk' => $request->no_kk,
+                'nik' => $request->nik,
+                'nama_lengkap' => $request->nama_lengkap,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'alamat' => $request->alamat,
+                'no_hp' => $request->no_hp,
+                'pekerjaan' => $request->pekerjaan,
+                'status_hubungan_keluarga' => $request->status_hubungan_keluarga ?? 'Anggota',
+                'status' => 'aktif'
+            ]);
+        });
         
         return redirect()->route('warga.index')->with('success', 'Warga berhasil ditambahkan');
     }
@@ -257,6 +286,86 @@ class WargaController extends Controller
         }
         
         return redirect()->route('warga.index')->with('success', 'Warga ' . $user->name . ' berhasil diverifikasi dan dapat login ke aplikasi.');
+    }
+
+    public function mutasi(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user->isAdminRt() || $user->isAdminRw(), 403);
+
+        $query = MutasiWarga::with(['rt', 'creator', 'profile']);
+        $selectedRt = null;
+
+        if ($user->isAdminRt()) {
+            $query->where('rt_id', $user->managedRtId());
+            $selectedRt = $user->managedRt ?? Rt::find($user->managedRtId());
+        } elseif ($request->filled('rt_id')) {
+            $query->where('rt_id', $request->rt_id);
+            $selectedRt = Rt::find($request->rt_id);
+        }
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis_mutasi', $request->jenis);
+        }
+
+        $mutasiList = $query->latest('tanggal_mutasi')->paginate(15)->withQueryString();
+        $rts = $user->isAdminRw() ? Rt::orderBy('kode_rt')->get() : collect();
+
+        // Get list of warga for dropdown in add mutation modal
+        $wargaList = collect();
+        if ($user->isAdminRt()) {
+            $wargaList = UserProfile::where('rt_id', $user->managedRtId())->orderBy('nama_lengkap')->get();
+        }
+
+        return view('warga.mutasi', compact('user', 'mutasiList', 'rts', 'selectedRt', 'wargaList'));
+    }
+
+    public function storeMutasi(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user->isAdminRt() || $user->isAdminRw(), 403);
+
+        $validated = $request->validate([
+            'rt_id' => $user->isAdminRw() ? ['required', 'exists:rts,id'] : ['nullable'],
+            'user_profile_id' => ['nullable', 'exists:user_profiles,id'],
+            'nama_warga' => ['required', 'string', 'max:255'],
+            'nik' => ['nullable', 'string', 'max:30'],
+            'no_kk' => ['nullable', 'string', 'max:30'],
+            'jenis_mutasi' => ['required', 'in:masuk,keluar,meninggal,pindah_rt,lainnya'],
+            'tanggal_mutasi' => ['required', 'date'],
+            'keterangan' => ['nullable', 'string'],
+        ]);
+
+        $rtId = $user->isAdminRt() ? $user->managedRtId() : (int) $request->rt_id;
+
+        $mutasi = MutasiWarga::create([
+            'rt_id' => $rtId,
+            'user_profile_id' => $validated['user_profile_id'] ?? null,
+            'nama_warga' => $validated['nama_warga'],
+            'nik' => $validated['nik'] ?? null,
+            'no_kk' => $validated['no_kk'] ?? null,
+            'jenis_mutasi' => $validated['jenis_mutasi'],
+            'tanggal_mutasi' => $validated['tanggal_mutasi'],
+            'keterangan' => $validated['keterangan'] ?? null,
+            'created_by' => $user->id,
+        ]);
+
+        // If 'keluar' or 'meninggal', mark user profile nonaktif
+        if (!empty($validated['user_profile_id']) && in_array($validated['jenis_mutasi'], ['keluar', 'meninggal'])) {
+            UserProfile::where('id', $validated['user_profile_id'])->update(['status' => 'nonaktif']);
+        }
+
+        // Record into AuditLog
+        AuditLog::record(
+            action: 'mutasi_' . $validated['jenis_mutasi'],
+            entityType: 'mutasi_warga',
+            entityId: $mutasi->id,
+            deskripsi: "Pencatatan mutasi warga ({$validated['jenis_mutasi']}): {$validated['nama_warga']} tanggal {$validated['tanggal_mutasi']}. Keterangan: " . ($validated['keterangan'] ?: '-'),
+            rtId: $rtId,
+            userId: $user->id
+        );
+
+        return back()->with('success', 'Data mutasi warga berhasil dicatat.');
     }
 
     private function findWargaForAuthorization($id): Warga

@@ -2,164 +2,561 @@
 
 @section('content')
 <div class="container-fluid px-3 px-lg-4 py-3 umkm-page">
-    <header class="umkm-head">
-        <div><h2><i class="fas fa-store me-2"></i>UMKM Warga</h2><p>Temukan produk dan jasa warga sekitar.</p></div>
-        <a href="{{ route('dashboard') }}#layanan-masyarakat" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Kembali</a>
+    <header class="umkm-head mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <h2 class="h4 mb-1 fw-bold text-warning"><i class="fas fa-store me-2"></i>UMKM & Usaha Warga @if(isset($myRtId) && $isRt)<span class="badge bg-warning-subtle text-dark fs-6 ms-1">RT {{ str_pad($myRtId, 2, '0', STR_PAD_LEFT) }}</span>@endif</h2>
+            <p class="text-muted small mb-0">Pemberdayaan potensi ekonomi warga lokal, etalase produk, dan promosi usaha mikro.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
+        </div>
     </header>
 
-    @if(session('success'))<div class="alert alert-success py-2">{{ session('success') }}</div>@endif
-    @if($errors->any())<div class="alert alert-danger py-2">{{ $errors->first() }}</div>@endif
+    @if(session('success'))<div class="alert alert-success py-2 small mb-3"><i class="fas fa-check-circle me-1"></i>{{ session('success') }}</div>@endif
+    @if(session('error'))<div class="alert alert-danger py-2 small mb-3"><i class="fas fa-exclamation-circle me-1"></i>{{ session('error') }}</div>@endif
+    @if($errors->any())<div class="alert alert-danger py-2 small mb-3">{{ $errors->first() }}</div>@endif
 
-    <div class="umkm-actions">
-        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalToko"><i class="fas fa-store me-1"></i>{{ $tokoSaya ? 'Kelola Toko' : 'Buat Toko' }}</button>
-        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalProduk"><i class="fas fa-plus me-1"></i>Tambah Produk</button>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalToko"><i class="fas fa-store me-1"></i>{{ $tokoSaya ? 'Kelola Toko Saya' : 'Daftarkan Toko Saya' }}</button>
+        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalProduk"><i class="fas fa-plus me-1"></i>Tambah Produk/Jasa</button>
+        @if($isPengurus)
+            <button class="btn btn-sm btn-outline-warning text-dark" data-bs-toggle="modal" data-bs-target="#modalTambahUmkmWarga"><i class="fas fa-user-plus me-1"></i>Daftarkan Usaha Warga</button>
+        @endif
     </div>
 
-    <section class="umkm-summary">
-        <article><i class="fas fa-box-open orange"></i><div><strong>{{ $produk->count() }}</strong><span>Produk Aktif</span></div></article>
-        <article><i class="fas fa-layer-group blue"></i><div><strong>{{ $kategoriProduk->count() }}</strong><span>Kategori</span></div></article>
-        <article><i class="fas fa-shop green"></i><div><strong>{{ $tokoSaya ? 'Aktif' : 'Belum' }}</strong><span>Toko Saya</span></div></article>
+    <section class="umkm-summary mb-3">
+        <article class="p-3 rounded border bg-card d-flex align-items-center gap-3">
+            <i class="fas fa-box-open fa-2x text-warning"></i>
+            <div>
+                <strong class="fs-5 d-block text-warning">{{ $produk->count() }}</strong>
+                <span class="text-muted small">Produk Aktif di Katalog</span>
+            </div>
+        </article>
+        <article class="p-3 rounded border bg-card d-flex align-items-center gap-3">
+            <i class="fas fa-shop fa-2x text-success"></i>
+            <div>
+                <strong class="fs-5 d-block text-success">{{ $tokoSaya ? 'Aktif Terdaftar' : 'Belum Terdaftar' }}</strong>
+                <span class="text-muted small">Status Toko Saya</span>
+            </div>
+        </article>
+        <article class="p-3 rounded border bg-card d-flex align-items-center gap-3">
+            <i class="fas fa-layer-group fa-2x text-primary"></i>
+            <div>
+                <strong class="fs-5 d-block text-primary">{{ $kategoriProduk->count() }} Kategori</strong>
+                <span class="text-muted small">Kategori Usaha</span>
+            </div>
+        </article>
         @if($isPengurus)
-            <article><i class="fas fa-hourglass-half amber"></i><div><strong>{{ $produkPending->count() }}</strong><span>Perlu Moderasi</span></div></article>
+            <article class="p-3 rounded border bg-card d-flex align-items-center gap-3">
+                <i class="fas fa-hourglass-half fa-2x text-danger"></i>
+                <div>
+                    <strong class="fs-5 d-block text-danger">{{ $produkPending->count() }} Produk</strong>
+                    <span class="text-muted small">Perlu Moderasi RT/RW</span>
+                </div>
+            </article>
         @endif
     </section>
 
-    <nav class="nav nav-tabs umkm-tabs" role="tablist">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabKatalog" type="button">Katalog</button>
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabProdukSaya" type="button">{{ $isPengurus ? 'Kelola Semua Produk' : 'Produk Saya' }} <span class="badge bg-secondary">{{ $produkSaya->count() }}</span></button>
+    <nav class="nav nav-tabs mb-3" role="tablist">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabKatalog" type="button"><i class="fas fa-store me-1"></i>Katalog Produk & Jasa</button>
         @if($isPengurus)
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabModerasi" type="button">Moderasi <span class="badge bg-warning text-dark">{{ $produkPending->count() }}</span></button>
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabKelolaUmkm" type="button">
+                <i class="fas fa-briefcase me-1"></i>Daftar Toko/UMKM RT <span class="badge bg-secondary ms-1">{{ $umkmsRt->count() }}</span>
+            </button>
+        @endif
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabProdukSaya" type="button">
+            <i class="fas fa-boxes-stacked me-1"></i>{{ $isPengurus ? 'Kelola Semua Produk' : 'Produk Saya' }}
+            <span class="badge bg-secondary ms-1">{{ $produkSaya->count() }}</span>
+        </button>
+        @if($isPengurus)
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabModerasi" type="button">
+                <i class="fas fa-shield-halved me-1"></i>Moderasi Produk
+                @if($produkPending->count() > 0)
+                    <span class="badge bg-danger ms-1">{{ $produkPending->count() }}</span>
+                @endif
+            </button>
         @endif
     </nav>
 
-    <div class="tab-content umkm-tab-content">
-        <section class="tab-pane fade show active" id="tabKatalog">
-            <div class="umkm-card">
-                <form class="umkm-filter" method="GET">
-                    <div class="input-group input-group-sm"><span class="input-group-text"><i class="fas fa-search"></i></span><input class="form-control" name="q" value="{{ request('q') }}" placeholder="Cari produk, jasa, atau toko"></div>
-                    <select class="form-select form-select-sm" name="kategori"><option value="">Semua kategori</option>@foreach($kategoriProduk as $kategori)<option value="{{ $kategori }}" @selected(request('kategori') === $kategori)>{{ $kategori }}</option>@endforeach</select>
-                    <button class="btn btn-sm btn-primary">Terapkan</button>
-                    @if(request()->filled('q') || request()->filled('kategori'))<a href="{{ route('layanan.umkm.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a>@endif
-                </form>
+    <div class="tab-content">
+        {{-- TAB 1: KATALOG --}}
+        <div class="tab-pane fade show active" id="tabKatalog">
+            <div class="card border mb-3">
+                <div class="card-body p-3">
+                    <form class="row g-2 align-items-center" method="GET" action="{{ route('layanan.umkm.index') }}">
+                        <div class="col-md-5">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input class="form-control" name="q" value="{{ request('q') }}" placeholder="Cari produk, jasa, atau nama toko...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select form-select-sm" name="kategori">
+                                <option value="">Semua Kategori</option>
+                                @foreach($kategoriProduk as $kat)
+                                    <option value="{{ $kat }}" @selected(request('kategori') === $kat)>{{ $kat }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select form-select-sm" name="rt_id">
+                                <option value="">Semua RT</option>
+                                @foreach($rts as $rtItem)
+                                    <option value="{{ $rtItem->id }}" @selected(request('rt_id') == $rtItem->id)>RT {{ $rtItem->kode_rt }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex gap-1">
+                            <button class="btn btn-sm btn-primary flex-grow-1"><i class="fas fa-filter me-1"></i>Filter</button>
+                            @if(request()->filled('q') || request()->filled('kategori') || request()->filled('rt_id'))
+                                <a href="{{ route('layanan.umkm.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-                <div class="umkm-product-scroll">
-                    <div class="umkm-product-grid">
-                        @forelse($produk as $item)
-                            @php
-                                $nomorWhatsapp = preg_replace('/[^0-9]/', '', $item->umkm->whatsapp ?? '');
-                                if (str_starts_with($nomorWhatsapp, '0')) $nomorWhatsapp = '62' . substr($nomorWhatsapp, 1);
-                            @endphp
-                            <article class="umkm-product">
-                                <div class="umkm-photo">@if($item->foto)<img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama_produk }}">@else<i class="fas fa-box-open"></i>@endif</div>
-                                <div class="umkm-product-body">
-                                    <span class="umkm-category">{{ $item->kategori }}</span>
-                                    <h5>{{ $item->nama_produk }}</h5>
-                                    <small>{{ $item->umkm->nama_usaha ?? 'UMKM Warga' }}</small>
-                                    <strong>Rp {{ number_format($item->harga, 0, ',', '.') }}@if($item->satuan)<em>/{{ $item->satuan }}</em>@endif</strong>
-                                    <p>{{ str($item->deskripsi)->limit(65) }}</p>
-                                    @if($nomorWhatsapp)<a class="btn btn-sm btn-success" target="_blank" rel="noopener" href="https://wa.me/{{ $nomorWhatsapp }}"><i class="fab fa-whatsapp me-1"></i>Hubungi</a>@endif
+            <div class="row g-3">
+                @forelse($produk as $item)
+                    @php
+                        $nomorWhatsapp = preg_replace('/[^0-9]/', '', $item->umkm->whatsapp ?? '');
+                        if (str_starts_with($nomorWhatsapp, '0')) $nomorWhatsapp = '62' . substr($nomorWhatsapp, 1);
+                        $rtKodeItem = $item->umkm?->rt?->kode_rt ?? ($item->umkm?->pemilik?->getRtKode() ?? null);
+                    @endphp
+                    <div class="col-sm-6 col-lg-4 col-xl-3">
+                        <div class="card h-100 border shadow-sm product-card">
+                            <div class="product-thumb position-relative" style="height: 180px; overflow: hidden; background: #1e293b;">
+                                @if($item->foto)
+                                    <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama_produk }}" class="w-100 h-100 object-fit-cover">
+                                @else
+                                    <div class="w-100 h-100 d-grid place-content-center text-muted"><i class="fas fa-box-open fa-3x"></i></div>
+                                @endif
+                                <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">{{ $item->kategori }}</span>
+                                @if($rtKodeItem)
+                                    <span class="badge bg-dark bg-opacity-75 position-absolute top-0 end-0 m-2">RT {{ $rtKodeItem }}</span>
+                                @endif
+                            </div>
+                            <div class="card-body d-flex flex-column p-3">
+                                <h6 class="fw-bold mb-1 text-truncate" title="{{ $item->nama_produk }}">{{ $item->nama_produk }}</h6>
+                                <p class="small text-muted mb-2 text-truncate"><i class="fas fa-store me-1"></i>{{ $item->umkm->nama_usaha ?? 'UMKM Warga' }}</p>
+                                <p class="small text-secondary mb-3 flex-grow-1 line-clamp-2" style="font-size: 0.8rem;">{{ str($item->deskripsi)->limit(70) }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                                    <strong class="text-success fs-6">Rp {{ number_format($item->harga, 0, ',', '.') }}<small class="text-muted fw-normal">/{{ $item->satuan ?: 'pcs' }}</small></strong>
+                                    @if($nomorWhatsapp)
+                                        <a href="https://wa.me/{{ $nomorWhatsapp }}?text={{ urlencode('Halo, saya tertarik dengan produk ' . $item->nama_produk . ' yang ada di RW Smart.') }}" target="_blank" class="btn btn-xs btn-success"><i class="fab fa-whatsapp me-1"></i>Pesan</a>
+                                    @endif
                                 </div>
-                            </article>
-                        @empty
-                            <div class="umkm-empty"><i class="fas fa-store-slash"></i><span>Belum ada produk yang sesuai.</span></div>
-                        @endforelse
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-12"><div class="alert alert-light text-center py-5 text-muted"><i class="fas fa-store-slash fa-2x mb-2 d-block"></i>Belum ada produk aktif yang sesuai filter.</div></div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- TAB 2: DAFTAR TOKO / UMKM RT (KHUSUS PENGURUS) --}}
+        @if($isPengurus)
+            <div class="tab-pane fade" id="tabKelolaUmkm">
+                <div class="card border">
+                    <div class="card-header bg-card d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-semibold text-warning"><i class="fas fa-briefcase me-2"></i>Daftar Unit Usaha UMKM Warga</h6>
+                        <button class="btn btn-sm btn-outline-warning text-dark" data-bs-toggle="modal" data-bs-target="#modalTambahUmkmWarga"><i class="fas fa-plus me-1"></i>Tambah UMKM Warga</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nama Usaha</th>
+                                    <th>Pemilik Warga</th>
+                                    <th>Wilayah</th>
+                                    <th>Kategori Usaha</th>
+                                    <th>WhatsApp</th>
+                                    <th>Total Produk</th>
+                                    <th>Status Toko</th>
+                                    <th class="text-end">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($umkmsRt as $u)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ $u->nama_usaha }}</div>
+                                            <small class="text-muted">{{ $u->alamat ?: 'Alamat belum diatur' }}</small>
+                                        </td>
+                                        <td>
+                                            <div>{{ $u->pemilik->name ?? '-' }}</div>
+                                            <small class="text-muted">NIK: {{ $u->pemilik->profile->nik ?? '-' }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary-subtle text-secondary">RT {{ $u->rt->kode_rt ?? ($u->pemilik?->getRtKode() ?? '-') }}</span>
+                                        </td>
+                                        <td><span class="badge bg-info-subtle text-info">{{ $u->kategori }}</span></td>
+                                        <td>{{ $u->whatsapp ?: '-' }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ $u->produk->count() }} Item</span></td>
+                                        <td>
+                                            <span class="badge bg-{{ $u->status === 'aktif' ? 'success' : 'danger' }}">{{ ucfirst($u->status) }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <form method="POST" action="{{ route('layanan.umkm.toggle', $u) }}" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-xs btn-outline-{{ $u->status === 'aktif' ? 'danger' : 'success' }}" title="Toggle Status Aktif/Nonaktif">
+                                                    {{ $u->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="8" class="text-center py-4 text-muted">Belum ada profil usaha warga yang didaftarkan.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </section>
+        @endif
 
-        <section class="tab-pane fade" id="tabProdukSaya">
-            <div class="umkm-card">
-                <div class="umkm-card-head"><h5><i class="fas fa-boxes-stacked"></i> {{ $isPengurus ? 'Kelola Semua Produk UMKM' : 'Kelola Produk Saya' }}</h5></div>
-                <div class="table-responsive umkm-table-scroll"><table class="table table-sm align-middle mb-0"><thead><tr><th>Produk</th>@if($isPengurus)<th>Toko / Pemilik</th>@endif<th>Harga / Stok</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
-                    @forelse($produkSaya as $item)
-                        <tr>
-                            <td><strong>{{ $item->nama_produk }}</strong><small>{{ $item->kategori }} · {{ str($item->deskripsi)->limit(45) }}</small></td>
-                            @if($isPengurus)<td>{{ $item->umkm->nama_usaha ?? '-' }}<small>{{ $item->umkm->pemilik->name ?? '-' }}</small></td>@endif
-                            <td>Rp {{ number_format($item->harga, 0, ',', '.') }}<small>Stok: {{ $item->stok ?? '-' }} {{ $item->satuan }}</small></td>
-                            <td><span class="badge {{ $item->status === 'aktif' ? 'bg-success' : ($item->status === 'ditolak' ? 'bg-danger' : 'bg-warning text-dark') }}">{{ ucfirst($item->status) }}</span>@if($item->catatan_moderasi)<small>{{ $item->catatan_moderasi }}</small>@endif</td>
-                            <td><div class="umkm-product-actions">
-                                <button type="button" class="btn btn-sm btn-warning edit-product-btn" data-bs-toggle="modal" data-bs-target="#modalEditProduk" data-action="{{ route('layanan.umkm.produk.update', $item) }}" data-name="{{ $item->nama_produk }}" data-category="{{ $item->kategori }}" data-price="{{ $item->harga }}" data-stock="{{ $item->stok }}" data-unit="{{ $item->satuan }}" data-description="{{ $item->deskripsi }}"><i class="fas fa-pen"></i> Edit</button>
-                                <form method="POST" action="{{ route('layanan.umkm.produk.destroy', $item) }}" onsubmit="return confirm('Hapus produk ini? Tindakan ini tidak dapat dibatalkan.')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Hapus</button></form>
-                            </div></td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="{{ $isPengurus ? 5 : 4 }}" class="text-center py-4">Belum ada produk. Gunakan tombol Tambah Produk.</td></tr>
-                    @endforelse
-                </tbody></table></div>
-            </div>
-        </section>
-
-        @if($isPengurus)
-            <section class="tab-pane fade" id="tabModerasi">
-                <div class="umkm-card">
-                    <div class="umkm-card-head"><h5><i class="fas fa-shield-halved"></i> Produk Menunggu Moderasi</h5><input id="moderationSearch" class="form-control form-control-sm" type="search" placeholder="Cari produk/toko..."></div>
-                    <div class="table-responsive umkm-table-scroll"><table class="table table-sm align-middle mb-0" id="moderationTable"><thead><tr><th>Produk</th><th>Toko</th><th>Harga</th><th>Deskripsi</th><th>Aksi</th></tr></thead><tbody>
-                        @forelse($produkPending as $item)
-                            <tr><td><strong>{{ $item->nama_produk }}</strong><small>{{ $item->kategori }}</small></td><td>{{ $item->umkm->nama_usaha ?? '-' }}<small>{{ $item->umkm->pemilik->name ?? '-' }}</small></td><td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td><td>{{ str($item->deskripsi)->limit(55) }}</td><td><form method="POST" action="{{ route('layanan.umkm.produk.moderate', $item) }}" class="umkm-moderation">@csrf @method('PATCH')<button name="status" value="aktif" class="btn btn-sm btn-success">Setujui</button><button name="status" value="ditolak" class="btn btn-sm btn-danger">Tolak</button></form></td></tr>
-                        @empty
-                            <tr><td colspan="5" class="text-center">Tidak ada produk menunggu moderasi.</td></tr>
-                        @endforelse
-                    </tbody></table></div>
+        {{-- TAB 3: PRODUK SAYA / KELOLA SEMUA PRODUK --}}
+        <div class="tab-pane fade" id="tabProdukSaya">
+            <div class="card border">
+                <div class="card-header bg-card d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-semibold"><i class="fas fa-boxes-stacked me-2"></i>{{ $isPengurus ? 'Daftar Semua Produk UMKM' : 'Produk di Toko Saya' }}</h6>
+                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalProduk"><i class="fas fa-plus me-1"></i>Tambah Produk Baru</button>
                 </div>
-            </section>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produk</th>
+                                @if($isPengurus)<th>Toko / Pemilik</th>@endif
+                                <th>Harga & Satuan</th>
+                                <th>Stok</th>
+                                <th>Status</th>
+                                <th class="text-end">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($produkSaya as $item)
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ $item->nama_produk }}</div>
+                                        <small class="text-muted">{{ $item->kategori }} · {{ str($item->deskripsi)->limit(40) }}</small>
+                                    </td>
+                                    @if($isPengurus)
+                                        <td>
+                                            <div>{{ $item->umkm->nama_usaha ?? '-' }}</div>
+                                            <small class="text-muted">{{ $item->umkm->pemilik->name ?? '-' }} (RT {{ $item->umkm?->rt?->kode_rt ?? '-' }})</small>
+                                        </td>
+                                    @endif
+                                    <td class="fw-semibold text-success">Rp {{ number_format($item->harga, 0, ',', '.') }}<small class="text-muted">/{{ $item->satuan ?: 'pcs' }}</small></td>
+                                    <td>{{ $item->stok ?? '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ $item->status === 'aktif' ? 'success' : ($item->status === 'ditolak' ? 'danger' : 'warning text-dark') }}">{{ ucfirst($item->status) }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-1">
+                                            <button type="button" class="btn btn-xs btn-outline-warning text-dark edit-product-btn" data-bs-toggle="modal" data-bs-target="#modalEditProduk" data-action="{{ route('layanan.umkm.produk.update', $item) }}" data-name="{{ $item->nama_produk }}" data-category="{{ $item->kategori }}" data-price="{{ $item->harga }}" data-stock="{{ $item->stok }}" data-unit="{{ $item->satuan }}" data-description="{{ $item->deskripsi }}"><i class="fas fa-edit me-1"></i>Edit</button>
+                                            <form method="POST" action="{{ route('layanan.umkm.produk.destroy', $item) }}" onsubmit="return confirm('Hapus produk ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-xs btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="{{ $isPengurus ? 6 : 5 }}" class="text-center py-4 text-muted">Belum ada produk yang didaftarkan.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- TAB 4: MODERASI (KHUSUS PENGURUS) --}}
+        @if($isPengurus)
+            <div class="tab-pane fade" id="tabModerasi">
+                <div class="card border">
+                    <div class="card-header bg-card d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-semibold text-danger"><i class="fas fa-shield-halved me-2"></i>Produk Warga Menunggu Verifikasi / Moderasi</h6>
+                        <span class="badge bg-danger">{{ $produkPending->count() }} Menunggu</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Produk</th>
+                                    <th>Toko & Pemilik</th>
+                                    <th>Harga</th>
+                                    <th>Deskripsi</th>
+                                    <th class="text-end" style="min-width: 180px;">Aksi Moderasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($produkPending as $item)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ $item->nama_produk }}</div>
+                                            <span class="badge bg-info-subtle text-info">{{ $item->kategori }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold">{{ $item->umkm->nama_usaha ?? '-' }}</div>
+                                            <small class="text-muted">{{ $item->umkm->pemilik->name ?? '-' }} (RT {{ $item->umkm?->rt?->kode_rt ?? '-' }})</small>
+                                        </td>
+                                        <td class="fw-semibold text-success">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                        <td class="small text-muted" style="max-width: 280px;">{{ $item->deskripsi ?: '-' }}</td>
+                                        <td class="text-end">
+                                            <form method="POST" action="{{ route('layanan.umkm.produk.moderate', $item) }}" class="d-inline-flex gap-1">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" name="status" value="aktif" class="btn btn-sm btn-success" title="Setujui dan Terbitkan"><i class="fas fa-check me-1"></i>Setujui</button>
+                                                <button type="submit" name="status" value="ditolak" class="btn btn-sm btn-danger" title="Tolak"><i class="fas fa-times me-1"></i>Tolak</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" class="text-center py-4 text-muted">Tidak ada produk yang menunggu moderasi.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         @endif
     </div>
 
-    <div class="modal fade" id="modalToko" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">{{ $tokoSaya ? 'Kelola Toko Saya' : 'Buat Toko' }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.umkm.toko.store') }}">@csrf<div class="modal-body">
-        <label class="form-label">Nama Toko/Usaha</label><input class="form-control mb-2" name="nama_usaha" value="{{ old('nama_usaha', $tokoSaya->nama_usaha ?? '') }}" required>
-        <label class="form-label">Kategori</label><input class="form-control mb-2" name="kategori" value="{{ old('kategori', $tokoSaya->kategori ?? '') }}" placeholder="Kuliner, Jasa, Jahit" required>
-        <label class="form-label">WhatsApp</label><input class="form-control mb-2" name="whatsapp" value="{{ old('whatsapp', $tokoSaya->whatsapp ?? '') }}">
-        <label class="form-label">Alamat</label><textarea class="form-control mb-2" name="alamat" rows="2">{{ old('alamat', $tokoSaya->alamat ?? '') }}</textarea>
-        <div class="row g-2 mb-2"><div class="col-sm-6"><label class="form-label">Latitude (opsional)</label><input class="form-control" type="number" step="0.0000001" min="-90" max="90" name="latitude" value="{{ old('latitude', $tokoSaya->latitude ?? '') }}"></div><div class="col-sm-6"><label class="form-label">Longitude (opsional)</label><input class="form-control" type="number" step="0.0000001" min="-180" max="180" name="longitude" value="{{ old('longitude', $tokoSaya->longitude ?? '') }}"></div></div>
-        <label class="form-label">Deskripsi</label><textarea class="form-control" name="deskripsi" rows="2">{{ old('deskripsi', $tokoSaya->deskripsi ?? '') }}</textarea>
-    </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary">Simpan Toko</button></div></form></div></div></div>
+    {{-- MODAL TOKO SAYA (WARGA) --}}
+    <div class="modal fade" id="modalToko" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('layanan.umkm.toko.store') }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold text-primary"><i class="fas fa-store me-1"></i>{{ $tokoSaya ? 'Kelola Toko Saya' : 'Daftarkan Usaha Saya' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nama Usaha / Toko <span class="text-danger">*</span></label>
+                            <input class="form-control" name="nama_usaha" value="{{ old('nama_usaha', $tokoSaya->nama_usaha ?? '') }}" placeholder="Contoh: Warung Berkah Bu Siti" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Kategori Usaha <span class="text-danger">*</span></label>
+                            <input class="form-control" name="kategori" value="{{ old('kategori', $tokoSaya->kategori ?? '') }}" placeholder="Contoh: Kuliner / Jasa / Sembako / Jahit" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">No. WhatsApp Pemesanan</label>
+                            <input class="form-control" name="whatsapp" value="{{ old('whatsapp', $tokoSaya->whatsapp ?? '') }}" placeholder="Contoh: 081234567890">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Alamat / Lokasi Usaha</label>
+                            <textarea class="form-control" name="alamat" rows="2" placeholder="Contoh: Jl. Mawar No. 12 RT 01">{{ old('alamat', $tokoSaya->alamat ?? '') }}</textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Deskripsi Singkat Usaha</label>
+                            <textarea class="form-control" name="deskripsi" rows="2" placeholder="Jelaskan produk atau jasa yang ditawarkan...">{{ old('deskripsi', $tokoSaya->deskripsi ?? '') }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save me-1"></i>Simpan Profil Toko</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <div class="modal fade" id="modalProduk" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Tambah Produk/Jasa</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.umkm.produk.store') }}" enctype="multipart/form-data">@csrf<div class="modal-body">
-        <label class="form-label">Nama Produk/Jasa</label><input class="form-control mb-2" name="nama_produk" required>
-        <div class="row g-2"><div class="col-sm-6"><label class="form-label">Kategori</label><input class="form-control" name="kategori" required></div><div class="col-sm-6"><label class="form-label">Harga</label><input class="form-control" type="number" name="harga" min="0" required></div></div>
-        <div class="row g-2 mt-1"><div class="col-sm-6"><label class="form-label">Stok</label><input class="form-control" type="number" name="stok" min="0"></div><div class="col-sm-6"><label class="form-label">Satuan</label><input class="form-control" name="satuan" placeholder="pcs/porsi/jam"></div></div>
-        <label class="form-label mt-2">Foto</label><input class="form-control mb-2" type="file" name="foto" accept="image/*">
-        <label class="form-label">Deskripsi</label><textarea class="form-control" name="deskripsi" rows="2"></textarea>
-    </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-success">Kirim untuk Moderasi</button></div></form></div></div></div>
+    {{-- MODAL TAMBAH PRODUK --}}
+    <div class="modal fade" id="modalProduk" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('layanan.umkm.produk.store') }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold text-success"><i class="fas fa-plus me-1"></i>Tambah Produk / Jasa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nama Produk / Jasa <span class="text-danger">*</span></label>
+                            <input class="form-control" name="nama_produk" placeholder="Contoh: Nasi Goreng Spesial / Jasa Jahit Celana" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Kategori <span class="text-danger">*</span></label>
+                                <input class="form-control" name="kategori" placeholder="Contoh: Kuliner" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Harga (Rp) <span class="text-danger">*</span></label>
+                                <input class="form-control" type="number" name="harga" min="0" placeholder="Contoh: 15000" required>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Stok (Opsional)</label>
+                                <input class="form-control" type="number" name="stok" min="0" placeholder="Contoh: 20">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Satuan</label>
+                                <input class="form-control" name="satuan" placeholder="Contoh: porsi / pcs / jam">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Foto Produk</label>
+                            <input class="form-control" type="file" name="foto" accept="image/*">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Deskripsi Produk</label>
+                            <textarea class="form-control" name="deskripsi" rows="2" placeholder="Penjelasan rasa, varian, atau ketentuan layanan..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-paper-plane me-1"></i>Simpan Produk</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <div class="modal fade" id="modalEditProduk" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Edit Produk/Jasa</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form id="editProductForm" method="POST" enctype="multipart/form-data">@csrf @method('PUT')<div class="modal-body">
-        <label class="form-label">Nama Produk/Jasa</label><input id="editProductName" class="form-control mb-2" name="nama_produk" required>
-        <div class="row g-2"><div class="col-sm-6"><label class="form-label">Kategori</label><input id="editProductCategory" class="form-control" name="kategori" required></div><div class="col-sm-6"><label class="form-label">Harga</label><input id="editProductPrice" class="form-control" type="number" name="harga" min="0" required></div></div>
-        <div class="row g-2 mt-1"><div class="col-sm-6"><label class="form-label">Stok</label><input id="editProductStock" class="form-control" type="number" name="stok" min="0"></div><div class="col-sm-6"><label class="form-label">Satuan</label><input id="editProductUnit" class="form-control" name="satuan" placeholder="pcs/porsi/jam"></div></div>
-        <label class="form-label mt-2">Ganti Foto <small>(opsional)</small></label><input class="form-control mb-2" type="file" name="foto" accept="image/*">
-        <label class="form-label">Deskripsi</label><textarea id="editProductDescription" class="form-control" name="deskripsi" rows="2"></textarea>
-        @unless($isPengurus)<small class="text-muted d-block mt-2">Produk yang diedit akan dikirim ulang untuk moderasi.</small>@endunless
-    </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-warning">Simpan Perubahan</button></div></form></div></div></div>
+    {{-- MODAL EDIT PRODUK --}}
+    <div class="modal fade" id="modalEditProduk" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="editProductForm" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold text-warning"><i class="fas fa-edit me-1"></i>Edit Produk / Jasa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nama Produk / Jasa <span class="text-danger">*</span></label>
+                            <input id="editProductName" class="form-control" name="nama_produk" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Kategori <span class="text-danger">*</span></label>
+                                <input id="editProductCategory" class="form-control" name="kategori" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Harga (Rp) <span class="text-danger">*</span></label>
+                                <input id="editProductPrice" class="form-control" type="number" name="harga" min="0" required>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Stok</label>
+                                <input id="editProductStock" class="form-control" type="number" name="stok" min="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Satuan</label>
+                                <input id="editProductUnit" class="form-control" name="satuan">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Ganti Foto Produk <small class="text-muted">(Opsional)</small></label>
+                            <input class="form-control" type="file" name="foto" accept="image/*">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Deskripsi</label>
+                            <textarea id="editProductDescription" class="form-control" name="deskripsi" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-sm btn-warning"><i class="fas fa-save me-1"></i>Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL TAMBAH UMKM OLEH PENGURUS RT/RW --}}
+    @if($isPengurus)
+        <div class="modal fade" id="modalTambahUmkmWarga" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="POST" action="{{ route('layanan.umkm.pengurus.store') }}">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold text-warning"><i class="fas fa-user-plus me-1"></i>Daftarkan Usaha Warga RT</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Pilih Warga Pemilik Usaha <span class="text-danger">*</span></label>
+                                <select name="user_id" class="form-select" required>
+                                    <option value="">-- Pilih Warga --</option>
+                                    @foreach($wargasRt as $w)
+                                        <option value="{{ $w->id }}">{{ $w->name }} (NIK: {{ $w->profile->nik ?? '-' }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Nama Usaha / Toko <span class="text-danger">*</span></label>
+                                <input type="text" name="nama_usaha" class="form-control" placeholder="Contoh: Toko Kelontong Berkah" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Kategori Usaha <span class="text-danger">*</span></label>
+                                <input type="text" name="kategori" class="form-control" placeholder="Contoh: Sembako / Kuliner / Jasa" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Nomor WhatsApp Pemesanan</label>
+                                <input type="text" name="whatsapp" class="form-control" placeholder="Contoh: 081234567890">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Alamat Tempat Usaha</label>
+                                <textarea name="alamat" class="form-control" rows="2" placeholder="Contoh: Jl. Kenanga No. 5 RT 01"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold">Deskripsi Singkat Usaha</label>
+                                <textarea name="deskripsi" class="form-control" rows="2" placeholder="Keterangan mengenai usaha warga..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-sm btn-warning"><i class="fas fa-save me-1"></i>Daftarkan Usaha Warga</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 <style>
-    .umkm-page{--u-surface:var(--surface,#10271e);--u-raised:var(--surface-raised,#18382b);--u-text:var(--text-primary,#f8fafc);--u-muted:var(--text-muted,#b8c7be);--u-border:var(--border-color,#526b5c);color:var(--u-text)}
-    .umkm-page .umkm-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px}.umkm-page .umkm-head h2{margin:0;font-size:1.4rem;color:var(--u-text)}.umkm-page .umkm-head h2 i{color:#fbbf24}.umkm-page .umkm-head p{margin:2px 0 0;color:var(--u-muted);font-size:.82rem}.umkm-page .umkm-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
-    .umkm-page .umkm-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.umkm-page .umkm-summary article{display:flex;align-items:center;gap:10px;min-height:68px;padding:10px 12px;border:1px solid var(--u-border);border-radius:13px;background:var(--u-surface)}.umkm-page .umkm-summary i{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:var(--u-raised)}.umkm-page .umkm-summary .orange{color:#fb923c}.umkm-page .umkm-summary .blue{color:#60a5fa}.umkm-page .umkm-summary .green{color:#4ade80}.umkm-page .umkm-summary .amber{color:#fbbf24}.umkm-page .umkm-summary strong{display:block;color:var(--u-text);font-size:1.15rem;line-height:1.15}.umkm-page .umkm-summary span{color:var(--u-muted);font-size:.7rem}
-    .umkm-page .umkm-tabs{border-color:var(--u-border);gap:3px}.umkm-page .umkm-tabs .nav-link{color:var(--u-muted)!important;font-size:.8rem;padding:7px 11px}.umkm-page .umkm-tabs .nav-link.active{background:var(--u-raised)!important;color:var(--u-text)!important;border-color:var(--u-border)!important}.umkm-page .umkm-tab-content{padding-top:10px}
-    .umkm-page .umkm-card{padding:12px;border:1px solid var(--u-border);border-radius:13px;background:var(--u-surface);color:var(--u-text);overflow:hidden}.umkm-page .umkm-filter{display:grid;grid-template-columns:minmax(220px,1fr) 210px auto auto;gap:7px;margin-bottom:10px}.umkm-page .umkm-product-scroll{max-height:620px;overflow-y:auto;padding-right:3px}.umkm-page .umkm-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.umkm-page .umkm-product{display:grid;grid-template-columns:94px minmax(0,1fr);min-height:145px;border:1px solid var(--u-border);border-radius:11px;background:var(--u-raised);overflow:hidden}.umkm-page .umkm-photo{display:grid;place-items:center;min-height:100%;background:rgba(255,255,255,.05);color:var(--u-muted);font-size:1.5rem}.umkm-page .umkm-photo img{width:100%;height:100%;object-fit:cover}.umkm-page .umkm-product-body{padding:9px;min-width:0}.umkm-page .umkm-product-body h5{margin:3px 0 0;color:var(--u-text);font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.umkm-page .umkm-product-body small{display:block;color:var(--u-muted);font-size:.67rem}.umkm-page .umkm-product-body>strong{display:block;margin:4px 0;color:#4ade80;font-size:.84rem}.umkm-page .umkm-product-body strong em{font-size:.65rem;font-style:normal;color:var(--u-muted)}.umkm-page .umkm-product-body p{height:30px;margin:0 0 5px;color:var(--u-muted);font-size:.68rem;line-height:1.35;overflow:hidden}.umkm-page .umkm-category{display:inline-block;padding:2px 6px;border-radius:999px;background:rgba(251,191,36,.16);color:#fbbf24;font-size:.61rem}.umkm-page .umkm-product .btn{padding:3px 7px;font-size:.67rem}.umkm-page .umkm-empty{grid-column:1/-1;display:grid;place-items:center;gap:8px;min-height:220px;color:var(--u-muted)}
-    .umkm-page .umkm-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.umkm-page .umkm-card-head h5{margin:0;color:var(--u-text);font-size:.92rem}.umkm-page .umkm-card-head h5 i{color:var(--accent,#f6d860);margin-right:5px}.umkm-page .umkm-card-head .form-control{width:min(230px,48%)}.umkm-page .umkm-table-scroll{max-height:500px;overflow:auto}.umkm-page .table{color:var(--u-text);font-size:.76rem}.umkm-page .table thead{position:sticky;top:0;z-index:1}.umkm-page .table th{background:var(--u-raised)!important;color:var(--u-text)!important}.umkm-page .table td small{display:block;color:var(--u-muted)}.umkm-page .umkm-moderation,.umkm-page .umkm-product-actions{display:flex;gap:4px;align-items:center}.umkm-page .umkm-product-actions form{margin:0}.umkm-page .modal .form-label{font-size:.77rem;margin-bottom:3px}
-    html[data-theme="light"] .umkm-page .umkm-summary .orange{color:#9a3412}html[data-theme="light"] .umkm-page .umkm-summary .blue{color:#1d4ed8}html[data-theme="light"] .umkm-page .umkm-summary .green{color:#166534}html[data-theme="light"] .umkm-page .umkm-summary .amber{color:#92400e}html[data-theme="light"] .umkm-page .umkm-product-body>strong{color:#166534}html[data-theme="light"] .umkm-page .umkm-category{color:#854d0e}
-    @media(max-width:1200px){.umkm-page .umkm-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.umkm-page .umkm-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:768px){.umkm-page .umkm-filter{grid-template-columns:1fr 1fr}.umkm-page .umkm-product-grid{grid-template-columns:1fr}.umkm-page .umkm-product-scroll{max-height:560px}}
-    @media(max-width:576px){.umkm-page{padding-left:8px!important;padding-right:8px!important}.umkm-page .umkm-head p{display:none}.umkm-page .umkm-summary{gap:7px}.umkm-page .umkm-summary article{min-height:60px;padding:8px}.umkm-page .umkm-summary i{display:none}.umkm-page .umkm-filter{grid-template-columns:1fr}.umkm-page .umkm-product{grid-template-columns:82px minmax(0,1fr)}.umkm-page .umkm-card-head{align-items:flex-start;flex-direction:column}.umkm-page .umkm-card-head .form-control{width:100%}}
+.umkm-page .umkm-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+.btn-xs {
+    padding: 0.18rem 0.45rem;
+    font-size: 0.75rem;
+}
 </style>
-@endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded',function(){
-    const search=document.getElementById('moderationSearch');const rows=document.querySelectorAll('#moderationTable tbody tr');search?.addEventListener('input',()=>{const term=search.value.toLowerCase();rows.forEach(row=>row.style.display=row.textContent.toLowerCase().includes(term)?'':'none')});
-    document.querySelectorAll('.edit-product-btn').forEach(button=>button.addEventListener('click',()=>{
-        document.getElementById('editProductForm').action=button.dataset.action;
-        document.getElementById('editProductName').value=button.dataset.name || '';
-        document.getElementById('editProductCategory').value=button.dataset.category || '';
-        document.getElementById('editProductPrice').value=button.dataset.price || '';
-        document.getElementById('editProductStock').value=button.dataset.stock || '';
-        document.getElementById('editProductUnit').value=button.dataset.unit || '';
-        document.getElementById('editProductDescription').value=button.dataset.description || '';
-    }));
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.edit-product-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const form = document.getElementById('editProductForm');
+            if (form) {
+                form.action = button.dataset.action;
+                document.getElementById('editProductName').value = button.dataset.name || '';
+                document.getElementById('editProductCategory').value = button.dataset.category || '';
+                document.getElementById('editProductPrice').value = button.dataset.price || '';
+                document.getElementById('editProductStock').value = button.dataset.stock || '';
+                document.getElementById('editProductUnit').value = button.dataset.unit || '';
+                document.getElementById('editProductDescription').value = button.dataset.description || '';
+            }
+        });
+    });
 });
 </script>
 @endpush
+@endsection

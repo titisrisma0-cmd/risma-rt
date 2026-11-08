@@ -1,53 +1,98 @@
 @extends('layouts.app')
 
+@section('title', 'Laporan ' . (Auth::user()->isAdminRw() ? 'Wilayah RW' : 'RT'))
+
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="text-white animate__animated animate__fadeInLeft">
-                <i class="fas fa-file-alt"></i> Laporan Keuangan
-            </h2>
-            <p class="text-white-50 animate__animated animate__fadeInLeft animate__delay-1s">
-                Generate laporan pemasukan dan pengeluaran dalam berbagai format
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 text-white mb-1">
+                <i class="fas fa-file-invoice text-emerald-400 me-2"></i>
+                {{ Auth::user()->isAdminRw() ? 'Laporan Agregat Wilayah RW' : 'Laporan Operasional RT' }}
+            </h1>
+            <p class="text-white-50 mb-0">
+                {{ Auth::user()->isAdminRw() 
+                    ? 'Pusat ekspor laporan agregat kependudukan, keuangan, kegiatan, dan audit seluruh RT' 
+                    : 'Generate laporan penerimaan iuran, kas, dan operasional warga di lingkungan RT' }}
             </p>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Form Generate Laporan -->
-        <div class="col-md-6 mb-4">
-            <div class="card animate__animated animate__fadeInLeft">
-                <div class="card-header bg-primary">
-                    <h5 class="mb-0 text-white"><i class="fas fa-chart-bar"></i> Generate Laporan</h5>
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <div class="row g-4 mb-4">
+        {{-- Form Generate Laporan Agregat --}}
+        <div class="{{ Auth::user()->isAdminRt() ? 'col-lg-7' : 'col-lg-8' }}">
+            <div class="card border-0" style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px; overflow: hidden;">
+                <div class="card-header border-bottom border-white-10 p-3" style="background: rgba(15, 23, 42, 0.85);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-chart-bar text-emerald-400 me-2"></i>
+                        {{ Auth::user()->isAdminRw() ? 'Generate Laporan Agregat Wilayah' : 'Generate Laporan RT' }}
+                    </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4 text-white">
                     <form action="{{ route('laporan.generate') }}" method="POST">
                         @csrf
-                        <div class="mb-3">
-                            <label class="form-label text-white">Jenis Laporan <span class="text-danger">*</span></label>
-                            <select name="jenis_laporan" class="form-select bg-dark text-white border-secondary" required>
-                                <option value="" class="bg-dark text-white">-- Pilih Jenis Laporan --</option>
-                                <option value="bulanan" class="bg-dark text-white">Laporan Bulanan</option>
-                                <option value="tahunan" class="bg-dark text-white">Laporan Tahunan</option>
-                                <option value="per_iuran" class="bg-dark text-white">Laporan Per Iuran</option>
-                            </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label text-white">Periode Awal <span class="text-danger">*</span></label>
-                                <input type="date" name="periode_awal" class="form-control bg-dark text-white border-secondary" required>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-white-50 small">Jenis Laporan <span class="text-danger">*</span></label>
+                                <select name="jenis_laporan" class="form-select text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);" required>
+                                    @if(Auth::user()->isAdminRw())
+                                        <option value="keuangan_gabungan">Laporan Keuangan Gabungan RW</option>
+                                        <option value="iuran_per_rt">Laporan Iuran per RT</option>
+                                        <option value="pengeluaran_per_rt">Laporan Pengeluaran per RT</option>
+                                        <option value="kas_per_rt">Laporan Saldo Kas per RT</option>
+                                        <option value="kk_per_rt">Laporan Jumlah KK per RT</option>
+                                        <option value="warga_per_rt">Laporan Jumlah Warga per RT</option>
+                                        <option value="kegiatan_wilayah">Laporan Kegiatan RT dan RW</option>
+                                        <option value="layanan_per_rt">Laporan Pelayanan Masyarakat per RT</option>
+                                        <option value="audit_keuangan">Laporan Hasil Audit Keuangan</option>
+                                    @else
+                                        <option value="bulanan">Laporan Bulanan RT</option>
+                                        <option value="tahunan">Laporan Tahunan RT</option>
+                                        <option value="per_iuran">Laporan Per Jenis Iuran</option>
+                                    @endif
+                                </select>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label text-white">Periode Akhir <span class="text-danger">*</span></label>
-                                <input type="date" name="periode_akhir" class="form-control bg-dark text-white border-secondary" required>
+
+                            @if(Auth::user()->isAdminRw())
+                                <div class="col-md-6">
+                                    <label class="form-label text-white-50 small">Filter Wilayah RT</label>
+                                    <select name="rt_id" class="form-select text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);">
+                                        <option value="">Semua RT (RT 01 – RT 08)</option>
+                                        @foreach($rts as $r)
+                                            <option value="{{ $r->id }}">RT {{ $r->kode_rt }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-white-50 small">Periode Awal <span class="text-danger">*</span></label>
+                                <input type="date" name="periode_awal" value="{{ date('Y-m-01') }}" class="form-control text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-white-50 small">Periode Akhir <span class="text-danger">*</span></label>
+                                <input type="date" name="periode_akhir" value="{{ date('Y-m-d') }}" class="form-control text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);" required>
                             </div>
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" name="export_excel" value="1" class="btn btn-success">
-                                <i class="fas fa-file-excel"></i> Export ke Excel
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="export_excel" value="1" class="btn btn-success px-4">
+                                <i class="fas fa-file-excel me-1"></i> Export ke Excel
                             </button>
-                            <button type="submit" name="export_pdf" value="1" class="btn btn-danger">
-                                <i class="fas fa-file-pdf"></i> Export ke PDF
+                            <button type="submit" name="export_pdf" value="1" class="btn btn-danger px-4">
+                                <i class="fas fa-file-pdf me-1"></i> Export ke PDF
+                            </button>
+                            <button type="submit" class="btn btn-outline-light px-4">
+                                <i class="fas fa-save me-1"></i> Simpan Laporan
                             </button>
                         </div>
                     </form>
@@ -55,155 +100,122 @@
             </div>
         </div>
 
-        <!-- Form Laporan Per Warga -->
-        <div class="col-md-6 mb-4">
-            <div class="card animate__animated animate__fadeInRight">
-                <div class="card-header bg-info">
-                    <h5 class="mb-0 text-white"><i class="fas fa-user"></i> Laporan Per Warga</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('laporan.per-warga') }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label text-white">Pilih Warga <span class="text-danger">*</span></label>
-                            <select name="user_id" class="form-select bg-dark text-white border-secondary" required>
-                                <option value="" class="bg-dark text-white">-- Pilih Warga --</option>
-                                @foreach($warga as $item)
-                                    <option value="{{ $item->id }}" class="bg-dark text-white">{{ $item->name }} - {{ $item->profile->no_hp ?? '-' }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label text-white">Periode Awal <span class="text-danger">*</span></label>
-                                <input type="date" name="periode_awal" class="form-control bg-dark text-white border-secondary" required>
+        {{-- Form Laporan Per Warga (HANYA DITAMPILKAN UNTUK KETUA RT) --}}
+        @if(Auth::user()->isAdminRt())
+            <div class="col-lg-5">
+                <div class="card border-0" style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px; overflow: hidden;">
+                    <div class="card-header border-bottom border-white-10 p-3" style="background: rgba(15, 23, 42, 0.85);">
+                        <h5 class="mb-0 text-white"><i class="fas fa-user text-info me-2"></i>Laporan Per Warga (RT)</h5>
+                    </div>
+                    <div class="card-body p-4 text-white">
+                        <form action="{{ route('laporan.per-warga') }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label text-white-50 small">Pilih Warga <span class="text-danger">*</span></label>
+                                <select name="user_id" class="form-select text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);" required>
+                                    <option value="">-- Pilih Warga --</option>
+                                    @foreach($warga as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }} - {{ $item->profile->no_hp ?? '-' }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label text-white">Periode Akhir <span class="text-danger">*</span></label>
-                                <input type="date" name="periode_akhir" class="form-control bg-dark text-white border-secondary" required>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label text-white-50 small">Periode Awal</label>
+                                    <input type="date" name="periode_awal" value="{{ date('Y-01-01') }}" class="form-control text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label text-white-50 small">Periode Akhir</label>
+                                    <input type="date" name="periode_akhir" value="{{ date('Y-m-d') }}" class="form-control text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" name="export_excel" value="1" class="btn btn-gradient">
-                                <i class="fas fa-file-excel"></i> Export Laporan Warga
+                            <button type="submit" name="export_excel" value="1" class="btn btn-info text-white w-100">
+                                <i class="fas fa-file-excel me-1"></i> Export Laporan Warga
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
+        @else
+            {{-- Info Box untuk Pengurus RW --}}
+            <div class="col-lg-4">
+                <div class="card border-0 h-100" style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px;">
+                    <div class="card-header border-bottom border-white-10 p-3" style="background: rgba(15, 23, 42, 0.85);">
+                        <h5 class="mb-0 text-white"><i class="fas fa-info-circle text-emerald-400 me-2"></i>Panduan Laporan RW</h5>
+                    </div>
+                    <div class="card-body p-4 text-white-50 small">
+                        <p class="mb-2">Sesuai tata kelola wilayah dan RBAC RW Smart:</p>
+                        <ul class="ps-3 mb-3">
+                            <li>Pengurus RW berfokus pada <strong>Laporan Agregat Wilayah</strong> RT 01 – RT 08.</li>
+                            <li>Laporan individu per warga dikelola langsung oleh masing-masing Ketua RT.</li>
+                            <li>Ekspor dapat dilakukan ke dalam format dokumen PDF atau spreadsheet Excel.</li>
+                        </ul>
+                        <div class="alert alert-info py-2 px-3 small mb-0" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd;">
+                            <i class="fas fa-check-double me-1"></i> Untuk audit keuangan mendalam per RT, silakan gunakan modul <strong>Keuangan dan Audit RT</strong>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
-    <!-- Riwayat Laporan -->
-    <div class="card animate__animated animate__fadeInUp">
-        <div class="card-header bg-dark">
-            <h5 class="mb-0 text-white"><i class="fas fa-history"></i> Riwayat Laporan</h5>
+    {{-- Riwayat Laporan Tersimpan --}}
+    <div class="card border-0" style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px; overflow: hidden;">
+        <div class="card-header border-bottom border-white-10 p-3 d-flex justify-content-between align-items-center" style="background: rgba(15, 23, 42, 0.85);">
+            <h5 class="mb-0 text-white"><i class="fas fa-history text-primary me-2"></i>Riwayat Laporan Digenerate</h5>
+            <span class="badge bg-slate-700 text-white">{{ $laporan->count() }} Dokumen</span>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-dark table-hover mb-0">
-                    <thead>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-white">
+                <thead style="background: rgba(15, 23, 42, 0.6);">
+                    <tr class="text-secondary small">
+                        <th>Kode Laporan</th>
+                        <th>Jenis Laporan</th>
+                        <th>Periode</th>
+                        <th class="text-end">Pemasukan</th>
+                        <th class="text-end">Pengeluaran</th>
+                        <th class="text-end">Saldo Akhir</th>
+                        <th class="text-center">Dibuat Oleh</th>
+                        <th class="text-end">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($laporan as $item)
                         <tr>
-                            <th>Kode Laporan</th>
-                            <th>Jenis</th>
-                            <th>Periode</th>
-                            <th>Total Pemasukan</th>
-                            <th>Total Pengeluaran</th>
-                            <th>Saldo Akhir</th>
-                            <th>Tanggal Buat</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($laporan as $item)
-                        <tr>
-                            <td><span class="text-white">{{ $item->kode_laporan }}</span></td>
+                            <td class="font-monospace small text-emerald-400">{{ $item->kode_laporan }}</td>
                             <td>
-                                <span class="badge bg-primary">{{ ucfirst($item->jenis_laporan) }}</span>
+                                <span class="badge bg-primary bg-opacity-25 text-info">
+                                    {{ ucwords(str_replace('_', ' ', $item->jenis_laporan)) }}
+                                </span>
                             </td>
-                            <td><span class="text-white">{{ date('d/m/Y', strtotime($item->periode_awal)) }} - {{ date('d/m/Y', strtotime($item->periode_akhir)) }}</span></td>
-                            <td class="text-success">Rp {{ number_format($item->total_pemasukan, 0, ',', '.') }}</td>
-                            <td class="text-danger">Rp {{ number_format($item->total_pengeluaran, 0, ',', '.') }}</td>
-                            <td class="text-primary">Rp {{ number_format($item->saldo_akhir, 0, ',', '.') }}</td>
-                            <td><span class="text-white">{{ $item->created_at->format('d/m/Y H:i') }}</span></td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="{{ route('laporan.show', $item->id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button onclick="confirmDelete('{{ route('laporan.destroy', $item->id) }}', 'laporan')" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
+                            <td class="text-white-50 small">
+                                {{ date('d/m/Y', strtotime($item->periode_awal)) }} – {{ date('d/m/Y', strtotime($item->periode_akhir)) }}
+                            </td>
+                            <td class="text-end font-monospace text-emerald-400">Rp {{ number_format($item->total_pemasukan, 0, ',', '.') }}</td>
+                            <td class="text-end font-monospace text-danger">Rp {{ number_format($item->total_pengeluaran, 0, ',', '.') }}</td>
+                            <td class="text-end font-monospace text-white fw-bold">Rp {{ number_format($item->saldo_akhir, 0, ',', '.') }}</td>
+                            <td class="text-center small text-white-50">{{ optional($item->creator)->name ?? '-' }}</td>
+                            <td class="text-end text-nowrap">
+                                <a href="{{ route('laporan.show', $item->id) }}" class="btn btn-sm btn-outline-info text-white me-1">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <form action="{{ route('laporan.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus riwayat laporan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash-alt"></i>
                                     </button>
-                                </div>
-                             </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-4">
-                                <i class="fas fa-inbox fa-2x text-secondary mb-2 d-block"></i>
-                                <span class="text-secondary">Belum ada riwayat laporan</span>
+                                </form>
                             </td>
                         </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-white-50">Belum ada riwayat laporan yang dibuat.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<style>
-.card {
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(96, 165, 250, 0.1);
-}
-
-.card-header {
-    background: rgba(15, 23, 42, 0.5);
-    border-bottom: 1px solid rgba(96, 165, 250, 0.1);
-}
-
-.form-label {
-    font-weight: 500;
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
-}
-
-.btn-gradient {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: none;
-    color: white;
-    transition: all 0.3s;
-}
-
-.btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-    color: white;
-}
-
-.table-dark {
-    background: transparent;
-}
-
-.table-dark th {
-    border-bottom-color: rgba(96, 165, 250, 0.2);
-    color: #94a3b8;
-    font-weight: 500;
-}
-
-.table-dark td {
-    border-bottom-color: rgba(96, 165, 250, 0.05);
-    color: #f1f5f9;
-}
-
-.text-white {
-    color: #f1f5f9 !important;
-}
-
-.text-white-50 {
-    color: rgba(255, 255, 255, 0.5) !important;
-}
-</style>
 @endsection

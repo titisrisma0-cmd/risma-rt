@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Balita extends Model
 {
     protected $fillable = [
-        'kartu_keluarga_id', 'orang_tua_user_id', 'nama', 'nik',
+        'rt_id', 'kartu_keluarga_id', 'orang_tua_user_id', 'nama', 'nik',
         'tanggal_lahir', 'jenis_kelamin', 'catatan_kesehatan',
     ];
 
@@ -16,6 +16,11 @@ class Balita extends Model
     public function kartuKeluarga()
     {
         return $this->belongsTo(KartuKeluarga::class);
+    }
+
+    public function rt()
+    {
+        return $this->belongsTo(Rt::class);
     }
 
     public function orangTua()

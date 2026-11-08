@@ -16,6 +16,11 @@ use App\Http\Controllers\AspirasiController;
 use App\Http\Controllers\RtController;
 use App\Http\Controllers\CctvController;
 use App\Http\Controllers\PetaWilayahController;
+use App\Http\Controllers\KartuKeluargaController;
+use App\Http\Controllers\AuditKeuanganController;
+use App\Http\Controllers\MonitoringWilayahController;
+use App\Http\Controllers\RtVerifikasiController;
+use App\Http\Controllers\PengumumanController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -39,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/kegiatan', [KegiatanController::class, 'store'])->name('kegiatan.store');
     Route::patch('/kegiatan/{kegiatan}', [KegiatanController::class, 'update'])->name('kegiatan.update');
     Route::delete('/kegiatan/{kegiatan}', [KegiatanController::class, 'destroy'])->name('kegiatan.destroy');
+    Route::delete('/kegiatan/{kegiatan}/soft-delete', [KegiatanController::class, 'softDeleteCancelled'])->name('kegiatan.soft-delete');
     Route::post('/kegiatan/{kegiatan}/daftar', [KegiatanController::class, 'daftar'])->name('kegiatan.daftar');
     Route::delete('/kegiatan/{kegiatan}/daftar', [KegiatanController::class, 'batalDaftar'])->name('kegiatan.batal-daftar');
     Route::get('/kegiatan/{kegiatan}/peserta', [KegiatanController::class, 'peserta'])->name('kegiatan.peserta');
@@ -61,10 +67,55 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
-    // ==================== DATA WARGA ====================
+    // ==================== DATA WARGA & KARTU KELUARGA ====================
+    Route::get('kartu-keluarga/saya', [KartuKeluargaController::class, 'saya'])->name('kartu-keluarga.saya');
+    Route::get('kartu-keluarga/{kartuKeluarga}/cetak', [KartuKeluargaController::class, 'cetak'])->name('kartu-keluarga.cetak');
+    Route::resource('kartu-keluarga', KartuKeluargaController::class);
+    Route::post('kartu-keluarga/{kartuKeluarga}/anggota', [KartuKeluargaController::class, 'storeAnggota'])->name('kartu-keluarga.anggota.store');
+    Route::put('kartu-keluarga/{kartuKeluarga}/anggota/{profile}', [KartuKeluargaController::class, 'updateAnggota'])->name('kartu-keluarga.anggota.update');
+    Route::post('kartu-keluarga/{kartuKeluarga}/anggota/{profile}/pindah', [KartuKeluargaController::class, 'pindahKK'])->name('kartu-keluarga.anggota.pindah');
+    Route::delete('kartu-keluarga/{kartuKeluarga}/anggota/{profile}', [KartuKeluargaController::class, 'destroyAnggota'])->name('kartu-keluarga.anggota.destroy');
+
+    Route::get('warga/mutasi', [WargaController::class, 'mutasi'])->name('warga.mutasi');
+    Route::post('warga/mutasi', [WargaController::class, 'storeMutasi'])->name('warga.mutasi.store');
     Route::resource('warga', WargaController::class);
     Route::post('warga/{id}/verify', [WargaController::class, 'verify'])->name('warga.verify');
-    Route::resource('rts', RtController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('rts', RtController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+    Route::post('rts/{rt}/ketua', [RtController::class, 'storeKetua'])->name('rts.ketua.store');
+    Route::put('rts/{rt}/ketua/{user}', [RtController::class, 'updateKetua'])->name('rts.ketua.update');
+    Route::patch('rts/{rt}/ketua/{user}/toggle-status', [RtController::class, 'toggleKetuaStatus'])->name('rts.ketua.toggle-status');
+    Route::post('rts/{rt}/ketua/{user}/reset-password', [RtController::class, 'resetKetuaPassword'])->name('rts.ketua.reset-password');
+
+    // ==================== MONITORING & PENGAWASAN RW ====================
+    Route::get('monitoring/warga', [MonitoringWilayahController::class, 'wargaPerRt'])->name('rw.monitoring.warga');
+    Route::get('monitoring/kegiatan', [MonitoringWilayahController::class, 'kegiatanPerRt'])->name('rw.monitoring.kegiatan');
+    Route::get('monitoring/layanan', [MonitoringWilayahController::class, 'layananPerRt'])->name('rw.monitoring.layanan');
+    Route::get('pengawasan/persetujuan', [MonitoringWilayahController::class, 'pengajuanRw'])->name('rw.pengawasan.persetujuan');
+    Route::post('pengawasan/persetujuan/{pengajuanSurat}', [MonitoringWilayahController::class, 'approvePengajuanRw'])->name('rw.pengawasan.approve');
+    Route::get('pengawasan/laporan', [LaporanController::class, 'index'])->name('rw.pengawasan.laporan');
+    Route::get('pengawasan/aktivitas', [AuditKeuanganController::class, 'auditLog'])->name('rw.pengawasan.aktivitas');
+    Route::get('pengaturan-rw', [ProfileController::class, 'index'])->name('rw.pengaturan');
+
+    // ==================== AUDIT KEUANGAN RW ====================
+    Route::get('audit-keuangan', [AuditKeuanganController::class, 'index'])->name('rw.audit.index');
+    Route::get('audit-keuangan/rt/{rt}', [AuditKeuanganController::class, 'showRt'])->name('rw.audit.show-rt');
+    Route::post('audit-keuangan/rt/{rt}/status', [AuditKeuanganController::class, 'updateStatus'])->name('rw.audit.update-status');
+    Route::get('audit-keuangan/riwayat', [AuditKeuanganController::class, 'auditLog'])->name('rw.audit.riwayat');
+    Route::get('audit-keuangan/iuran', [AuditKeuanganController::class, 'index'])->name('rw.audit.iuran');
+    Route::get('audit-keuangan/pengeluaran', [AuditKeuanganController::class, 'index'])->name('rw.audit.pengeluaran');
+    Route::get('audit-keuangan/kas', [AuditKeuanganController::class, 'index'])->name('rw.audit.kas');
+
+    // ==================== VERIFIKASI & PERSETUJUAN RT ====================
+    Route::get('rt/verifikasi/permohonan', [RtVerifikasiController::class, 'permohonan'])->name('rt.verifikasi.permohonan');
+    Route::get('rt/verifikasi/diteruskan', [RtVerifikasiController::class, 'diteruskan'])->name('rt.verifikasi.diteruskan');
+    Route::get('rt/verifikasi/riwayat', [RtVerifikasiController::class, 'riwayat'])->name('rt.verifikasi.riwayat');
+    Route::post('rt/verifikasi/{pengajuanSurat}/teruskan', [RtVerifikasiController::class, 'teruskanKeRw'])->name('rt.verifikasi.teruskan');
+    Route::post('rt/verifikasi/{pengajuanSurat}/teruskan-rw', [RtVerifikasiController::class, 'teruskanKeRw'])->name('rt.verifikasi.teruskan-rw');
+    Route::get('manajemen-permohonan', function () { return redirect()->route('rt.verifikasi.permohonan'); })->name('rt.permohonan.index');
+    // ==================== PENGUMUMAN RESMI RW ====================
+    Route::resource('pengumuman', PengumumanController::class);
+    Route::get('rt/informasi/pengumuman', function () { return redirect()->route('pengumuman.index'); })->name('rt.informasi.pengumuman');
+    Route::get('warga/pengumuman', function () { return redirect()->route('pengumuman.index'); })->name('warga.pengumuman');
     
     // ==================== IURAN ====================
     Route::resource('iuran', IuranController::class);
@@ -97,12 +148,17 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/setoran/{setoran}/verifikasi', [BankSampahController::class, 'verifySetoran'])->name('setoran.verify');
         Route::post('/harga', [BankSampahController::class, 'updateHarga'])->name('harga.store');
         Route::post('/jadwal', [BankSampahController::class, 'storeJadwal'])->name('jadwal.store');
+        Route::patch('/jadwal/{jadwal}/status', [BankSampahController::class, 'updateStatusJadwal'])->name('jadwal.status');
+        Route::post('/penarikan', [BankSampahController::class, 'requestWithdrawal'])->name('penarikan.store');
+        Route::patch('/penarikan/{penarikan}/proses', [BankSampahController::class, 'processWithdrawal'])->name('penarikan.proses');
     });
 
     // ==================== LAYANAN MASYARAKAT ====================
     Route::prefix('layanan')->name('layanan.')->group(function () {
         Route::get('/umkm', [LayananMasyarakatController::class, 'umkm'])->name('umkm.index');
         Route::post('/umkm/toko-saya', [LayananMasyarakatController::class, 'storeUmkm'])->name('umkm.toko.store');
+        Route::post('/umkm/kelola', [LayananMasyarakatController::class, 'storeUmkmPengurus'])->name('umkm.pengurus.store');
+        Route::patch('/umkm/{umkm}/toggle', [LayananMasyarakatController::class, 'toggleUmkmStatus'])->name('umkm.toggle');
         Route::post('/umkm/produk', [LayananMasyarakatController::class, 'storeProdukUmkm'])->name('umkm.produk.store');
         Route::put('/umkm/produk/{produk}', [LayananMasyarakatController::class, 'updateProdukUmkm'])->name('umkm.produk.update');
         Route::delete('/umkm/produk/{produk}', [LayananMasyarakatController::class, 'destroyProdukUmkm'])->name('umkm.produk.destroy');
@@ -113,12 +169,21 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/surat/{pengajuanSurat}/cetak', [LayananMasyarakatController::class, 'cetakSurat'])->name('surat.cetak');
         Route::get('/posyandu', [LayananMasyarakatController::class, 'posyandu'])->name('posyandu.index');
         Route::post('/posyandu/jadwal', [LayananMasyarakatController::class, 'storeJadwalPosyandu'])->name('posyandu.jadwal.store');
+        Route::put('/posyandu/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalPosyandu'])->name('posyandu.jadwal.update');
+        Route::delete('/posyandu/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalPosyandu'])->name('posyandu.jadwal.destroy');
         Route::post('/posyandu/balita', [LayananMasyarakatController::class, 'storeBalita'])->name('posyandu.balita.store');
+        Route::put('/posyandu/balita/{balita}', [LayananMasyarakatController::class, 'updateBalita'])->name('posyandu.balita.update');
+        Route::delete('/posyandu/balita/{balita}', [LayananMasyarakatController::class, 'destroyBalita'])->name('posyandu.balita.destroy');
         Route::post('/posyandu/pemeriksaan', [LayananMasyarakatController::class, 'storePemeriksaanBalita'])->name('posyandu.pemeriksaan.store');
         Route::get('/ronda', [LayananMasyarakatController::class, 'ronda'])->name('ronda.index');
         Route::post('/ronda/jadwal', [LayananMasyarakatController::class, 'storeJadwalRonda'])->name('ronda.jadwal.store');
+        Route::put('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalRonda'])->name('ronda.jadwal.update');
+        Route::delete('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalRonda'])->name('ronda.jadwal.destroy');
         Route::post('/ronda/absensi', [LayananMasyarakatController::class, 'storeAbsensiRonda'])->name('ronda.absensi.store');
+        Route::post('/ronda/tukar', [LayananMasyarakatController::class, 'requestTukarRonda'])->name('ronda.tukar.store');
+        Route::patch('/ronda/tukar/{tukar}/respon', [LayananMasyarakatController::class, 'responTukarRonda'])->name('ronda.tukar.respon');
         Route::post('/ronda/panic', [LayananMasyarakatController::class, 'storePanicReport'])->name('ronda.panic.store');
+        Route::patch('/ronda/panic/{panicReport}/status', [LayananMasyarakatController::class, 'updatePanicReportStatus'])->name('ronda.panic.status');
         Route::get('/ronda/cctv', [CctvController::class, 'live'])->name('ronda.cctv.live');
         Route::get('/ronda/cctv/recordings', [CctvController::class, 'recordings'])->name('ronda.cctv.recordings');
         Route::get('/ronda/cctv/manage', [CctvController::class, 'manage'])->name('ronda.cctv.manage');
@@ -127,6 +192,26 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/ronda/cctv/cameras/{camera}', [CctvController::class, 'destroy'])->name('ronda.cctv.cameras.destroy');
         Route::patch('/ronda/cctv/cameras/{camera}/status', [CctvController::class, 'toggleStatus'])->name('ronda.cctv.cameras.status');
     });
+
+    // ==================== ALIASES ROUTE OPERASIONAL RT ====================
+    Route::get('/ronda', function () { return redirect()->route('layanan.ronda.index'); })->name('ronda.index');
+    Route::post('/ronda/jadwal', [LayananMasyarakatController::class, 'storeJadwalRonda'])->name('ronda.jadwal.store');
+    Route::put('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalRonda'])->name('ronda.jadwal.update');
+    Route::delete('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalRonda'])->name('ronda.jadwal.destroy');
+    Route::post('/ronda/absensi', [LayananMasyarakatController::class, 'storeAbsensiRonda'])->name('ronda.absensi.store');
+    Route::post('/ronda/tukar', [LayananMasyarakatController::class, 'requestTukarRonda'])->name('ronda.tukar.store');
+    Route::patch('/ronda/tukar/{tukar}/respon', [LayananMasyarakatController::class, 'responTukarRonda'])->name('ronda.tukar.respon');
+    Route::post('/ronda/panic', [LayananMasyarakatController::class, 'storePanicReport'])->name('ronda.panic.store');
+    Route::patch('/ronda/panic/{panicReport}/status', [LayananMasyarakatController::class, 'updatePanicReportStatus'])->name('ronda.panic.status');
+
+    Route::get('/posyandu', function () { return redirect()->route('layanan.posyandu.index'); })->name('posyandu.index');
+    Route::post('/posyandu/jadwal', [LayananMasyarakatController::class, 'storeJadwalPosyandu'])->name('posyandu.jadwal.store');
+    Route::put('/posyandu/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalPosyandu'])->name('posyandu.jadwal.update');
+    Route::delete('/posyandu/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalPosyandu'])->name('posyandu.jadwal.destroy');
+    Route::post('/posyandu/balita', [LayananMasyarakatController::class, 'storeBalita'])->name('posyandu.balita.store');
+    Route::put('/posyandu/balita/{balita}', [LayananMasyarakatController::class, 'updateBalita'])->name('posyandu.balita.update');
+    Route::delete('/posyandu/balita/{balita}', [LayananMasyarakatController::class, 'destroyBalita'])->name('posyandu.balita.destroy');
+    Route::post('/posyandu/pemeriksaan', [LayananMasyarakatController::class, 'storePemeriksaanBalita'])->name('posyandu.pemeriksaan.store');
 
     // ==================== NOTIFIKASI ====================
     Route::get('notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifikasi.index');

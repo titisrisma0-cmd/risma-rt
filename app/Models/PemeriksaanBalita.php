@@ -8,8 +8,8 @@ class PemeriksaanBalita extends Model
 {
     protected $fillable = [
         'balita_id', 'jadwal_posyandu_id', 'tanggal_periksa', 'berat_kg',
-        'tinggi_cm', 'lingkar_kepala_cm', 'imunisasi_sudah', 'imunisasi_belum',
-        'catatan', 'petugas_id',
+        'tinggi_cm', 'lingkar_kepala_cm', 'lingkar_lengan_cm', 'status_gizi',
+        'imunisasi_sudah', 'imunisasi_belum', 'catatan', 'petugas_id',
     ];
 
     protected $casts = [
@@ -17,6 +17,7 @@ class PemeriksaanBalita extends Model
         'berat_kg' => 'decimal:2',
         'tinggi_cm' => 'decimal:2',
         'lingkar_kepala_cm' => 'decimal:2',
+        'lingkar_lengan_cm' => 'decimal:2',
         'imunisasi_sudah' => 'array',
         'imunisasi_belum' => 'array',
     ];

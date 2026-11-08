@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\JenisSampah;
 use App\Models\JadwalBankSampah;
 use App\Models\Notifikasi;
+use App\Models\PenarikanSaldoSampah;
 use App\Models\SaldoSampah;
 use App\Models\SetoranSampah;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +17,11 @@ use Illuminate\Support\Facades\Schema;
 
 class BankSampahController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $schemaReady = $this->schemaReady();
         $isPengurus = $this->isPengurus();
+        $user = Auth::user();
 
         if (! $schemaReady) {
             return view('bank-sampah.index', [
@@ -32,18 +35,76 @@ class BankSampahController extends Controller
         $jenisSampahs = JenisSampah::orderBy('nama')->get();
 
         if ($isPengurus) {
+            $isRt = $user->isAdminRt();
+            $rtId = $user->managedRtId();
+
+            $wargaUserIds = $isRt && $rtId
+                ? User::where(function ($q) use ($rtId) {
+                    $q->where('rt_id', $rtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $rtId));
+                })->pluck('id')
+                : null;
+
+            $jadwalsQuery = JadwalBankSampah::with('rt')->orderBy('waktu', 'desc');
+            if ($isRt && $rtId) {
+                $jadwalsQuery->where(function ($q) use ($rtId) {
+                    $q->where('rt_id', $rtId)->orWhereNull('rt_id');
+                });
+            }
+            $jadwals = $jadwalsQuery->get();
+
+            $setoranQuery = SetoranSampah::with(['user.profile', 'jenisSampah']);
+            if ($isRt && $wargaUserIds) {
+                $setoranQuery->whereIn('user_id', $wargaUserIds);
+            }
+
+            $setoranTerbaru = (clone $setoranQuery)->latest()->limit(20)->get();
+            $setoranPending = (clone $setoranQuery)->where('status', 'pending')->latest()->get();
+
+            $penarikanQuery = PenarikanSaldoSampah::with(['user.profile', 'processor']);
+            if ($isRt && $wargaUserIds) {
+                $penarikanQuery->whereIn('user_id', $wargaUserIds);
+            }
+            $penarikanList = (clone $penarikanQuery)->latest()->limit(20)->get();
+            $penarikanPending = (clone $penarikanQuery)->where('status', 'pending')->latest()->get();
+
+            $validSetoranQuery = SetoranSampah::where('status', 'valid');
+            if ($isRt && $wargaUserIds) {
+                $validSetoranQuery->whereIn('user_id', $wargaUserIds);
+            }
+
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
+
+            $rekap = [
+                'berat' => (clone $validSetoranQuery)->sum('berat_kg'),
+                'nilai' => (clone $validSetoranQuery)->sum('total_saldo'),
+                'warga_count' => (clone $validSetoranQuery)->distinct('user_id')->count('user_id'),
+                'berat_bulan_ini' => (clone $validSetoranQuery)->whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('berat_kg'),
+                'nilai_bulan_ini' => (clone $validSetoranQuery)->whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('total_saldo'),
+            ];
+
+            // List of wargas with balances for RT
+            $wargaBalances = SaldoSampah::with(['user.profile'])
+                ->when($isRt && $wargaUserIds, fn ($q) => $q->whereIn('user_id', $wargaUserIds))
+                ->where('saldo', '>', 0)
+                ->orderByDesc('saldo')
+                ->limit(20)
+                ->get();
+
             return view('bank-sampah.index', [
                 'schemaReady' => true,
                 'isPengurus' => true,
+                'isRt' => $isRt,
+                'rtId' => $rtId,
                 'jenisSampahs' => $jenisSampahs,
-                'wargas' => $this->wargaQuery()->orderBy('name')->get(),
-                'setoranTerbaru' => SetoranSampah::with(['user', 'jenisSampah'])
-                    ->latest()
-                    ->limit(12)
-                    ->get(),
-                'setoranPending' => SetoranSampah::with(['user', 'jenisSampah'])->where('status', 'pending')->latest()->get(),
-                'jadwals' => JadwalBankSampah::with('rt')->where('aktif', true)->orderBy('waktu')->get(),
-                'rekap' => ['berat' => SetoranSampah::where('status', 'valid')->sum('berat_kg'), 'nilai' => SetoranSampah::where('status', 'valid')->sum('total_saldo')],
+                'wargas' => $this->wargaQuery()->when($isRt && $rtId, fn ($q) => $q->where(fn ($sub) => $sub->where('rt_id', $rtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $rtId))))->orderBy('name')->get(),
+                'setoranTerbaru' => $setoranTerbaru,
+                'setoranPending' => $setoranPending,
+                'penarikanList' => $penarikanList,
+                'penarikanPending' => $penarikanPending,
+                'wargaBalances' => $wargaBalances,
+                'jadwals' => $jadwals,
+                'rekap' => $rekap,
             ]);
         }
 
@@ -51,6 +112,17 @@ class BankSampahController extends Controller
             ['user_id' => Auth::id()],
             ['saldo' => 0, 'total_berat_kg' => 0]
         );
+
+        $rtId = $user->managedRtId() ?? $user->profile?->rt_id;
+        $jadwals = JadwalBankSampah::with('rt')
+            ->where(function ($q) use ($rtId) {
+                if ($rtId) {
+                    $q->where('rt_id', $rtId)->orWhereNull('rt_id');
+                }
+            })
+            ->where('aktif', true)
+            ->orderBy('waktu')
+            ->get();
 
         return view('bank-sampah.index', [
             'schemaReady' => true,
@@ -61,7 +133,10 @@ class BankSampahController extends Controller
                 ->where('user_id', Auth::id())
                 ->latest()
                 ->get(),
-            'jadwals' => JadwalBankSampah::with('rt')->where('aktif', true)->orderBy('waktu')->get(),
+            'riwayatPenarikan' => PenarikanSaldoSampah::where('user_id', Auth::id())
+                ->latest()
+                ->get(),
+            'jadwals' => $jadwals,
         ]);
     }
 
@@ -93,31 +168,52 @@ class BankSampahController extends Controller
             ]);
         });
 
-        return redirect()->route('bank-sampah.index')->with('success', 'Setoran dikirim dan menunggu verifikasi petugas.');
+        return redirect()->route('bank-sampah.index')->with('success', 'Setoran dikirim dan menunggu verifikasi petugas RT.');
     }
 
     public function verifySetoran(Request $request, SetoranSampah $setoran)
     {
         abort_unless($this->isPengurus(), 403);
-        $data = $request->validate(['status' => ['required', 'in:valid,ditolak'], 'catatan' => ['nullable', 'string']]);
-        abort_if($setoran->status !== 'pending', 422, 'Setoran sudah diverifikasi.');
+        $data = $request->validate([
+            'status' => ['required', 'in:valid,ditolak'],
+            'catatan' => ['nullable', 'string'],
+        ]);
+
+        abort_if($setoran->status !== 'pending', 422, 'Setoran sudah diverifikasi sebelumnya.');
+
+        $user = Auth::user();
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $setoranUserRt = $setoran->user?->managedRtId() ?? $setoran->user?->profile?->rt_id;
+            if ($rtId && $setoranUserRt && (int) $rtId !== (int) $setoranUserRt) {
+                abort(403, 'Anda hanya dapat memverifikasi setoran warga RT Anda.');
+            }
+        }
+
         DB::transaction(function () use ($setoran, $data) {
             $setoran->update($data + ['validated_by' => Auth::id(), 'validated_at' => now()]);
+
             if ($data['status'] === 'valid') {
-                $saldo = SaldoSampah::firstOrCreate(['user_id' => $setoran->user_id], ['saldo' => 0, 'total_berat_kg' => 0]);
-                $saldo->increment('saldo', $setoran->total_saldo); $saldo->increment('total_berat_kg', $setoran->berat_kg);
+                $saldo = SaldoSampah::firstOrCreate(
+                    ['user_id' => $setoran->user_id],
+                    ['saldo' => 0, 'total_berat_kg' => 0]
+                );
+                $saldo->increment('saldo', $setoran->total_saldo);
+                $saldo->increment('total_berat_kg', $setoran->berat_kg);
             }
+
             Notifikasi::create([
                 'user_id' => $setoran->user_id,
                 'from_user_id' => Auth::id(),
                 'tipe' => 'bank_sampah',
                 'judul' => 'Setoran sampah ' . ($data['status'] === 'valid' ? 'disetujui' : 'ditolak'),
                 'pesan' => $data['status'] === 'valid'
-                    ? 'Saldo Bank Sampah Anda bertambah Rp ' . number_format($setoran->total_saldo, 0, ',', '.')
+                    ? 'Saldo Bank Sampah Anda bertambah Rp ' . number_format($setoran->total_saldo, 0, ',', '.') . " ({$setoran->berat_kg} kg {$setoran->jenisSampah?->nama})"
                     : ($data['catatan'] ?: 'Setoran belum dapat disetujui.'),
                 'dibaca' => false,
             ]);
         });
+
         return back()->with('success', 'Setoran berhasil diverifikasi.');
     }
 
@@ -149,9 +245,57 @@ class BankSampahController extends Controller
     public function storeJadwal(Request $request)
     {
         abort_unless($this->isPengurus(), 403);
-        $data = $request->validate(['judul' => ['required', 'string', 'max:255'], 'waktu' => ['required', 'date'], 'lokasi' => ['required', 'string', 'max:255'], 'keterangan' => ['nullable', 'string']]);
-        JadwalBankSampah::create($data + ['aktif' => true]);
-        return back()->with('success', 'Jadwal setor/jemput berhasil ditambahkan.');
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'judul' => ['required', 'string', 'max:255'],
+            'waktu' => ['required', 'date'],
+            'lokasi' => ['required', 'string', 'max:255'],
+            'petugas_nama' => ['nullable', 'string', 'max:255'],
+            'petugas_kontak' => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'in:terjadwal,berlangsung,selesai,ditunda'],
+            'keterangan' => ['nullable', 'string'],
+        ]);
+
+        $rtId = $user->isAdminRt() ? $user->managedRtId() : ($request->input('rt_id') ?? $user->managedRtId());
+
+        $jadwal = JadwalBankSampah::create($data + [
+            'rt_id' => $rtId,
+            'status' => $data['status'] ?? 'terjadwal',
+            'aktif' => true,
+        ]);
+
+        // Broadcast notification to citizens in the RT
+        if ($rtId) {
+            $wargaIds = User::where(function ($q) use ($rtId) {
+                $q->where('rt_id', $rtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $rtId));
+            })->pluck('id');
+
+            foreach ($wargaIds as $wId) {
+                Notifikasi::create([
+                    'user_id' => $wId,
+                    'from_user_id' => $user->id,
+                    'tipe' => 'bank_sampah',
+                    'judul' => 'Jadwal Bank Sampah Baru',
+                    'pesan' => "Jadwal pengumpulan sampah: {$jadwal->judul} pada " . Carbon::parse($jadwal->waktu)->isoFormat('dddd, D MMMM Y HH:mm') . " di {$jadwal->lokasi}.",
+                    'dibaca' => false,
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Jadwal pengumpulan sampah berhasil ditambahkan dan disiarkan ke warga.');
+    }
+
+    public function updateStatusJadwal(Request $request, JadwalBankSampah $jadwal)
+    {
+        abort_unless($this->isPengurus(), 403);
+        $validated = $request->validate([
+            'status' => ['required', 'in:terjadwal,berlangsung,selesai,ditunda'],
+        ]);
+
+        $jadwal->update(['status' => $validated['status']]);
+
+        return back()->with('success', 'Status jadwal pengumpulan berhasil diperbarui.');
     }
 
     public function requestWithdrawal(Request $request)
@@ -179,7 +323,7 @@ class BankSampahController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->route('bank-sampah.index')->with('success', 'Pengajuan tarik saldo berhasil dikirim.');
+        return redirect()->route('bank-sampah.index')->with('success', 'Pengajuan pencairan saldo berhasil dikirim ke pengurus RT.');
     }
 
     public function processWithdrawal(Request $request, PenarikanSaldoSampah $penarikan)
@@ -190,6 +334,15 @@ class BankSampahController extends Controller
             'status' => ['required', 'in:disetujui,ditolak,dibayar'],
             'catatan' => ['nullable', 'string'],
         ]);
+
+        $user = Auth::user();
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $penarikanUserRt = $penarikan->user?->managedRtId() ?? $penarikan->user?->profile?->rt_id;
+            if ($rtId && $penarikanUserRt && (int) $rtId !== (int) $penarikanUserRt) {
+                abort(403, 'Anda hanya dapat memproses pencairan warga RT Anda.');
+            }
+        }
 
         DB::transaction(function () use ($penarikan, $validated) {
             if (in_array($penarikan->status, ['ditolak', 'dibayar'], true)) {
@@ -215,6 +368,19 @@ class BankSampahController extends Controller
                 'processed_at' => now(),
                 'catatan' => $validated['catatan'] ?? null,
             ]);
+
+            Notifikasi::create([
+                'user_id' => $penarikan->user_id,
+                'from_user_id' => Auth::id(),
+                'tipe' => 'bank_sampah',
+                'judul' => 'Pencairan Saldo Bank Sampah ' . ucfirst($validated['status']),
+                'pesan' => $validated['status'] === 'dibayar'
+                    ? 'Pencairan saldo Rp ' . number_format($penarikan->nominal, 0, ',', '.') . ' telah dibayarkan.'
+                    : ($validated['status'] === 'disetujui'
+                        ? 'Pengajuan pencairan saldo Rp ' . number_format($penarikan->nominal, 0, ',', '.') . ' disetujui, menunggu pembayaran.'
+                        : 'Pengajuan pencairan ditolak: ' . ($validated['catatan'] ?? '-')),
+                'dibaca' => false,
+            ]);
         });
 
         return redirect()->route('bank-sampah.index')->with('success', 'Status pencairan saldo berhasil diperbarui.');
@@ -235,9 +401,11 @@ class BankSampahController extends Controller
         }
 
         collect([
-            ['nama' => 'Plastik', 'kategori' => 'Anorganik', 'harga_per_kg' => 2000],
-            ['nama' => 'Kertas', 'kategori' => 'Anorganik', 'harga_per_kg' => 1500],
-            ['nama' => 'Logam', 'kategori' => 'Anorganik', 'harga_per_kg' => 5000],
+            ['nama' => 'Plastik Botol/Gelas Bersih', 'kategori' => 'Anorganik', 'harga_per_kg' => 3000],
+            ['nama' => 'Kardus & Kertas Bekas', 'kategori' => 'Anorganik', 'harga_per_kg' => 1800],
+            ['nama' => 'Besi & Logam Campur', 'kategori' => 'Anorganik', 'harga_per_kg' => 5500],
+            ['nama' => 'Minyak Jelantah', 'kategori' => 'Limbah', 'harga_per_kg' => 6000],
+            ['nama' => 'Elektronik Kecil / Kabel', 'kategori' => 'B3 / E-Waste', 'harga_per_kg' => 8000],
         ])->each(fn ($jenis) => JenisSampah::create($jenis));
     }
 
@@ -252,7 +420,7 @@ class BankSampahController extends Controller
             'ketua_rw',
             'petugas',
             'sekretaris',
-        ], true);
+        ], true) || ($user && ($user->isAdminRt() || $user->isAdminRw()));
     }
 
     private function wargaQuery()

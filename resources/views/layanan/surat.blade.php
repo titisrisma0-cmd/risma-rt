@@ -3,8 +3,12 @@
 @php
     $statusClass = [
         'pending' => 'bg-warning text-dark',
+        'menunggu_rt' => 'bg-warning text-dark',
         'diproses' => 'bg-info',
+        'diproses_rt' => 'bg-info',
+        'menunggu_rw' => 'bg-purple-600 text-white',
         'siap_diambil' => 'bg-success',
+        'disetujui' => 'bg-success',
         'selesai' => 'bg-primary',
         'ditolak' => 'bg-danger',
     ];
@@ -206,6 +210,9 @@
                                             <div class="d-flex flex-wrap gap-2">
                                                 <button name="status" value="diproses" class="btn btn-sm btn-info">Diproses</button>
                                                 <button name="status" value="siap_diambil" class="btn btn-sm btn-success">Setujui</button>
+                                                @if(!empty($isRt))
+                                                    <button name="status" value="menunggu_rw" class="btn btn-sm text-white" style="background: #8b5cf6;" title="Eskalasi persetujuan ke RW">Ke RW</button>
+                                                @endif
                                                 <button name="status" value="ditolak" class="btn btn-sm btn-outline-danger">Tolak</button>
                                                 @if($surat->nomor_surat)
                                                     <a class="btn btn-sm btn-outline-light" href="{{ route('layanan.surat.cetak', $surat) }}">

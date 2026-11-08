@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Pembayaran;
 use App\Models\User;
+use App\Models\AuditLog;
 use App\Models\Iuran;
 use App\Models\Kas;
 use App\Models\Notifikasi;
@@ -19,8 +20,9 @@ class PembayaranController extends Controller
     {
         $currentPeriod = Carbon::now()->format('Y-m');
         $previousPeriod = Carbon::now()->subMonthNoOverflow()->format('Y-m');
+        $user = Auth::user();
 
-        if (Auth::user()->hasRole('warga')) {
+        if ($user->hasRole('warga')) {
             $pembayaran = Pembayaran::with(['iuran', 'verifikator'])
                 ->where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
@@ -80,8 +82,20 @@ class PembayaranController extends Controller
             });
 
             $tagihan = $tagihanGroups->flatMap->items;
+        } elseif ($user->isAdminRt()) {
+            // Khusus Ketua RT: Hanya menampilkan pembayaran warga di wilayah RT-nya
+            $rtId = $user->managedRtId();
+            $pembayaran = Pembayaran::with(['user.profile', 'iuran', 'verifikator'])
+                ->whereHas('user.profile', function ($q) use ($rtId) {
+                    $q->where('rt_id', $rtId);
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+            $tagihan = collect();
+            $tagihanGroups = collect();
         } else {
-            $pembayaran = Pembayaran::with(['user', 'iuran', 'verifikator'])
+            // RW / Admin / Bendahara: Akses seluruh pembayaran
+            $pembayaran = Pembayaran::with(['user.profile', 'iuran', 'verifikator'])
                 ->orderBy('created_at', 'desc')
                 ->get();
             $tagihan = collect();
@@ -93,9 +107,20 @@ class PembayaranController extends Controller
     
     public function create(Request $request)
     {
-        $warga = User::whereHas('role', function($q) {
+        $user = Auth::user();
+        $wargaQuery = User::whereHas('role', function ($q) {
             $q->where('nama_role', 'warga');
-        })->get();
+        });
+
+        // Pembatasan pemilihan warga jika user adalah Ketua RT
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $wargaQuery->whereHas('profile', function ($q) use ($rtId) {
+                $q->where('rt_id', $rtId);
+            });
+        }
+
+        $warga = $wargaQuery->get();
         
         $iuran = Iuran::where('status', 'aktif')
             ->orderBy('nama_iuran')
@@ -135,7 +160,8 @@ class PembayaranController extends Controller
     
     public function store(Request $request)
     {
-        $isWarga = Auth::user()->hasRole('warga');
+        $user = Auth::user();
+        $isWarga = $user->hasRole('warga');
 
         // Validasi
         $rules = [
@@ -157,6 +183,17 @@ class PembayaranController extends Controller
         }
         
         $request->validate($rules);
+
+        // Keamanan Server-Side RT: Pastikan warga yang dibayar berada di wilayah RT bersangkutan
+        if ($user->isAdminRt()) {
+            $targetUser = User::with('profile')->findOrFail($request->user_id);
+            $rtId = $user->managedRtId();
+            abort_if(
+                (int) optional($targetUser->profile)->rt_id !== (int) $rtId,
+                403,
+                'Akses ditolak - Warga tidak berada di wilayah RT Anda.'
+            );
+        }
         
         DB::beginTransaction();
         
@@ -185,7 +222,6 @@ class PembayaranController extends Controller
             $noTransaksi = 'TRX' . date('Ymd') . str_pad(($lastTransaksi ? $lastTransaksi->id + 1 : 1), 4, '0', STR_PAD_LEFT);
             $paymentStatus = $isWarga ? 'pending' : 'lunas';
             
-            // Initialize data array dengan urutan yang sesuai fillable model
             $data = [
                 'no_transaksi' => $noTransaksi,
                 'user_id' => $request->user_id,
@@ -202,12 +238,10 @@ class PembayaranController extends Controller
                 'verified_at' => $isWarga ? null : now(),
             ];
 
-            // Tambah metode pembayaran ke keterangan jika e-wallet
             if ($request->metode_bayar == 'ewallet') {
                 $data['keterangan'] = ($data['keterangan'] ? $data['keterangan'] . ' | ' : '') . 'E-Wallet: ' . $request->ewallet_provider;
             }
 
-            // Hitung denda jika telat berdasarkan konfigurasi iuran
             $iuran = Iuran::find($request->iuran_id);
             if ($iuran) {
                 try {
@@ -222,7 +256,6 @@ class PembayaranController extends Controller
                         $data['keterangan'] = ($data['keterangan'] ? $data['keterangan'] . ' | ' : '') . "Denda telat bayar: Rp " . number_format($dendaAmount, 0, ',', '.');
 
                         if (!$isWarga) {
-                            // Buat notifikasi kepada warga saat pembayaran dicatat petugas.
                             Notifikasi::create([
                                 'user_id' => $request->user_id,
                                 'from_user_id' => Auth::id(),
@@ -235,11 +268,10 @@ class PembayaranController extends Controller
                         }
                     }
                 } catch (\Exception $e) {
-                    // jika format bulan_tahun salah, abaikan denda
+                    // Abaikan kesalahan parsing tanggal
                 }
             }
             
-            // Upload bukti transfer jika ada
             if ($request->hasFile('bukti_transfer')) {
                 $file = $request->file('bukti_transfer');
                 $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
@@ -248,37 +280,51 @@ class PembayaranController extends Controller
             }
             
             $pembayaran = Pembayaran::create($data);
+            $wargaRtId = optional(User::with('profile')->find($request->user_id))->profile?->rt_id;
 
-            if ($isWarga) {
-                $petugas = User::whereHas('role', function ($q) {
-                    $q->whereIn('nama_role', ['admin', 'bendahara']);
-                })->get();
+            // Audit Trail
+            AuditLog::record(
+                action: 'pembayaran_iuran',
+                entityType: 'pembayaran',
+                entityId: $pembayaran->id,
+                deskripsi: "Pencatatan pembayaran iuran {$noTransaksi} warga {$pembayaran->user->name} sebesar Rp " . number_format($pembayaran->jumlah_bayar, 0, ',', '.') . " ({$paymentStatus})",
+                nominal: $pembayaran->jumlah_bayar,
+                bukti: $pembayaran->bukti_transfer,
+                rtId: $wargaRtId,
+                userId: Auth::id()
+            );
 
-                foreach ($petugas as $userPetugas) {
+            if ($isWarga && $wargaRtId) {
+                // Notifikasi khusus Ketua RT wilayah bersangkutan
+                $rtModel = \App\Models\Rt::find($wargaRtId);
+                if ($rtModel && $rtModel->ketua_user_id) {
                     Notifikasi::create([
-                        'user_id' => $userPetugas->id,
+                        'user_id' => $rtModel->ketua_user_id,
                         'from_user_id' => Auth::id(),
                         'iuran_id' => $request->iuran_id,
                         'tipe' => 'pembayaran',
-                        'judul' => 'Pembayaran Perlu Verifikasi',
-                        'pesan' => Auth::user()->name . ' mengirim pembayaran iuran ' . ($iuran ? $iuran->nama_iuran : '') . ' periode ' . $bulanTahun . '. Silakan cek bukti pembayaran sebelum verifikasi.',
+                        'judul' => 'Pembayaran Warga Perlu Verifikasi',
+                        'pesan' => Auth::user()->name . ' (RT ' . $rtModel->kode_rt . ') mengirim pembayaran iuran ' . ($iuran ? $iuran->nama_iuran : '') . ' periode ' . $bulanTahun . '. Silakan verifikasi.',
                         'dibaca' => false,
                     ]);
                 }
             }
             
             if ($data['status'] === 'lunas') {
+                $wargaUser = User::with('profile')->find($request->user_id);
                 Kas::create([
+                    'rt_id' => optional($wargaUser->profile)->rt_id,
+                    'rw_id' => 1,
                     'tanggal' => now(),
                     'jenis' => 'masuk',
                     'nominal' => $data['jumlah_bayar'],
                     'sumber' => 'Iuran',
-                    'keterangan' => "Pembayaran iuran dari " . User::find($request->user_id)->name,
+                    'keterangan' => "Pembayaran iuran dari " . $wargaUser->name,
                     'pembayaran_id' => $pembayaran->id,
+                    'created_by' => Auth::id(),
                 ]);
             }
 
-            // Notifikasi status pembayaran untuk warga
             if ($request->user_id) {
                 $iuran = Iuran::find($request->iuran_id);
                 Notifikasi::create([
@@ -288,8 +334,8 @@ class PembayaranController extends Controller
                     'tipe' => 'pembayaran',
                     'judul' => $isWarga ? 'Pembayaran Menunggu Verifikasi' : 'Pembayaran Berhasil',
                     'pesan' => $isWarga
-                        ? 'Pembayaran iuran ' . ($iuran ? $iuran->nama_iuran : '') . ' periode ' . $bulanTahun . ' berhasil dikirim dan menunggu verifikasi admin/bendahara.'
-                        : 'Pembayaran iuran ' . ($iuran ? $iuran->nama_iuran : '') . ' periode ' . $bulanTahun . ' berhasil diverifikasi. Terima kasih.',
+                        ? 'Pembayaran iuran ' . ($iuran ? $iuran->nama_iuran : '') . ' periode ' . $bulanTahun . ' berhasil dikirim dan menunggu verifikasi.'
+                        : 'Pembayaran iuran ' . ($iuran ? $iuran->nama_iuran : '') . ' periode ' . $bulanTahun . ' berhasil diproses (Lunas). Terima kasih.',
                     'dibaca' => false,
                 ]);
             }
@@ -307,14 +353,21 @@ class PembayaranController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }
+
+    public function show($id)
+    {
+        $pembayaran = $this->authorizePembayaran($id);
+        return redirect()->route('pembayaran.index');
+    }
     
     public function verifikasi($id)
     {
-        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('bendahara')) {
-            abort(403, 'Hanya admin atau bendahara yang dapat memverifikasi pembayaran.');
+        $user = Auth::user();
+        if (! $user->hasRole('admin') && ! $user->hasRole('bendahara') && ! $user->isAdminRw() && ! $user->isAdminRt()) {
+            abort(403, 'Anda tidak memiliki hak akses untuk memverifikasi pembayaran.');
         }
 
-        $pembayaran = Pembayaran::findOrFail($id);
+        $pembayaran = $this->authorizePembayaran($id);
         
         DB::beginTransaction();
         
@@ -326,12 +379,38 @@ class PembayaranController extends Controller
             ]);
             
             Kas::create([
+                'rt_id' => optional($pembayaran->user->profile)->rt_id,
+                'rw_id' => 1,
                 'tanggal' => now(),
                 'jenis' => 'masuk',
                 'nominal' => $pembayaran->jumlah_bayar,
                 'sumber' => 'Iuran',
                 'keterangan' => "Verifikasi pembayaran iuran dari " . $pembayaran->user->name,
                 'pembayaran_id' => $pembayaran->id,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Audit Trail
+            AuditLog::record(
+                action: 'pembayaran_verifikasi',
+                entityType: 'pembayaran',
+                entityId: $pembayaran->id,
+                deskripsi: "Verifikasi lunas pembayaran iuran {$pembayaran->no_transaksi} ({$pembayaran->user->name}) sebesar Rp " . number_format($pembayaran->jumlah_bayar, 0, ',', '.') . " oleh " . $user->name,
+                nominal: $pembayaran->jumlah_bayar,
+                bukti: $pembayaran->bukti_transfer,
+                rtId: optional($pembayaran->user->profile)->rt_id,
+                userId: Auth::id()
+            );
+
+            // Notify citizen
+            Notifikasi::create([
+                'user_id' => $pembayaran->user_id,
+                'from_user_id' => Auth::id(),
+                'iuran_id' => $pembayaran->iuran_id,
+                'tipe' => 'pembayaran',
+                'judul' => 'Pembayaran Diverifikasi (Lunas)',
+                'pesan' => "Pembayaran iuran Anda ({$pembayaran->no_transaksi}) telah diverifikasi oleh pengurus dan dinyatakan LUNAS. Terima kasih.",
+                'dibaca' => false,
             ]);
             
             DB::commit();
@@ -340,15 +419,14 @@ class PembayaranController extends Controller
             
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Terjadi kesalahan');
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
     
     public function destroy($id)
     {
-        $pembayaran = Pembayaran::findOrFail($id);
+        $pembayaran = $this->authorizePembayaran($id);
         
-        // Hapus file bukti transfer
         if ($pembayaran->bukti_transfer && Storage::disk('public')->exists($pembayaran->bukti_transfer)) {
             Storage::disk('public')->delete($pembayaran->bukti_transfer);
         }
@@ -366,5 +444,28 @@ class PembayaranController extends Controller
     {
         $iuran = Iuran::find($iuranId);
         return response()->json(['nominal' => $iuran ? $iuran->nominal : 0]);
+    }
+
+    private function authorizePembayaran($id): Pembayaran
+    {
+        $user = Auth::user();
+        $pembayaran = Pembayaran::with('user.profile')->findOrFail($id);
+
+        if ($user->hasRole('warga')) {
+            abort_if((int) $pembayaran->user_id !== (int) $user->id, 403, 'Akses ditolak.');
+            return $pembayaran;
+        }
+
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $pembayaranRtId = optional($pembayaran->user->profile)->rt_id;
+            abort_if(
+                (int) $pembayaranRtId !== (int) $rtId,
+                403,
+                'Akses ditolak - Data transaksi berada di luar wilayah RT Anda.'
+            );
+        }
+
+        return $pembayaran;
     }
 }

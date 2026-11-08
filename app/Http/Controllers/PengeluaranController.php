@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\AuditLog;
 use App\Models\Pengeluaran;
 use App\Models\Kas;
 use Illuminate\Support\Facades\Auth;
@@ -12,9 +13,19 @@ class PengeluaranController extends Controller
 {
     public function index()
     {
-        $pengeluaran = Pengeluaran::with('creator')
-            ->orderBy('tanggal', 'desc')
-            ->get();
+        $user = Auth::user();
+
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            $pengeluaran = Pengeluaran::with('creator')
+                ->where('rt_id', $rtId)
+                ->orderBy('tanggal', 'desc')
+                ->get();
+        } else {
+            $pengeluaran = Pengeluaran::with('creator')
+                ->orderBy('tanggal', 'desc')
+                ->get();
+        }
         
         return view('pengeluaran.index', compact('pengeluaran'));
     }
@@ -26,6 +37,8 @@ class PengeluaranController extends Controller
     
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
             'tanggal' => 'required|date',
             'kategori' => 'required',
@@ -36,7 +49,11 @@ class PengeluaranController extends Controller
         DB::beginTransaction();
         
         try {
+            $rtId = $user->isAdminRt() ? $user->managedRtId() : ($request->input('rt_id') ?: null);
+
             $pengeluaran = Pengeluaran::create([
+                'rt_id' => $rtId,
+                'rw_id' => 1,
                 'tanggal' => $request->tanggal,
                 'kategori' => $request->kategori,
                 'nominal' => $request->nominal,
@@ -46,12 +63,27 @@ class PengeluaranController extends Controller
             ]);
             
             Kas::create([
+                'rt_id' => $rtId,
+                'rw_id' => 1,
                 'tanggal' => $request->tanggal,
                 'jenis' => 'keluar',
                 'nominal' => $request->nominal,
                 'sumber' => $request->kategori,
                 'keterangan' => $request->keterangan,
+                'created_by' => Auth::id(),
             ]);
+
+            // Audit Trail
+            AuditLog::record(
+                action: 'pengeluaran_create',
+                entityType: 'pengeluaran',
+                entityId: $pengeluaran->id,
+                deskripsi: "Pencatatan pengeluaran: {$request->kategori} - {$request->keterangan} sebesar Rp " . number_format($request->nominal, 0, ',', '.'),
+                nominal: $request->nominal,
+                bukti: $request->bukti,
+                rtId: $rtId,
+                userId: Auth::id()
+            );
             
             DB::commit();
             
@@ -65,13 +97,13 @@ class PengeluaranController extends Controller
     
     public function edit($id)
     {
-        $pengeluaran = Pengeluaran::findOrFail($id);
+        $pengeluaran = $this->authorizePengeluaran($id);
         return view('pengeluaran.edit', compact('pengeluaran'));
     }
     
     public function update(Request $request, $id)
     {
-        $pengeluaran = Pengeluaran::findOrFail($id);
+        $pengeluaran = $this->authorizePengeluaran($id);
         
         $request->validate([
             'tanggal' => 'required|date',
@@ -118,7 +150,7 @@ class PengeluaranController extends Controller
     
     public function destroy($id)
     {
-        $pengeluaran = Pengeluaran::findOrFail($id);
+        $pengeluaran = $this->authorizePengeluaran($id);
         
         DB::beginTransaction();
         
@@ -140,5 +172,22 @@ class PengeluaranController extends Controller
             DB::rollback();
             return redirect()->back()->with('error', 'Terjadi kesalahan');
         }
+    }
+
+    private function authorizePengeluaran($id): Pengeluaran
+    {
+        $user = Auth::user();
+        $pengeluaran = Pengeluaran::findOrFail($id);
+
+        if ($user->isAdminRt()) {
+            $rtId = $user->managedRtId();
+            abort_if(
+                (int) $pengeluaran->rt_id !== (int) $rtId,
+                403,
+                'Akses ditolak - Data pengeluaran berada di luar wilayah RT Anda.'
+            );
+        }
+
+        return $pengeluaran;
     }
 }

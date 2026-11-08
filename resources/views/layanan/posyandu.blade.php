@@ -143,9 +143,38 @@
                         <div class="pos-card-head"><h5><i class="fas fa-calendar-days"></i> Jadwal Posyandu</h5><span class="pos-count">{{ $jadwals->count() }}</span></div>
                         <div class="pos-compact-list schedule-list">
                             @forelse($jadwals as $jadwal)
-                                <div class="pos-list-item">
-                                    <time><strong>{{ $jadwal->tanggal_mulai->format('d') }}</strong><span>{{ $jadwal->tanggal_mulai->format('M') }}</span></time>
-                                    <div><strong>{{ $jadwal->judul }}</strong><span>{{ $jadwal->tanggal_mulai->format('H:i') }} · {{ $jadwal->lokasi }}</span></div>
+                                <div class="pos-list-item d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <time><strong>{{ $jadwal->tanggal_mulai->format('d') }}</strong><span>{{ $jadwal->tanggal_mulai->format('M') }}</span></time>
+                                        <div>
+                                            <strong>{{ $jadwal->judul }}</strong>
+                                            <span class="d-block small text-muted">{{ $jadwal->tanggal_mulai->format('H:i') }} · {{ $jadwal->lokasi }}</span>
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                @if($jadwal->nama_bidan)
+                                                    <span class="badge bg-info-subtle text-info border"><i class="fas fa-user-doctor me-1"></i>{{ $jadwal->nama_bidan }}</span>
+                                                    @if($jadwal->kontak_bidan)
+                                                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $jadwal->kontak_bidan) }}" target="_blank" class="badge bg-success text-white text-decoration-none"><i class="fab fa-whatsapp me-1"></i>WA Bidan</a>
+                                                    @endif
+                                                @endif
+                                                @if($jadwal->kader_info)
+                                                    <span class="badge bg-secondary-subtle text-dark border"><i class="fas fa-hand-holding-heart me-1"></i>{{ $jadwal->kader_info }}</span>
+                                                @endif
+                                                <span class="badge bg-primary-subtle text-primary border">{{ ucfirst($jadwal->status) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if($isPengurus)
+                                        <div class="d-flex gap-1 ms-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#modalEditJadwalPosyandu{{ $jadwal->id }}" title="Edit Jadwal">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form method="POST" action="{{ route('layanan.posyandu.jadwal.destroy', $jadwal) }}" class="d-inline" onsubmit="return confirm('Hapus jadwal posyandu ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Hapus"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </div>
+                                    @endif
                                 </div>
                             @empty
                                 <div class="pos-empty">Belum ada jadwal.</div>
@@ -237,19 +266,120 @@
         <div class="modal fade" id="modalPenimbangan" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Input Hasil Penimbangan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.posyandu.pemeriksaan.store') }}">@csrf<div class="modal-body">
             <div class="row g-2"><div class="col-md-6"><label class="form-label">Nama Anak</label><select class="form-select" name="balita_id" required><option value="">Pilih anak</option>@foreach($semuaBalita as $balita)<option value="{{ $balita->id }}">{{ $balita->nama }}</option>@endforeach</select></div><div class="col-md-6"><label class="form-label">Jadwal</label><select class="form-select" name="jadwal_posyandu_id"><option value="">Tanpa jadwal</option>@foreach($jadwals as $jadwal)<option value="{{ $jadwal->id }}">{{ $jadwal->tanggal_mulai->format('d/m/Y') }} - {{ $jadwal->judul }}</option>@endforeach</select></div></div>
             <label class="form-label mt-2">Tanggal Periksa</label><input class="form-control mb-2" type="date" name="tanggal_periksa" value="{{ date('Y-m-d') }}" required>
-            <div class="row g-2"><div class="col-md-6"><label class="form-label">Berat Badan (kg)</label><input class="form-control" type="number" step="0.01" min="0" name="berat_kg"></div><div class="col-md-6"><label class="form-label">Tinggi Badan (cm)</label><input class="form-control" type="number" step="0.01" min="0" name="tinggi_cm"></div></div>
+            <div class="row g-2">
+                <div class="col-md-6"><label class="form-label">Berat Badan (kg) <span class="text-danger">*</span></label><input class="form-control" type="number" step="0.01" min="0" name="berat_kg" required></div>
+                <div class="col-md-6"><label class="form-label">Tinggi Badan (cm) <span class="text-danger">*</span></label><input class="form-control" type="number" step="0.01" min="0" name="tinggi_cm" required></div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-md-4"><label class="form-label">Lingkar Kepala (cm)</label><input class="form-control" type="number" step="0.01" min="0" name="lingkar_kepala_cm"></div>
+                <div class="col-md-4"><label class="form-label">Lingkar Lengan / LILA (cm)</label><input class="form-control" type="number" step="0.01" min="0" name="lingkar_lengan_cm"></div>
+                <div class="col-md-4">
+                    <label class="form-label">Status Gizi</label>
+                    <select name="status_gizi" class="form-select">
+                        <option value="Gizi Baik" selected>Gizi Baik</option>
+                        <option value="Gizi Kurang">Gizi Kurang</option>
+                        <option value="Gizi Lebih">Gizi Lebih</option>
+                        <option value="Berisiko Stunting">Berisiko Stunting</option>
+                        <option value="Stunting">Stunting</option>
+                    </select>
+                </div>
+            </div>
             <div class="row g-2 mt-1"><div class="col-md-6"><label class="form-label">Imunisasi Sudah</label><input class="form-control" name="imunisasi_sudah" placeholder="BCG, Polio, DPT"></div><div class="col-md-6"><label class="form-label">Imunisasi Belum</label><input class="form-control" name="imunisasi_belum" placeholder="Campak, DPT lanjutan"></div></div>
-            <label class="form-label mt-2">Catatan</label><textarea class="form-control" name="catatan" rows="2"></textarea>
+            <label class="form-label mt-2">Catatan Perkembangan Anak</label><textarea class="form-control" name="catatan" rows="2" placeholder="Catatan keaktifan, nafsu makan, dll..."></textarea>
         </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-success">Simpan Penimbangan</button></div></form></div></div></div>
 
-        <div class="modal fade" id="modalJadwal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Input Jadwal Posyandu</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.posyandu.jadwal.store') }}">@csrf<div class="modal-body">
-            <label class="form-label">Judul Kegiatan</label><input class="form-control mb-2" name="judul" value="{{ old('judul', 'Posyandu Balita Bulanan') }}" required>
-            <div class="row g-2"><div class="col-sm-6"><label class="form-label">Tanggal Mulai</label><input class="form-control" type="datetime-local" name="tanggal_mulai" required></div><div class="col-sm-6"><label class="form-label">Tanggal Selesai</label><input class="form-control" type="datetime-local" name="tanggal_selesai"></div></div>
-            <label class="form-label mt-2">Lokasi</label><input class="form-control mb-2" name="lokasi" placeholder="Balai RW" required>
-            <label class="form-label">Wilayah RT (opsional)</label><select class="form-select mb-2" name="rt_id"><option value="">Tingkat RW</option>@foreach($rts as $rt)<option value="{{ $rt->id }}">RT {{ $rt->kode_rt }}{{ $rt->nama_rt ? ' - '.$rt->nama_rt : '' }}</option>@endforeach</select>
-            <div class="row g-2 mb-2"><div class="col-sm-6"><label class="form-label">Latitude (opsional)</label><input class="form-control" type="number" step="0.0000001" min="-90" max="90" name="latitude"></div><div class="col-sm-6"><label class="form-label">Longitude (opsional)</label><input class="form-control" type="number" step="0.0000001" min="-180" max="180" name="longitude"></div></div>
-            <label class="form-label">Keterangan</label><textarea class="form-control" name="keterangan" rows="2"></textarea>
-        </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-info">Simpan Jadwal</button></div></form></div></div></div>
+        <div class="modal fade" id="modalJadwal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold text-success"><i class="fas fa-calendar-plus me-2"></i>Input Jadwal Posyandu RT</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form method="POST" action="{{ route('layanan.posyandu.jadwal.store') }}">@csrf<div class="modal-body">
+            <label class="form-label">Judul Kegiatan <span class="text-danger">*</span></label><input class="form-control mb-2" name="judul" value="{{ old('judul', 'Posyandu Balita Rutin RT') }}" required>
+            <div class="row g-2"><div class="col-sm-6"><label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label><input class="form-control" type="datetime-local" name="tanggal_mulai" required></div><div class="col-sm-6"><label class="form-label">Tanggal Selesai</label><input class="form-control" type="datetime-local" name="tanggal_selesai"></div></div>
+            <label class="form-label mt-2">Lokasi Posyandu <span class="text-danger">*</span></label><input class="form-control mb-2" name="lokasi" placeholder="Pos Ronda RT / Balai Warga" required>
+            <div class="row g-2 mb-2">
+                <div class="col-sm-6"><label class="form-label">Nama Bidan / Tenaga Medis</label><input class="form-control" name="nama_bidan" placeholder="Bidan Siti / Puskesmas"></div>
+                <div class="col-sm-6"><label class="form-label">Kontak Bidan (WA/HP)</label><input class="form-control" name="kontak_bidan" placeholder="081234567890"></div>
+            </div>
+            <div class="row g-2 mb-2">
+                <div class="col-sm-6"><label class="form-label">Nama Kader Penanggung Jawab</label><input class="form-control" name="kader_info" placeholder="Ibu Rahma"></div>
+                <div class="col-sm-6">
+                    <label class="form-label">Status Jadwal</label>
+                    <select name="status" class="form-select">
+                        <option value="terjadwal" selected>Terjadwal</option>
+                        <option value="berlangsung">Berlangsung</option>
+                        <option value="selesai">Selesai</option>
+                        <option value="ditunda">Ditunda</option>
+                    </select>
+                </div>
+            </div>
+            <label class="form-label">Keterangan / Instruksi ke Orang Tua</label><textarea class="form-control" name="keterangan" rows="2" placeholder="Wajib membawa buku KIA / KMS..."></textarea>
+            <p class="small text-muted mb-0 mt-2"><i class="fas fa-bell text-warning me-1"></i>Notifikasi pengingat otomatis akan dikirim ke seluruh orang tua balita di RT ini.</p>
+        </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-success">Simpan & Siarkan Jadwal</button></div></form></div></div></div>
+
+        @foreach($jadwals as $jEdit)
+            <div class="modal fade" id="modalEditJadwalPosyandu{{ $jEdit->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold text-primary"><i class="fas fa-edit me-2"></i>Edit Jadwal Posyandu</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="{{ route('layanan.posyandu.jadwal.update', $jEdit) }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <label class="form-label">Judul Kegiatan <span class="text-danger">*</span></label>
+                                <input class="form-control mb-2" name="judul" value="{{ old('judul', $jEdit->judul) }}" required>
+                                
+                                <div class="row g-2">
+                                    <div class="col-sm-6">
+                                        <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="datetime-local" name="tanggal_mulai" value="{{ $jEdit->tanggal_mulai->format('Y-m-d\TH:i') }}" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label">Tanggal Selesai</label>
+                                        <input class="form-control" type="datetime-local" name="tanggal_selesai" value="{{ $jEdit->tanggal_selesai ? $jEdit->tanggal_selesai->format('Y-m-d\TH:i') : '' }}">
+                                    </div>
+                                </div>
+
+                                <label class="form-label mt-2">Lokasi Posyandu <span class="text-danger">*</span></label>
+                                <input class="form-control mb-2" name="lokasi" value="{{ old('lokasi', $jEdit->lokasi) }}" required>
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-sm-6">
+                                        <label class="form-label">Nama Bidan / Tenaga Medis</label>
+                                        <input class="form-control" name="nama_bidan" value="{{ old('nama_bidan', $jEdit->nama_bidan) }}" placeholder="Bidan Siti / Puskesmas">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label">Kontak Bidan (WA/HP)</label>
+                                        <input class="form-control" name="kontak_bidan" value="{{ old('kontak_bidan', $jEdit->kontak_bidan) }}" placeholder="081234567890">
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-sm-6">
+                                        <label class="form-label">Nama Kader Penanggung Jawab</label>
+                                        <input class="form-control" name="kader_info" value="{{ old('kader_info', $jEdit->kader_info) }}" placeholder="Ibu Rahma">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label">Status Jadwal</label>
+                                        <select name="status" class="form-select">
+                                            <option value="terjadwal" {{ $jEdit->status === 'terjadwal' ? 'selected' : '' }}>Terjadwal</option>
+                                            <option value="berlangsung" {{ $jEdit->status === 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
+                                            <option value="selesai" {{ $jEdit->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                            <option value="dibatalkan" {{ $jEdit->status === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <label class="form-label">Keterangan / Instruksi ke Orang Tua</label>
+                                <textarea class="form-control" name="keterangan" rows="2">{{ old('keterangan', $jEdit->keterangan) }}</textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Simpan Perubahan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endforeach
     @endif
 </div>
 

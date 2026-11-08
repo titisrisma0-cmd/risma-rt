@@ -467,6 +467,7 @@
             font-size: 0.75rem;
             color: var(--text-muted);
             margin-bottom: 8px;
+            cursor: pointer;
         }
         
         .demo-item strong {
@@ -674,9 +675,11 @@
                             
                             <div class="demo-accounts">
                                 <h6><i class="fas fa-laptop-code"></i> Akun Demo</h6>
-                                <div class="demo-item"><strong>Admin:</strong> admin@rw-smart.test / password123</div>
-                                <div class="demo-item"><strong>Bendahara:</strong> bendahara@rw-smart.test / password123</div>
-                                <div class="demo-item"><strong>Warga:</strong> warga@rw-smart.test / password123</div>
+                                <div class="demo-item" role="button" tabindex="0" onclick="fillLogin('admin@rw-smart.test', 'password123')"><strong>Admin / RW:</strong> admin@rw-smart.test / password123</div>
+                                <div class="demo-item" role="button" tabindex="0" onclick="fillLogin('rt01@rw-smart.test', 'password123')"><strong>Ketua RT 01:</strong> rt01@rw-smart.test / password123</div>
+                                <div class="demo-item" role="button" tabindex="0" onclick="fillLogin('rt03@rw-smart.test', 'password123')"><strong>Ketua RT 03:</strong> rt03@rw-smart.test / password123</div>
+                                <div class="demo-item" role="button" tabindex="0" onclick="fillLogin('bendahara@rw-smart.test', 'password123')"><strong>Bendahara:</strong> bendahara@rw-smart.test / password123</div>
+                                <div class="demo-item" role="button" tabindex="0" onclick="fillLogin('warga@rw-smart.test', 'password123')"><strong>Warga:</strong> warga@rw-smart.test / password123</div>
                             </div>
                         </div>
                         
@@ -839,6 +842,18 @@
                 toggle.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
             });
         });
+
+        // Demo account auto-fill
+        function fillLogin(email, password) {
+            const emailInput = document.querySelector('#loginForm input[name="email"]') || document.querySelector('input[name="email"]');
+            const passInput = document.getElementById('loginPassword');
+            if (emailInput) {
+                emailInput.value = email;
+            }
+            if (passInput) {
+                passInput.value = password;
+            }
+        }
     </script>
 </body>
 </html>
