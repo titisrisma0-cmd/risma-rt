@@ -551,7 +551,7 @@
                         <a href="{{ route('layanan.ronda.index') }}#panic-reports" class="btn btn-sm btn-outline-danger flex-fill">
                             <i class="fas fa-triangle-exclamation me-1"></i> Laporan Darurat
                         </a>
-                        <a href="{{ route('layanan.ronda.cctv.index') }}" class="btn btn-sm btn-outline-secondary flex-fill">
+                        <a href="{{ route('layanan.ronda.cctv.live') }}" class="btn btn-sm btn-outline-secondary flex-fill">
                             <i class="fas fa-video me-1"></i> Pantau CCTV
                         </a>
                     </div>

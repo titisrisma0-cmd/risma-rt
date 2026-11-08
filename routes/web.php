@@ -41,7 +41,7 @@ Route::get('/register', function () {
     return redirect('/login#register');
 })->name('register');
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 
 Route::middleware(['auth'])->group(function () {
     
@@ -197,6 +197,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/ronda/panic', [LayananMasyarakatController::class, 'storePanicReport'])->name('ronda.panic.store');
         Route::patch('/ronda/panic/{panicReport}/status', [LayananMasyarakatController::class, 'updatePanicReportStatus'])->name('ronda.panic.status');
         Route::get('/ronda/cctv', [CctvController::class, 'live'])->name('ronda.cctv.live');
+        Route::get('/ronda/cctv/live', [CctvController::class, 'live'])->name('ronda.cctv.index');
         Route::get('/ronda/cctv/recordings', [CctvController::class, 'recordings'])->name('ronda.cctv.recordings');
         Route::get('/ronda/cctv/manage', [CctvController::class, 'manage'])->name('ronda.cctv.manage');
         Route::post('/ronda/cctv/cameras', [CctvController::class, 'store'])->name('ronda.cctv.cameras.store');
