@@ -3,16 +3,25 @@
 @section('title', 'Log Aktivitas dan Audit Trail')
 
 @section('content')
-<div class="container-fluid px-4 py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <div>
-            <h1 class="h3 text-white mb-1"><i class="fas fa-list-check text-emerald-400 me-2"></i>Log Aktivitas dan Audit Trail</h1>
-            <p class="text-white-50 mb-0">Catatan kronologis seluruh tindakan, audit, transaksi keuangan, dan perubahan data wilayah</p>
+<div class="py-2">
+    <div class="page-header-saas mb-4">
+        <div class="page-header-info">
+            <div class="breadcrumb-saas">
+                <a href="{{ route('dashboard') }}"><i class="fas fa-home me-1"></i> Dashboard</a>
+                <i class="fas fa-chevron-right small text-muted"></i>
+                <span>Keuangan & Pengawasan</span>
+                <i class="fas fa-chevron-right small text-muted"></i>
+                <span>Audit Trail</span>
+            </div>
+            <h1 class="h3 fw-bold text-dark mb-1">
+                Log Aktivitas & Audit Trail
+            </h1>
+            <p class="text-secondary mb-0">Catatan kronologis seluruh tindakan, audit, transaksi keuangan, dan perubahan data wilayah.</p>
         </div>
 
         @if($user->isAdminRw() || $user->hasRole('bendahara'))
-            <div>
-                <a href="{{ route('rw.audit.index') }}" class="btn btn-outline-light px-3 py-2">
+            <div class="page-header-actions">
+                <a href="{{ route('rw.audit.index') }}" class="btn btn-light">
                     <i class="fas fa-arrow-left me-1"></i> Keuangan dan Audit RT
                 </a>
             </div>
@@ -20,12 +29,12 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="card p-3 mb-4 border-0" style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px;">
-        <form method="GET" action="{{ route('rw.audit.riwayat') }}" class="row g-3 align-items-end">
+    <div class="saas-card p-3 mb-4">
+        <form method="GET" action="{{ route('rw.audit.riwayat') }}" class="row g-2 align-items-end">
             @if($user->isAdminRw() || $user->hasRole('bendahara'))
                 <div class="col-md-2">
-                    <label class="form-label text-white-50 small mb-1">Wilayah RT</label>
-                    <select name="rt_id" class="form-select text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);">
+                    <label class="form-label small text-secondary mb-1">Wilayah RT</label>
+                    <select name="rt_id" class="form-select form-select-sm">
                         <option value="">Semua RT (01–08)</option>
                         @foreach($rts as $r)
                             <option value="{{ $r->id }}" {{ request('rt_id') == $r->id ? 'selected' : '' }}>RT {{ $r->kode_rt }}</option>
@@ -35,8 +44,8 @@
             @endif
 
             <div class="col-md-2">
-                <label class="form-label text-white-50 small mb-1">Pelaku (Pengguna)</label>
-                <select name="user_id" class="form-select text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);">
+                <label class="form-label small text-secondary mb-1">Pengguna</label>
+                <select name="user_id" class="form-select form-select-sm">
                     <option value="">Semua Pengguna</option>
                     @foreach($actors ?? [] as $actor)
                         <option value="{{ $actor->id }}" {{ request('user_id') == $actor->id ? 'selected' : '' }}>{{ $actor->name }}</option>
@@ -45,8 +54,8 @@
             </div>
 
             <div class="col-md-2">
-                <label class="form-label text-white-50 small mb-1">Jenis Tindakan</label>
-                <select name="action" class="form-select text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);">
+                <label class="form-label small text-secondary mb-1">Jenis Tindakan</label>
+                <select name="action" class="form-select form-select-sm">
                     <option value="">Semua Tindakan</option>
                     <option value="audit_review" {{ request('action') == 'audit_review' ? 'selected' : '' }}>Audit Keuangan</option>
                     <option value="pembayaran_iuran" {{ request('action') == 'pembayaran_iuran' ? 'selected' : '' }}>Pencatatan Pembayaran</option>
@@ -59,20 +68,20 @@
             </div>
 
             <div class="col-md-2">
-                <label class="form-label text-white-50 small mb-1">Dari Tanggal</label>
-                <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);">
+                <label class="form-label small text-secondary mb-1">Dari Tanggal</label>
+                <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control form-control-sm">
             </div>
 
             <div class="col-md-2">
-                <label class="form-label text-white-50 small mb-1">Sampai Tanggal</label>
-                <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);">
+                <label class="form-label small text-secondary mb-1">Sampai Tanggal</label>
+                <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control form-control-sm">
             </div>
 
             <div class="col-md-2">
-                <label class="form-label text-white-50 small mb-1">Cari Kata Kunci</label>
-                <div class="input-group">
-                    <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Cari..." class="form-control text-white" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15);">
-                    <button type="submit" class="btn btn-emerald text-white" style="background: #10b981; border: none;">
+                <label class="form-label small text-secondary mb-1">Kata Kunci</label>
+                <div class="input-group input-group-sm">
+                    <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Cari..." class="form-control">
+                    <button type="submit" class="btn btn-emerald">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -81,55 +90,50 @@
     </div>
 
     {{-- Tabel Audit Trail --}}
-    <div class="card border-0" style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px; overflow: hidden;">
+    <div class="saas-card mb-4">
+        <div class="card-header-saas">
+            <h5 class="card-title-saas"><i class="fas fa-list text-success"></i> Catatan Audit Trail Wilayah</h5>
+            <span class="badge badge-soft-primary">{{ $logs->total() }} Log Tercatat</span>
+        </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-white">
-                <thead style="background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <table class="table-saas table align-middle mb-0">
+                <thead>
                     <tr>
-                        <th class="py-3 px-3">Tanggal & Waktu</th>
-                        <th class="py-3 px-3">Aktor (Pengguna)</th>
-                        <th class="py-3 px-3">Wilayah</th>
-                        <th class="py-3 px-3">Aksi</th>
-                        <th class="py-3 px-3">Deskripsi Tindakan</th>
-                        <th class="py-3 px-3 text-end">Nominal</th>
-                        <th class="py-3 px-3 text-end">IP Address</th>
+                        <th>Waktu</th>
+                        <th>Aktor (Pengguna)</th>
+                        <th>Wilayah</th>
+                        <th>Aksi</th>
+                        <th>Deskripsi Tindakan</th>
+                        <th class="text-end">Nominal</th>
+                        <th class="text-end">IP Address</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($logs as $log)
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <td class="py-3 px-3 text-white-50 font-monospace small">
-                                {{ $log->created_at->format('d M Y H:i:s') }}
+                        <tr>
+                            <td class="text-secondary font-monospace small" style="width: 17%;">{{ $log->created_at->format('d M Y H:i:s') }}</td>
+                            <td style="width: 20%;">
+                                <div class="fw-semibold text-dark small">{{ optional($log->user)->name ?? 'Sistem' }}</div>
+                                <small class="text-secondary">{{ optional($log->user)->email }}</small>
                             </td>
-                            <td class="py-3 px-3">
-                                <div class="fw-bold text-white">{{ optional($log->user)->name ?? 'Sistem' }}</div>
-                                <small class="text-white-50">{{ optional($log->user)->email ?? '' }}</small>
-                            </td>
-                            <td class="py-3 px-3">
-                                <span class="badge bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                            <td>
+                                <span class="badge badge-soft-primary">
                                     RT {{ optional($log->rt)->kode_rt ?? '-' }}
                                 </span>
                             </td>
-                            <td class="py-3 px-3">
-                                <span class="badge bg-slate-700 text-white font-monospace small">
-                                    {{ $log->action }}
-                                </span>
+                            <td>
+                                <span class="badge badge-soft-info font-monospace small">{{ $log->action }}</span>
                             </td>
-                            <td class="py-3 px-3 text-white-50 small" style="max-width: 320px;">
-                                {{ $log->deskripsi }}
-                            </td>
-                            <td class="py-3 px-3 text-end font-monospace fw-semibold text-emerald-400">
+                            <td class="small text-secondary">{{ $log->deskripsi }}</td>
+                            <td class="text-end font-monospace small fw-bold">
                                 {{ $log->nominal ? 'Rp ' . number_format($log->nominal, 0, ',', '.') : '-' }}
                             </td>
-                            <td class="py-3 px-3 text-end text-white-50 font-monospace small">
-                                {{ $log->ip_address ?: '-' }}
-                            </td>
+                            <td class="text-end font-monospace text-secondary small">{{ $log->ip_address ?? '-' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-white-50">
-                                <i class="fas fa-inbox fa-3x mb-3 text-secondary d-block"></i>
-                                Belum ada riwayat audit log yang tercatat.
+                            <td colspan="7" class="text-center py-5 text-secondary">
+                                Tidak ada log aktivitas yang cocok dengan kriteria pencarian.
                             </td>
                         </tr>
                     @endforelse
@@ -138,7 +142,7 @@
         </div>
 
         @if($logs->hasPages())
-            <div class="card-footer border-top border-white-10 p-3" style="background: rgba(15, 23, 42, 0.85);">
+            <div class="p-3 border-top">
                 {{ $logs->links() }}
             </div>
         @endif
