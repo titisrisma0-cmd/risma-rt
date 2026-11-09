@@ -37,7 +37,7 @@
         </div>
     @endif
 
-    @if($errors->any())
+    @if(isset($errors) && $errors->any())
         <div class="alert alert-saas alert-saas-danger d-flex align-items-center gap-2 mb-4">
             <i class="fas fa-exclamation-circle fs-5"></i>
             <div>
@@ -50,59 +50,96 @@
         </div>
     @endif
 
-    {{-- FILTER BAR: Bulan, Tahun, Status, Pencarian --}}
-    <div class="saas-card p-4 mb-4">
-        <form method="GET" action="{{ route('kegiatan.index') }}" class="row g-3 align-items-end">
-            <div class="col-6 col-md-2">
-                <label class="form-label-saas mb-1">Bulan</label>
-                <select name="bulan" class="form-select-saas">
-                    @for($m = 1; $m <= 12; $m++)
-                        <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
-                            {{ \Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}
-                        </option>
-                    @endfor
-                </select>
-            </div>
+    {{-- FILTER BAR: Modern Clean Green & White SaaS Style --}}
+    <div class="saas-card p-4 mb-4" style="background: #ffffff; border: 1px solid #E9EEEA; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+        <form method="GET" action="{{ route('kegiatan.index') }}">
+            @if(request('tingkat'))
+                <input type="hidden" name="tingkat" value="{{ request('tingkat') }}">
+            @endif
+            @if(request('cakupan'))
+                <input type="hidden" name="cakupan" value="{{ request('cakupan') }}">
+            @endif
 
-            <div class="col-6 col-md-2">
-                <label class="form-label-saas mb-1">Tahun</label>
-                <select name="tahun" class="form-select-saas">
-                    @for($y = date('Y') - 2; $y <= date('Y') + 2; $y++)
-                        <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-            </div>
+            <div class="row g-3 align-items-center">
+                {{-- A. Kolom Pencarian Luas dengan Ikon di Kiri --}}
+                <div class="col-12 col-lg-5">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Pencarian Kegiatan</label>
+                    <div class="position-relative">
+                        <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="font-size: 0.95rem; color: #758078 !important; pointer-events: none;"></i>
+                        <input type="text" 
+                               name="q" 
+                               value="{{ $search }}" 
+                               placeholder="Cari judul agenda, deskripsi, atau lokasi..." 
+                               class="form-control form-control-saas ps-5" 
+                               style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s;">
+                    </div>
+                </div>
 
-            <div class="col-12 col-md-2">
-                <label class="form-label-saas mb-1">Status Kegiatan</label>
-                <select name="status" class="form-select-saas">
-                    <option value="">Semua Status</option>
-                    <option value="draft" {{ $status === 'draft' ? 'selected' : '' }}>Draft</option>
-                    <option value="dibuka" {{ $status === 'dibuka' ? 'selected' : '' }}>Dibuka</option>
-                    <option value="berlangsung" {{ $status === 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
-                    <option value="selesai" {{ $status === 'selesai' ? 'selected' : '' }}>Selesai</option>
-                    <option value="dibatalkan" {{ $status === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                </select>
-            </div>
+                {{-- B. Filter Dropdown Bulan --}}
+                <div class="col-6 col-sm-3 col-lg-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Bulan</label>
+                    <select name="bulan" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.88rem;">
+                        @for($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
+                                {{ \Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
 
-            <div class="col-12 col-md-4">
-                <label class="form-label-saas mb-1">Cari Kegiatan</label>
-                <div class="input-group">
-                    <input type="text" name="q" value="{{ $search }}" placeholder="Cari judul, lokasi, atau deskripsi..." class="form-control-saas">
-                    <button type="submit" class="btn btn-saas-primary">
-                        <i class="fas fa-search me-1"></i> Filter
+                {{-- B. Filter Dropdown Tahun --}}
+                <div class="col-6 col-sm-3 col-lg-1">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Tahun</label>
+                    <select name="tahun" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.88rem;">
+                        @for($y = date('Y') - 2; $y <= date('Y') + 2; $y++)
+                            <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+
+                {{-- B. Filter Dropdown Status --}}
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Status</label>
+                    <select name="status" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.88rem;">
+                        <option value="">Semua Status</option>
+                        <option value="dibuka" {{ $status === 'dibuka' ? 'selected' : '' }}>Akan Datang / Dibuka</option>
+                        <option value="berlangsung" {{ $status === 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
+                        <option value="selesai" {{ $status === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                        <option value="dibatalkan" {{ $status === 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                        <option value="draft" {{ $status === 'draft' ? 'selected' : '' }}>Draft</option>
+                    </select>
+                </div>
+
+                {{-- C. Action Buttons: Terapkan Filter & Reset --}}
+                <div class="col-12 col-sm-6 col-lg-2 d-flex gap-2 align-items-end pt-sm-4">
+                    <button type="submit" class="btn btn-emerald text-white flex-grow-1 d-flex align-items-center justify-content-center" style="height: 44px; border-radius: 12px; font-weight: 600; font-size: 0.88rem; white-space: nowrap;">
+                        <i class="fas fa-filter me-1"></i> Terapkan Filter
                     </button>
+                    @if(request()->hasAny(['bulan', 'tahun', 'status', 'q']))
+                        <a href="{{ route('kegiatan.index', array_filter(['tingkat' => request('tingkat'), 'cakupan' => request('cakupan')])) }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center px-3" style="height: 44px; border-radius: 12px; font-weight: 500; font-size: 0.88rem; white-space: nowrap;" title="Reset Filter">
+                            <i class="fas fa-rotate-left"></i>
+                        </a>
+                    @endif
                 </div>
             </div>
 
-            <div class="col-12 col-md-2">
-                @if(request()->hasAny(['bulan', 'tahun', 'status', 'q']))
-                    <a href="{{ route('kegiatan.index') }}" class="btn btn-outline-saas w-100">
-                        <i class="fas fa-redo me-1"></i> Reset
-                    </a>
-                @else
-                    <span class="text-secondary small d-block text-md-end">Periode: <strong>{{ \Carbon\Carbon::create($tahun, $bulan, 1)->translatedFormat('F Y') }}</strong></span>
-                @endif
+            {{-- Info Bar Status Aktif --}}
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top small text-secondary">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge-soft-emerald"><i class="fas fa-calendar-alt me-1"></i>Periode: {{ \Carbon\Carbon::create($tahun, $bulan, 1)->translatedFormat('F Y') }}</span>
+                    @if($status)
+                        <span class="badge-soft-info"><i class="fas fa-tag me-1"></i>Status: {{ ucfirst($status) }}</span>
+                    @endif
+                    @if($search)
+                        <span class="badge-soft-warning"><i class="fas fa-search me-1"></i>Kata Kunci: "{{ $search }}"</span>
+                    @endif
+                    @if(request('tingkat') || request('cakupan'))
+                        <span class="badge-soft-primary"><i class="fas fa-layer-group me-1"></i>Cakupan: {{ strtoupper(request('tingkat') ?: request('cakupan')) }}</span>
+                    @endif
+                </div>
+                <div class="text-secondary small">
+                    Total: <strong>{{ $allKegiatans->total() }}</strong> kegiatan ditemukan
+                </div>
             </div>
         </form>
     </div>
@@ -332,6 +369,88 @@
             </div>
         </div>
     @endif
+@endforeach
+
+{{-- ==================== MODAL DETAIL KEGIATAN ==================== --}}
+@foreach($allVisibleKegiatans as $kegiatan)
+    <div class="modal fade" id="modalDetailKegiatan{{ $kegiatan->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom py-3 px-4">
+                    <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-check text-emerald me-2"></i>Detail Agenda Kegiatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex gap-2 align-items-center mb-3">
+                        <span class="badge {{ $kegiatan->cakupan === 'rw' ? 'badge-soft-emerald' : 'badge-soft-info' }}">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            {{ $kegiatan->cakupan === 'rw' ? 'Tingkat RW' : ($kegiatan->rt ? 'RT ' . $kegiatan->rt->kode_rt : 'Tingkat RT') }}
+                        </span>
+                        <span class="badge badge-soft-secondary text-uppercase">
+                            {{ str_replace('_', ' ', $kegiatan->kategori) }}
+                        </span>
+                        @if($kegiatan->status === 'dibuka')
+                            <span class="badge-soft-info"><i class="fas fa-bullhorn me-1"></i>Akan Datang</span>
+                        @elseif($kegiatan->status === 'berlangsung')
+                            <span class="badge-soft-warning"><i class="fas fa-play me-1"></i>Berlangsung</span>
+                        @elseif($kegiatan->status === 'selesai')
+                            <span class="badge-soft-emerald"><i class="fas fa-check-circle me-1"></i>Selesai</span>
+                        @elseif($kegiatan->status === 'dibatalkan')
+                            <span class="badge-soft-danger"><i class="fas fa-ban me-1"></i>Dibatalkan</span>
+                        @else
+                            <span class="badge-soft-secondary">Draft</span>
+                        @endif
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-2">{{ $kegiatan->judul }}</h5>
+                    <p class="text-secondary small mb-4" style="line-height: 1.6;">
+                        {{ $kegiatan->deskripsi ?? 'Tidak ada deskripsi rinci untuk kegiatan ini.' }}
+                    </p>
+
+                    <div class="p-3 rounded-3 bg-light border small mb-3" style="border-color: #E9EEEA !important; border-radius: 12px;">
+                        <div class="mb-2">
+                            <span class="text-secondary d-block">Waktu Pelaksanaan:</span>
+                            <strong class="text-dark">
+                                {{ $kegiatan->tanggal_mulai ? $kegiatan->tanggal_mulai->translatedFormat('l, d F Y · H:i') : '-' }} s/d 
+                                {{ $kegiatan->tanggal_selesai ? $kegiatan->tanggal_selesai->translatedFormat('d F Y · H:i') : '-' }} WIB
+                            </strong>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-secondary d-block">Lokasi:</span>
+                            <strong class="text-dark">{{ $kegiatan->lokasi }}</strong>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-secondary d-block">Penyelenggara:</span>
+                            <strong class="text-dark">{{ $kegiatan->cakupan === 'rw' ? 'Pengurus RW' : ($kegiatan->rt ? 'RT ' . $kegiatan->rt->kode_rt : 'Pengurus RT') }}</strong> (Dibuat oleh {{ $kegiatan->pembuat?->name ?? 'Pengurus' }})
+                        </div>
+                        <div>
+                            <span class="text-secondary d-block">Partisipasi Peserta:</span>
+                            <strong class="text-dark">{{ $kegiatan->peserta_count ?? ($kegiatan->peserta ? $kegiatan->peserta->count() : 0) }} Peserta</strong> {{ $kegiatan->kuota_peserta ? 'dari kuota ' . $kegiatan->kuota_peserta . ' orang' : '(Tanpa batas kuota)' }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-3 px-4 bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+                    @if($kegiatan->peserta && $kegiatan->peserta->contains('user_id', Auth::id()))
+                        <form method="POST" action="{{ route('kegiatan.batal-daftar', $kegiatan) }}" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="fas fa-user-minus me-1"></i> Batal Daftar
+                            </button>
+                        </form>
+                    @elseif(in_array($kegiatan->status, ['dibuka', 'berlangsung']))
+                        <form method="POST" action="{{ route('kegiatan.daftar', $kegiatan) }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-emerald text-white">
+                                <i class="fas fa-user-plus me-1"></i> Daftar Kegiatan
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 @endforeach
 
 @endsection

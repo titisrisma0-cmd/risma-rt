@@ -169,18 +169,44 @@
                                 <thead>
                                     <tr>
                                         <th>Nama Balita</th>
-                                        <th>Orang Tua</th>
+                                        <th>No. KK / NIK</th>
+                                        <th>Orang Tua / Wali</th>
                                         <th>Tanggal Lahir</th>
                                         <th>Status Gizi</th>
+                                        @if($isPengurus)
+                                            <th class="text-end">Aksi</th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($balitas as $balita)
                                         @php($latest = $balita->pemeriksaan->sortByDesc('tanggal_periksa')->first())
                                         <tr>
-                                            <td><strong class="text-dark">{{ $balita->nama }}</strong></td>
-                                            <td class="text-secondary">{{ $balita->orangTua->name ?? '-' }}</td>
-                                            <td class="text-secondary small">{{ $balita->tanggal_lahir->format('d/m/Y') }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="avatar-saas bg-light text-emerald fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 0.8rem;">
+                                                        {{ strtoupper(substr($balita->nama, 0, 1)) }}
+                                                    </div>
+                                                    <div>
+                                                        <strong class="text-dark d-block">{{ $balita->nama }}</strong>
+                                                        <span class="text-secondary small">{{ $balita->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-secondary">
+                                                <span class="d-block text-dark small fw-medium">{{ $balita->nik ?: '-' }}</span>
+                                                <small class="text-muted">KK: {{ $balita->kartuKeluarga?->no_kk ?: '-' }}</small>
+                                            </td>
+                                            <td class="text-secondary">
+                                                <span class="d-block text-dark small">{{ $balita->nama_wali }}</span>
+                                                @if($balita->no_hp_orang_tua)
+                                                    <small class="text-muted"><i class="fas fa-phone-alt me-1" style="font-size: 0.7rem;"></i>{{ $balita->no_hp_orang_tua }}</small>
+                                                @endif
+                                            </td>
+                                            <td class="text-secondary small">
+                                                {{ $balita->tanggal_lahir->format('d/m/Y') }}
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">({{ $balita->tanggal_lahir->diffInMonths(now()) }} bln)</span>
+                                            </td>
                                             <td>
                                                 @if($statusGizi($latest) === 'Normal')
                                                     <span class="badge-soft-emerald">Normal</span>
@@ -190,9 +216,23 @@
                                                     <span class="badge-soft-secondary">Belum Ada</span>
                                                 @endif
                                             </td>
+                                            @if($isPengurus)
+                                                <td class="text-end">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditBalita{{ $balita->id }}" title="Edit Balita">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <form method="POST" action="{{ route('layanan.posyandu.balita.destroy', $balita) }}" class="d-inline" data-confirm="Hapus data balita ini? Seluruh riwayat pemeriksaan juga akan terhapus." data-confirm-title="Hapus Balita" data-confirm-btn="Ya, Hapus">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            @endif
                                         </tr>
                                     @empty
-                                        <tr><td colspan="4" class="text-center py-5 text-secondary">Belum ada data anak.</td></tr>
+                                        <tr><td colspan="{{ $isPengurus ? 6 : 5 }}" class="text-center py-5 text-secondary">Belum ada data anak.</td></tr>
                                     @endforelse
                                 </tbody>
                             </table>
@@ -387,60 +427,176 @@
     </div>
 
     @if($isPengurus)
-        {{-- Modal Tambah Anak --}}
+        {{-- Modal Tambah Anak Terintegrasi KK --}}
         <div class="modal fade" id="modalTambahAnak" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
                     <div class="modal-header border-bottom bg-white">
-                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-user-plus text-emerald me-2"></i>Tambah Data Anak</h5>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0"><i class="fas fa-id-card-clip text-emerald me-2"></i>Tambah Data Anak dari Kartu Keluarga</h5>
+                            <small class="text-secondary">Pilih Kartu Keluarga untuk menghubungkan data kependudukan anak secara otomatis.</small>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <form method="POST" action="{{ route('layanan.posyandu.balita.store') }}">
+                    <form method="POST" action="{{ route('layanan.posyandu.balita.store') }}" id="formTambahAnakPosyandu">
                         @csrf
+                        <input type="hidden" name="user_profile_id" id="posyandu_user_profile_id">
+                        <input type="hidden" name="kartu_keluarga_id" id="posyandu_kartu_keluarga_id">
+                        <input type="hidden" name="orang_tua_user_id" id="posyandu_orang_tua_user_id">
+                        @if($isRt)
+                            <input type="hidden" name="rt_id" value="{{ $myRtId }}">
+                        @endif
+
                         <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Nama Anak <span class="text-danger">*</span></label>
-                                <input class="form-control form-control-saas" name="nama" value="{{ old('nama') }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Orang Tua / Akun Warga</label>
-                                <select class="form-select form-control-saas" name="orang_tua_user_id">
-                                    <option value="">Belum dihubungkan</option>
-                                    @foreach($wargas as $warga)
-                                        <option value="{{ $warga->id }}">{{ $warga->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">NIK Anak</label>
-                                <input class="form-control form-control-saas font-monospace" name="nik" value="{{ old('nik') }}">
-                            </div>
-                            <div class="row g-2 mb-3">
-                                <div class="col-sm-6">
-                                    <label class="form-label small fw-semibold text-secondary">Tanggal Lahir <span class="text-danger">*</span></label>
-                                    <input class="form-control form-control-saas" type="date" name="tanggal_lahir" required>
+                            {{-- Step 1: Pilih Kartu Keluarga & Anggota Anak --}}
+                            <div class="p-3 mb-3 rounded-3" style="background-color: #F7FAF8; border: 1px solid #E9EEEA;">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-md-7">
+                                        <label class="form-label small fw-semibold text-secondary mb-1">
+                                            <i class="fas fa-users text-emerald me-1"></i>1. Cari & Pilih Kartu Keluarga (KK) <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select form-control-saas" id="selectKkPosyandu" required>
+                                            <option value="">-- Cari No. KK atau Kepala Keluarga --</option>
+                                            @foreach($kkOptions as $kk)
+                                                <option value="{{ $kk['id'] }}">
+                                                    No. KK: {{ $kk['no_kk'] }} — {{ $kk['kepala_keluarga'] }} ({{ Str::limit($kk['alamat'], 22) }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label small fw-semibold text-secondary mb-1">
+                                            <i class="fas fa-child text-emerald me-1"></i>2. Pilih Anggota Keluarga (Anak) <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select form-control-saas" id="selectAnakPosyandu" required disabled>
+                                            <option value="">-- Pilih KK terlebih dahulu --</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-sm-6">
+                                <div id="kkHintAlert" class="small text-muted mt-2 d-none">
+                                    <i class="fas fa-info-circle text-info me-1"></i><span id="kkHintText"></span>
+                                </div>
+                                <div id="posyanduDuplicateAlert" class="alert alert-warning py-2 px-3 small mt-2 mb-0 d-none">
+                                    <i class="fas fa-triangle-exclamation me-1"></i> Anak ini sudah terdaftar dalam data Posyandu. Silakan pilih anak yang lain.
+                                </div>
+                            </div>
+
+                            {{-- Step 2: Data Otomatis & Konfirmasi --}}
+                            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-clipboard-check text-emerald me-2"></i>Data Kependudukan Anak</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-7">
+                                    <label class="form-label small fw-semibold text-secondary">Nama Lengkap Anak <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas bg-light" name="nama" id="posyandu_nama" placeholder="Otomatis dari data KK" required readonly>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-semibold text-secondary">NIK Anak</label>
+                                    <input class="form-control form-control-saas bg-light font-monospace" name="nik" id="posyandu_nik" placeholder="Otomatis dari data KK" readonly>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold text-secondary">Nomor Kartu Keluarga</label>
+                                    <input class="form-control form-control-saas bg-light font-monospace" id="posyandu_no_kk" placeholder="Otomatis" readonly>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold text-secondary">Tanggal Lahir <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas bg-light" type="date" name="tanggal_lahir" id="posyandu_tanggal_lahir" required readonly>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label small fw-semibold text-secondary">Jenis Kelamin <span class="text-danger">*</span></label>
-                                    <select class="form-select form-control-saas" name="jenis_kelamin" required>
-                                        <option value="L">Laki-laki</option>
-                                        <option value="P">Perempuan</option>
+                                    <select class="form-select form-control-saas bg-light" name="jenis_kelamin" id="posyandu_jenis_kelamin" required>
+                                        <option value="L">Laki-laki (L)</option>
+                                        <option value="P">Perempuan (P)</option>
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Nama Orang Tua / Wali <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" name="nama_orang_tua" id="posyandu_nama_orang_tua" placeholder="Nama Orang Tua / Wali" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary">Nomor HP / WhatsApp Orang Tua</label>
+                                    <input class="form-control form-control-saas" name="no_hp_orang_tua" id="posyandu_no_hp_orang_tua" placeholder="Contoh: 08123456789">
+                                </div>
+                            </div>
+
                             <div class="mb-2">
-                                <label class="form-label small fw-semibold text-secondary">Catatan Kesehatan</label>
-                                <textarea class="form-control form-control-saas" name="catatan_kesehatan" rows="2"></textarea>
+                                <label class="form-label small fw-semibold text-secondary">Catatan Kesehatan / Riwayat Khusus</label>
+                                <textarea class="form-control form-control-saas" name="catatan_kesehatan" id="posyandu_catatan_kesehatan" rows="2" placeholder="Catatan alergi, riwayat penyakit, atau catatan gizi khusus..."></textarea>
                             </div>
                         </div>
                         <div class="modal-footer border-top bg-light">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button class="btn btn-emerald text-white px-4">Simpan Anak</button>
+                            <button type="submit" class="btn btn-emerald text-white px-4" id="btnSimpanAnakPosyandu" disabled>
+                                <i class="fas fa-save me-1"></i>Simpan Data Anak
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+
+        {{-- Modal Edit Balita --}}
+        @foreach($balitas as $bEdit)
+            <div class="modal fade" id="modalEditBalita{{ $bEdit->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                        <div class="modal-header border-bottom bg-white">
+                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-edit text-warning me-2"></i>Edit Data Balita</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="{{ route('layanan.posyandu.balita.update', $bEdit) }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">Nama Anak <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-saas" name="nama" value="{{ old('nama', $bEdit->nama) }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-secondary">NIK Anak</label>
+                                    <input class="form-control form-control-saas font-monospace" name="nik" value="{{ old('nik', $bEdit->nik) }}">
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold text-secondary">Tanggal Lahir <span class="text-danger">*</span></label>
+                                        <input class="form-control form-control-saas" type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $bEdit->tanggal_lahir?->format('Y-m-d')) }}" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold text-secondary">Jenis Kelamin <span class="text-danger">*</span></label>
+                                        <select class="form-select form-control-saas" name="jenis_kelamin" required>
+                                            <option value="L" {{ $bEdit->jenis_kelamin === 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                            <option value="P" {{ $bEdit->jenis_kelamin === 'P' ? 'selected' : '' }}>Perempuan</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold text-secondary">Nama Orang Tua / Wali</label>
+                                        <input class="form-control form-control-saas" name="nama_orang_tua" value="{{ old('nama_orang_tua', $bEdit->nama_orang_tua ?: ($bEdit->orangTua?->name ?? '')) }}">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label small fw-semibold text-secondary">No. HP Orang Tua</label>
+                                        <input class="form-control form-control-saas" name="no_hp_orang_tua" value="{{ old('no_hp_orang_tua', $bEdit->no_hp_orang_tua) }}">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-semibold text-secondary">Catatan Kesehatan</label>
+                                    <textarea class="form-control form-control-saas" name="catatan_kesehatan" rows="2">{{ old('catatan_kesehatan', $bEdit->catatan_kesehatan) }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top bg-light">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-save me-1"></i>Simpan Perubahan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endforeach
 
         {{-- Modal Input Penimbangan --}}
         <div class="modal fade" id="modalPenimbangan" tabindex="-1" aria-hidden="true">
@@ -777,6 +933,117 @@ document.addEventListener('DOMContentLoaded', function () {
     prev?.addEventListener('click', () => { if(page>1){page--;renderRows();} }); 
     next?.addEventListener('click', () => { page++;renderRows(); }); 
     renderRows();
+
+    // KK & Child Selection in Posyandu Modal
+    const kkOptionsData = @json($kkOptions ?? []);
+    const selectKk = document.getElementById('selectKkPosyandu');
+    const selectAnak = document.getElementById('selectAnakPosyandu');
+    const dupAlert = document.getElementById('posyanduDuplicateAlert');
+    const btnSimpan = document.getElementById('btnSimpanAnakPosyandu');
+    const hintAlert = document.getElementById('kkHintAlert');
+    const hintText = document.getElementById('kkHintText');
+
+    const inpUserProfileId = document.getElementById('posyandu_user_profile_id');
+    const inpKkId = document.getElementById('posyandu_kartu_keluarga_id');
+    const inpOrangTuaUserId = document.getElementById('posyandu_orang_tua_user_id');
+    const inpNama = document.getElementById('posyandu_nama');
+    const inpNik = document.getElementById('posyandu_nik');
+    const inpNoKk = document.getElementById('posyandu_no_kk');
+    const inpTanggalLahir = document.getElementById('posyandu_tanggal_lahir');
+    const inpJenisKelamin = document.getElementById('posyandu_jenis_kelamin');
+    const inpNamaOrangTua = document.getElementById('posyandu_nama_orang_tua');
+    const inpNoHp = document.getElementById('posyandu_no_hp_orang_tua');
+
+    function resetChildForm() {
+        if (inpUserProfileId) inpUserProfileId.value = '';
+        if (inpKkId) inpKkId.value = '';
+        if (inpOrangTuaUserId) inpOrangTuaUserId.value = '';
+        if (inpNama) inpNama.value = '';
+        if (inpNik) inpNik.value = '';
+        if (inpNoKk) inpNoKk.value = '';
+        if (inpTanggalLahir) inpTanggalLahir.value = '';
+        if (inpNamaOrangTua) inpNamaOrangTua.value = '';
+        if (inpNoHp) inpNoHp.value = '';
+        if (dupAlert) dupAlert.classList.add('d-none');
+        if (btnSimpan) btnSimpan.disabled = true;
+    }
+
+    selectKk?.addEventListener('change', function () {
+        resetChildForm();
+        const kkId = this.value;
+        if (!kkId) {
+            if (selectAnak) {
+                selectAnak.innerHTML = '<option value="">-- Pilih KK terlebih dahulu --</option>';
+                selectAnak.disabled = true;
+            }
+            if (hintAlert) hintAlert.classList.add('d-none');
+            return;
+        }
+
+        const selectedKk = kkOptionsData.find(item => String(item.id) === String(kkId));
+        if (!selectedKk) return;
+
+        if (inpKkId) inpKkId.value = selectedKk.id;
+        if (inpNoKk) inpNoKk.value = selectedKk.no_kk;
+
+        if (hintAlert && hintText) {
+            hintText.textContent = `Kepala Keluarga: ${selectedKk.kepala_keluarga} · Alamat: ${selectedKk.alamat}`;
+            hintAlert.classList.remove('d-none');
+        }
+
+        if (selectAnak) {
+            selectAnak.innerHTML = '<option value="">-- Pilih Anggota Anak --</option>';
+            if (!selectedKk.children || selectedKk.children.length === 0) {
+                selectAnak.innerHTML = '<option value="">Tidak ada data anggota keluarga dalam KK ini</option>';
+                selectAnak.disabled = true;
+            } else {
+                selectedKk.children.forEach(child => {
+                    const opt = document.createElement('option');
+                    opt.value = child.id;
+                    opt.textContent = `${child.nama} (${child.jenis_kelamin === 'L' ? 'L' : 'P'}) ${child.status_hubungan ? '· ' + child.status_hubungan : ''} ${child.is_registered ? '— [Sudah Terdaftar]' : ''}`;
+                    if (child.is_registered) {
+                        opt.classList.add('text-muted');
+                    }
+                    selectAnak.appendChild(opt);
+                });
+                selectAnak.disabled = false;
+            }
+        }
+    });
+
+    selectAnak?.addEventListener('change', function () {
+        const memberId = this.value;
+        const kkId = selectKk ? selectKk.value : null;
+        if (!memberId || !kkId) {
+            resetChildForm();
+            return;
+        }
+
+        const selectedKk = kkOptionsData.find(item => String(item.id) === String(kkId));
+        if (!selectedKk) return;
+
+        const child = (selectedKk.children || []).find(c => String(c.id) === String(memberId));
+        if (!child) return;
+
+        if (inpUserProfileId) inpUserProfileId.value = child.id;
+        if (inpKkId) inpKkId.value = selectedKk.id;
+        if (inpOrangTuaUserId) inpOrangTuaUserId.value = child.orang_tua_user_id || '';
+        if (inpNama) inpNama.value = child.nama || '';
+        if (inpNik) inpNik.value = child.nik || '';
+        if (inpNoKk) inpNoKk.value = selectedKk.no_kk || '';
+        if (inpTanggalLahir) inpTanggalLahir.value = child.tanggal_lahir || '';
+        if (inpJenisKelamin) inpJenisKelamin.value = child.jenis_kelamin || 'L';
+        if (inpNamaOrangTua) inpNamaOrangTua.value = child.nama_orang_tua || selectedKk.kepala_keluarga || '';
+        if (inpNoHp) inpNoHp.value = child.no_hp_orang_tua || '';
+
+        if (child.is_registered) {
+            if (dupAlert) dupAlert.classList.remove('d-none');
+            if (btnSimpan) btnSimpan.disabled = true;
+        } else {
+            if (dupAlert) dupAlert.classList.add('d-none');
+            if (btnSimpan) btnSimpan.disabled = false;
+        }
+    });
 });
 </script>
 @endpush

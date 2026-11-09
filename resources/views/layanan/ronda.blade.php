@@ -1117,16 +1117,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Dynamic Calendar Implementation
-    const rawJadwals = @json($jadwals->map(function($j) use ($user) {
-        return [
-            'id' => $j->id,
-            'tanggal' => $j->tanggal->format('Y-m-d'),
-            'shift' => $j->shift,
-            'lokasi' => $j->lokasi_pos,
-            'petugas' => $j->petugas->map(fn($p) => $p->user->name ?? 'Warga')->toArray(),
-            'is_mine' => $j->petugas->contains('user_id', $user->id),
-        ];
-    }));
+    const rawJadwals = @json($calendarJadwals ?? []);
 
     let currentCalDate = new Date();
 
@@ -1135,13 +1126,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const month = date.getMonth();
         
         const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        document.getElementById('calCurrentMonthTitle').textContent = `${monthNames[month]} ${year}`;
+        const titleEl = document.getElementById('calCurrentMonthTitle');
+        if (titleEl) {
+            titleEl.textContent = `${monthNames[month]} ${year}`;
+        }
 
         const firstDayIndex = new Date(year, month, 1).getDay();
         const lastDay = new Date(year, month + 1, 0).getDate();
         const prevLastDay = new Date(year, month, 0).getDate();
 
         const grid = document.getElementById('calendarDaysGrid');
+        if (!grid) return;
         grid.innerHTML = '';
 
         const today = new Date();
@@ -1160,29 +1155,33 @@ document.addEventListener('DOMContentLoaded', function () {
         for (let i = 1; i <= lastDay; i++) {
             const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
             const isToday = dateStr === todayStr;
-            const dayJadwals = rawJadwals.filter(j => j.tanggal === dateStr);
+            const dayJadwals = Array.isArray(rawJadwals) ? rawJadwals.filter(j => j.tanggal === dateStr) : [];
 
             const cell = document.createElement('div');
             cell.className = `cal-day-cell ${isToday ? 'today' : ''}`;
 
             let eventsHtml = '';
             dayJadwals.forEach(j => {
-                const pillClass = j.is_mine ? 'badge badge-soft-primary' : 'badge badge-soft-success';
-                const officerNames = j.petugas.length ? j.petugas.slice(0, 2).join(', ') : 'Belum ada';
-                eventsHtml += `<span class="cal-event-pill ${pillClass}" title="Pos: ${j.lokasi} | Petugas: ${j.petugas.join(', ')}">
-                    <i class="fas fa-shield-alt me-1"></i>${j.shift}: ${officerNames}
+                const pillClass = j.is_mine ? 'badge badge-soft-primary border border-primary' : 'badge badge-soft-success';
+                const officerNames = j.petugas && j.petugas.length ? j.petugas.slice(0, 2).join(', ') : 'Belum ada';
+                const swapBadge = j.has_swap_pending ? '<span class="badge badge-soft-warning ms-1" style="font-size:0.55rem;"><i class="fas fa-arrows-rotate"></i></span>' : '';
+                const absensiBadge = j.my_absensi === 'hadir' ? '<span class="badge badge-soft-success ms-1" style="font-size:0.55rem;"><i class="fas fa-check"></i></span>' : '';
+                
+                eventsHtml += `<span class="cal-event-pill ${pillClass} d-inline-flex align-items-center" title="Pos: ${j.lokasi} | Petugas: ${(j.petugas || []).join(', ')}">
+                    <i class="fas fa-shield-alt me-1"></i>${j.shift}: ${officerNames} ${swapBadge} ${absensiBadge}
                 </span>`;
             });
 
             cell.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="cal-day-num ${isToday ? 'text-success' : ''}">${i}</span>
+                    <span class="cal-day-num ${isToday ? 'text-success fw-bold' : ''}">${i}</span>
                     ${isToday ? '<span class="badge badge-soft-secondary" style="font-size:0.6rem;">Hari Ini</span>' : ''}
                 </div>
                 <div class="cal-day-events">${eventsHtml}</div>
             `;
             grid.appendChild(cell);
         }
+    }
     }
 
     renderCalendar(currentCalDate);

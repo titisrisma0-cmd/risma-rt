@@ -12,6 +12,7 @@ use App\Models\Iuran;
 use App\Models\JadwalPosyandu;
 use App\Models\JadwalRonda;
 use App\Models\JenisSurat;
+use App\Models\KartuKeluarga;
 use App\Models\Kas;
 use App\Models\Kegiatan;
 use App\Models\KontakDarurat;
@@ -28,6 +29,7 @@ use App\Models\Rt;
 use App\Models\TukarJadwalRonda;
 use App\Models\Umkm;
 use App\Models\User;
+use App\Models\UserProfile;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -540,13 +542,15 @@ class LayananMasyarakatController extends Controller
 
         $filterRt = $request->input('rt_id');
 
+        $kartuKeluargasQuery = KartuKeluarga::with(['kepalaKeluarga.profile', 'anggota']);
         if ($isRt) {
+            $kartuKeluargasQuery->where('rt_id', $myRtId);
             $jadwals = JadwalPosyandu::with('rt')
                 ->where(fn ($q) => $q->where('rt_id', $myRtId)->orWhereNull('rt_id'))
                 ->latest('tanggal_mulai')
                 ->get();
 
-            $balitas = Balita::with(['orangTua.profile', 'pemeriksaan' => fn ($q) => $q->orderByDesc('tanggal_periksa'), 'kartuKeluarga'])
+            $balitas = Balita::with(['orangTua.profile', 'userProfile', 'kartuKeluarga', 'pemeriksaan' => fn ($q) => $q->orderByDesc('tanggal_periksa')])
                 ->where(function ($q) use ($myRtId) {
                     $q->where('rt_id', $myRtId)
                         ->orWhereHas('kartuKeluarga', fn ($kk) => $kk->where('rt_id', $myRtId))
@@ -560,12 +564,15 @@ class LayananMasyarakatController extends Controller
                 ->orderBy('name')
                 ->get();
         } elseif ($isRw) {
+            if ($filterRt) {
+                $kartuKeluargasQuery->where('rt_id', $filterRt);
+            }
             $jadwals = JadwalPosyandu::with('rt')
                 ->when($filterRt, fn ($q) => $q->where('rt_id', $filterRt))
                 ->latest('tanggal_mulai')
                 ->get();
 
-            $balitas = Balita::with(['orangTua.profile', 'pemeriksaan' => fn ($q) => $q->orderByDesc('tanggal_periksa'), 'kartuKeluarga'])
+            $balitas = Balita::with(['orangTua.profile', 'userProfile', 'kartuKeluarga', 'pemeriksaan' => fn ($q) => $q->orderByDesc('tanggal_periksa')])
                 ->when($filterRt, function ($q) use ($filterRt) {
                     $q->where('rt_id', $filterRt)
                         ->orWhereHas('kartuKeluarga', fn ($kk) => $kk->where('rt_id', $filterRt))
@@ -586,13 +593,59 @@ class LayananMasyarakatController extends Controller
                 ->latest('tanggal_mulai')
                 ->get();
 
-            $balitas = Balita::with(['orangTua', 'pemeriksaan' => fn ($q) => $q->orderByDesc('tanggal_periksa')])
-                ->where('orang_tua_user_id', $user->id)
+            $userKkId = $user->profile?->kartu_keluarga_id ?? $user->kartuKeluarga?->id;
+            $balitas = Balita::with(['orangTua', 'userProfile', 'kartuKeluarga', 'pemeriksaan' => fn ($q) => $q->orderByDesc('tanggal_periksa')])
+                ->where(function ($q) use ($user, $userKkId) {
+                    $q->where('orang_tua_user_id', $user->id);
+                    if ($userKkId) {
+                        $q->orWhere('kartu_keluarga_id', $userKkId);
+                    }
+                })
                 ->orderBy('nama')
                 ->get();
 
             $wargas = collect();
         }
+
+        $kartuKeluargas = $isPengurus ? $kartuKeluargasQuery->orderBy('no_kk')->get() : collect();
+
+        $registeredUserProfileIds = Balita::whereNotNull('user_profile_id')->pluck('user_profile_id')->toArray();
+        $registeredNiks = Balita::whereNotNull('nik')->pluck('nik')->filter()->toArray();
+
+        $kkOptions = $kartuKeluargas->map(function ($kk) use ($registeredUserProfileIds, $registeredNiks) {
+            $kepalaName = $kk->nama_kepala_keluarga;
+            $kepalaHp = $kk->kepalaKeluarga?->profile?->no_hp ?? $kk->kepalaKeluarga?->no_hp ?? '';
+            $kepalaUserId = $kk->kepala_keluarga_user_id;
+
+            $children = $kk->anggota->map(function ($m) use ($registeredUserProfileIds, $registeredNiks, $kepalaName, $kepalaHp, $kepalaUserId, $kk) {
+                $isRegistered = in_array($m->id, $registeredUserProfileIds) || ($m->nik && in_array($m->nik, $registeredNiks));
+                $parentName = $m->nama_ayah ?: ($m->nama_ibu ?: $kepalaName);
+                $parentHp = $m->no_hp ?: $kepalaHp;
+
+                return [
+                    'id' => $m->id,
+                    'kartu_keluarga_id' => $kk->id,
+                    'no_kk' => $kk->no_kk,
+                    'nama' => $m->nama_lengkap,
+                    'nik' => $m->nik ?? '',
+                    'tanggal_lahir' => $m->tanggal_lahir ? $m->tanggal_lahir->format('Y-m-d') : '',
+                    'jenis_kelamin' => $m->jenis_kelamin ?? 'L',
+                    'status_hubungan' => $m->status_hubungan_keluarga ?? 'Anak',
+                    'nama_orang_tua' => $parentName,
+                    'no_hp_orang_tua' => $parentHp,
+                    'orang_tua_user_id' => $m->user_id ?: $kepalaUserId,
+                    'is_registered' => $isRegistered,
+                ];
+            })->values();
+
+            return [
+                'id' => $kk->id,
+                'no_kk' => $kk->no_kk,
+                'kepala_keluarga' => $kepalaName,
+                'alamat' => $kk->alamat,
+                'children' => $children,
+            ];
+        });
 
         $stats = [
             'total_balita' => $balitas->count(),
@@ -609,6 +662,8 @@ class LayananMasyarakatController extends Controller
             'jadwals' => $jadwals,
             'balitas' => $balitas,
             'semuaBalita' => $balitas,
+            'kartuKeluargas' => $kartuKeluargas,
+            'kkOptions' => $kkOptions,
             'wargas' => $wargas,
             'rts' => Rt::orderBy('kode_rt')->get(),
             'stats' => $stats,
@@ -622,31 +677,71 @@ class LayananMasyarakatController extends Controller
         abort_unless($user->isAdminRt() || $user->isAdminRw() || $user->hasRole('admin'), 403);
 
         $validated = $request->validate([
+            'kartu_keluarga_id' => ['nullable', 'exists:kartu_keluargas,id'],
+            'user_profile_id' => ['nullable', 'exists:user_profiles,id'],
             'nama' => ['required', 'string', 'max:255'],
-            'nik' => ['nullable', 'string', 'max:20', 'unique:balitas,nik'],
+            'nik' => ['nullable', 'string', 'max:20'],
             'tanggal_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', 'in:L,P'],
+            'nama_orang_tua' => ['nullable', 'string', 'max:255'],
+            'no_hp_orang_tua' => ['nullable', 'string', 'max:50'],
             'orang_tua_user_id' => ['nullable', 'exists:users,id'],
             'catatan_kesehatan' => ['nullable', 'string'],
             'rt_id' => ['nullable', 'exists:rts,id'],
         ]);
 
-        $rtId = $user->isAdminRt() ? $user->managedRtId() : ($validated['rt_id'] ?? null);
-        $kkId = null;
-        if (!empty($validated['orang_tua_user_id'])) {
-            $parent = User::with('profile')->find($validated['orang_tua_user_id']);
-            if (!$rtId) {
-                $rtId = $parent?->rt_id ?? $parent?->profile?->rt_id;
+        $myRtId = $user->isAdminRt() ? $user->managedRtId() : null;
+        $profile = null;
+        if (!empty($validated['user_profile_id'])) {
+            $profile = UserProfile::with('kartuKeluarga')->findOrFail($validated['user_profile_id']);
+
+            // RT isolation
+            if ($user->isAdminRt()) {
+                if ($profile->rt_id && (int) $profile->rt_id !== (int) $myRtId && $profile->kartuKeluarga?->rt_id !== (int) $myRtId) {
+                    abort(403, 'Anak yang didaftarkan harus berada di wilayah RT Anda.');
+                }
             }
-            $kkId = $parent?->profile?->kartu_keluarga_id;
+
+            // Duplicate check by user_profile_id
+            if (Balita::where('user_profile_id', $profile->id)->exists()) {
+                return back()->withInput()->with('error', 'Anak ini sudah terdaftar dalam data Posyandu.');
+            }
         }
 
-        Balita::create($validated + [
+        // Duplicate check by NIK
+        if (!empty($validated['nik'])) {
+            if (Balita::where('nik', $validated['nik'])->exists()) {
+                return back()->withInput()->with('error', 'Anak dengan NIK ini sudah terdaftar dalam data Posyandu.');
+            }
+        }
+
+        $kk = null;
+        if (!empty($validated['kartu_keluarga_id'])) {
+            $kk = KartuKeluarga::findOrFail($validated['kartu_keluarga_id']);
+            if ($user->isAdminRt() && (int) $kk->rt_id !== (int) $myRtId) {
+                abort(403, 'Kartu Keluarga yang dipilih berada di luar wilayah RT Anda.');
+            }
+        }
+
+        $rtId = $myRtId ?: ($validated['rt_id'] ?? $kk?->rt_id ?? $profile?->rt_id);
+        $kkId = $kk?->id ?? $profile?->kartu_keluarga_id;
+        $orangTuaUserId = $validated['orang_tua_user_id'] ?? $kk?->kepala_keluarga_user_id ?? $profile?->user_id;
+
+        Balita::create([
             'rt_id' => $rtId,
             'kartu_keluarga_id' => $kkId,
+            'user_profile_id' => $profile?->id,
+            'orang_tua_user_id' => $orangTuaUserId,
+            'nama' => $validated['nama'],
+            'nik' => $validated['nik'] ?? null,
+            'tanggal_lahir' => $validated['tanggal_lahir'],
+            'jenis_kelamin' => $validated['jenis_kelamin'],
+            'nama_orang_tua' => $validated['nama_orang_tua'] ?? null,
+            'no_hp_orang_tua' => $validated['no_hp_orang_tua'] ?? null,
+            'catatan_kesehatan' => $validated['catatan_kesehatan'] ?? null,
         ]);
 
-        return back()->with('success', 'Data balita berhasil ditambahkan.');
+        return back()->with('success', 'Data anak Posyandu berhasil didaftarkan langsung dari data Kartu Keluarga.');
     }
 
     public function updateBalita(Request $request, Balita $balita)
@@ -662,6 +757,8 @@ class LayananMasyarakatController extends Controller
             'nik' => ['nullable', 'string', 'max:20', 'unique:balitas,nik,' . $balita->id],
             'tanggal_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', 'in:L,P'],
+            'nama_orang_tua' => ['nullable', 'string', 'max:255'],
+            'no_hp_orang_tua' => ['nullable', 'string', 'max:50'],
             'orang_tua_user_id' => ['nullable', 'exists:users,id'],
             'catatan_kesehatan' => ['nullable', 'string'],
         ]);
@@ -907,6 +1004,25 @@ class LayananMasyarakatController extends Controller
             'alpa' => AbsensiRonda::whereIn('jadwal_ronda_id', $jadwalIdsInMonth)->where('status', 'alpa')->count(),
         ];
 
+        // Format data jadwal untuk kalender frontend interaktif
+        $calendarJadwals = $jadwals->map(function ($j) use ($user, $tukarJadwals) {
+            $tukarReq = $tukarJadwals->firstWhere('jadwal_ronda_asal_id', $j->id);
+            $hasSwapPending = $tukarReq && $tukarReq->status === 'menunggu';
+            $myAbsensi = $j->absensi->firstWhere('user_id', $user->id);
+
+            return [
+                'id' => $j->id,
+                'tanggal' => $j->tanggal instanceof \Carbon\CarbonInterface ? $j->tanggal->format('Y-m-d') : substr((string)$j->tanggal, 0, 10),
+                'shift' => ucfirst($j->shift),
+                'lokasi' => $j->lokasi_pos ?: 'Pos Ronda RT',
+                'petugas' => $j->petugas->map(fn($p) => optional($p->user)->name ?? 'Warga')->values()->toArray(),
+                'is_mine' => $j->petugas->contains('user_id', $user->id),
+                'has_swap_pending' => $hasSwapPending,
+                'my_absensi' => $myAbsensi ? $myAbsensi->status : null,
+                'status' => $j->status,
+            ];
+        })->values();
+
         return view('layanan.ronda', [
             'isPengurus' => $isPengurus,
             'isRt' => $isRt,
@@ -920,6 +1036,7 @@ class LayananMasyarakatController extends Controller
             'panicReports' => $panicReports,
             'activePanicReports' => $activePanicReports,
             'absensiRecap' => $absensiRecap,
+            'calendarJadwals' => $calendarJadwals,
             'rts' => Rt::orderBy('kode_rt')->get(),
         ]);
     }
