@@ -339,6 +339,509 @@
 }
 
 /* ==========================================================================
+   7.1 RICH UI SURFACES & ANTI-BARE ENGINE ("TIDAK ADA KONTEN TELANJANG")
+   ========================================================================== */
+
+/* A. Latar Halaman (Textured Background with Depth) */
+.main-content,
+.app-main {
+    position: relative !important;
+    background:
+        radial-gradient(900px 420px at 105% -10%, #e3f4ea 0, transparent 60%),
+        radial-gradient(700px 380px at -10% 35%, #fdf0d8 0, transparent 55%),
+        #f7faf8 !important;
+    min-height: 100vh;
+}
+
+[data-theme="dark"] .main-content,
+[data-bs-theme="dark"] .main-content {
+    background:
+        radial-gradient(900px 420px at 105% -10%, rgba(14, 122, 75, 0.15) 0, transparent 60%),
+        radial-gradient(700px 380px at -10% 35%, rgba(244, 166, 42, 0.08) 0, transparent 55%),
+        #101713 !important;
+}
+
+.main-content::before,
+.app-main::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.45;
+    background-image: radial-gradient(#cfe3d6 1.1px, transparent 1.1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(#000, transparent 65%);
+    z-index: 0;
+}
+
+[data-theme="dark"] .main-content::before,
+[data-bs-theme="dark"] .main-content::before {
+    background-image: radial-gradient(#1f3d2b 1.1px, transparent 1.1px);
+    opacity: 0.35;
+}
+
+.page-container,
+.content-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* B. Header Halaman (Modul Head Card dengan Ornamen Sudut) */
+.page-head,
+.page-header,
+.page-header-saas {
+    background: var(--surface, #ffffff) !important;
+    border: 1px solid var(--border, #dbe9e0) !important;
+    border-radius: 24px !important;
+    padding: 1.5rem 1.75rem !important;
+    box-shadow: 0 10px 30px rgba(15, 42, 29, 0.06) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    margin-bottom: 1.75rem !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 1.25rem !important;
+    isolation: isolate;
+}
+
+/* Ornamen lingkaran mint besar terpotong di sudut kanan */
+.page-head::after,
+.page-header::after,
+.page-header-saas::after {
+    content: "";
+    position: absolute;
+    top: -65px;
+    right: -65px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(14, 122, 75, 0.12) 0%, rgba(227, 244, 234, 0.04) 65%, transparent 100%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Pola titik halus dekoratif di sudut kiri bawah */
+.page-head::before,
+.page-header::before,
+.page-header-saas::before {
+    content: "";
+    position: absolute;
+    bottom: -20px;
+    left: 240px;
+    width: 140px;
+    height: 80px;
+    background-image: radial-gradient(rgba(14, 122, 75, 0.15) 1px, transparent 1px);
+    background-size: 14px 14px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.page-title {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: var(--ink, #0f2a1d) !important;
+    letter-spacing: -0.025em !important;
+    margin-bottom: 0.25rem !important;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.page-subtitle {
+    font-size: 0.9rem !important;
+    color: var(--ink-soft, #4b6355) !important;
+    margin-bottom: 0 !important;
+    line-height: 1.5 !important;
+}
+
+/* Ikon modul dalam kotak lembut 52px */
+.page-header-icon,
+.page-head-icon,
+.page-header > div > .page-title > i:first-child,
+.page-head > div > .page-title > i:first-child {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--primary-soft, #e3f4ea);
+    color: var(--primary, #0e7a4b);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+}
+
+/* Tombol aksi di dalam header */
+.page-header-actions,
+.page-header > div:last-child:not(:first-child) {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+/* C. Baris Statistik Ringkasan (Kaya Warna & Berhierarki) */
+.stat-card,
+.stat-card-saas,
+.stat-tile {
+    background: var(--surface, #ffffff) !important;
+    border: 1px solid var(--border, #dbe9e0) !important;
+    border-radius: 20px !important;
+    padding: 1.35rem 1.4rem !important;
+    box-shadow: 0 8px 24px rgba(15, 42, 29, 0.05) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s ease, border-color 0.2s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+.stat-card:hover,
+.stat-card-saas:hover,
+.stat-tile:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 14px 32px rgba(15, 42, 29, 0.09) !important;
+    border-color: rgba(14, 122, 75, 0.35) !important;
+}
+
+/* Garis aksen warna tipis di tepi atas kartu */
+.stat-card::before,
+.stat-card-saas::before,
+.stat-tile::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3.5px;
+    background: var(--primary, #0e7a4b);
+    border-radius: 20px 20px 0 0;
+}
+
+.stat-card.accent-amber::before,
+.stat-card-saas:has(.stat-icon-amber)::before {
+    background: var(--accent, #f4a62a) !important;
+}
+
+.stat-card.accent-danger::before,
+.stat-card-saas:has(.stat-icon-red)::before {
+    background: var(--danger, #e5483a) !important;
+}
+
+.stat-card.accent-info::before,
+.stat-card-saas:has(.stat-icon-blue)::before {
+    background: var(--info, #2a6fdb) !important;
+}
+
+.stat-card .stat-label,
+.stat-card-saas .stat-label,
+.stat-tile .stat-label {
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    color: var(--ink-soft, #4b6355) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    margin-bottom: 0.2rem !important;
+    display: block;
+}
+
+.stat-card .stat-value,
+.stat-card-saas .stat-value,
+.stat-tile .stat-value {
+    font-size: 2.1rem !important;
+    font-weight: 800 !important;
+    color: var(--ink, #0f2a1d);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-top: 0.35rem;
+    margin-bottom: 0.25rem;
+}
+
+.stat-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+/* D. Tab / Navigasi Sekunder (Segmented Pill Container) */
+.nav-tabs-saas,
+.nav-tabs,
+.segmented-tabs {
+    background: var(--surface, #ffffff) !important;
+    border: 1px solid var(--border, #dbe9e0) !important;
+    border-radius: 16px !important;
+    padding: 6px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px !important;
+    box-shadow: 0 4px 14px rgba(15, 42, 29, 0.04) !important;
+    border-bottom: 1px solid var(--border, #dbe9e0) !important;
+}
+
+.nav-tabs-saas .nav-link,
+.nav-tabs .nav-link,
+.segmented-tabs .nav-link {
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 9px 18px !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    color: var(--ink-soft, #4b6355) !important;
+    background: transparent !important;
+    white-space: nowrap !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.7, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.nav-tabs-saas .nav-link:hover,
+.nav-tabs .nav-link:hover,
+.segmented-tabs .nav-link:hover {
+    background: rgba(14, 122, 75, 0.06) !important;
+    color: var(--ink, #0f2a1d) !important;
+}
+
+.nav-tabs-saas .nav-link.active,
+.nav-tabs .nav-link.active,
+.segmented-tabs .nav-link.active {
+    background: var(--primary-soft, #e3f4ea) !important;
+    color: var(--primary, #0e7a4b) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 6px rgba(14, 122, 75, 0.10) !important;
+}
+
+/* E. Toolbar Pencarian & Filter */
+.saas-card .form-control,
+.saas-card .form-select,
+.form-control-saas,
+.input-group .form-control,
+.input-group .input-group-text {
+    height: 44px !important;
+    border-radius: 12px !important;
+    font-size: 0.9rem !important;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-control-saas:focus {
+    border-color: var(--primary, #0e7a4b) !important;
+    box-shadow: 0 0 0 3px rgba(14, 122, 75, 0.15) !important;
+}
+
+/* F. Grid Kartu Daftar (Card Grid Autofill) */
+.card-grid-autofill {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+    gap: 22px !important;
+}
+
+.product-card,
+.catalog-card {
+    background: var(--surface, #ffffff) !important;
+    border: 1px solid var(--border, #dbe9e0) !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 24px rgba(15, 42, 29, 0.05) !important;
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+.product-card:hover,
+.catalog-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 16px 36px rgba(15, 42, 29, 0.10) !important;
+}
+
+.product-thumb-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: #f1f5f3;
+}
+
+.product-thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-thumb-wrap img,
+.catalog-card:hover .product-thumb-wrap img {
+    transform: scale(1.05);
+}
+
+/* Badge Kategori Translucent Glass */
+.badge-category-glass {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.90) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    border-radius: 999px !important;
+    padding: 4px 10px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    color: var(--ink, #0f2a1d) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+.badge-category-glass::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary, #0e7a4b);
+}
+
+/* Badge RT Gelap Kontras */
+.badge-rt-pill {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(15, 42, 29, 0.85) !important;
+    color: #ffffff !important;
+    border-radius: 999px !important;
+    padding: 4px 10px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* G. Tabel & Daftar (Table Card Wrapper) */
+.table-card {
+    background: var(--surface, #ffffff) !important;
+    border: 1px solid var(--border, #dbe9e0) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 24px rgba(15, 42, 29, 0.05) !important;
+    overflow: hidden !important;
+    margin-bottom: 1.75rem !important;
+}
+
+.table-saas thead th,
+.table thead th {
+    background: var(--primary-soft, #e3f4ea) !important;
+    color: var(--primary-dark, #0a5c38) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    padding: 0.85rem 1.15rem !important;
+    border-bottom: 1px solid var(--border, #dbe9e0) !important;
+}
+
+/* H. Form Cards */
+.form-card {
+    background: var(--surface, #ffffff) !important;
+    border: 1px solid var(--border, #dbe9e0) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 24px rgba(15, 42, 29, 0.05) !important;
+    padding: 1.75rem 2rem !important;
+    margin-bottom: 1.75rem !important;
+}
+
+.form-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ink, #0f2a1d);
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border, #dbe9e0);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* I. Empty State */
+.empty-card {
+    background: var(--surface, #ffffff) !important;
+    border: 1.5px dashed var(--border, #dbe9e0) !important;
+    border-radius: 20px !important;
+    padding: 3rem 1.5rem !important;
+    text-align: center !important;
+    box-shadow: none !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.empty-svg-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    color: var(--primary, #0e7a4b);
+    opacity: 0.85;
+}
+
+/* J. Banner Info & Peringatan */
+.banner-soft {
+    border-radius: 16px !important;
+    padding: 1.15rem 1.35rem !important;
+    border: 1px solid transparent !important;
+    border-left: 5px solid var(--primary, #0e7a4b) !important;
+    background: var(--primary-soft, #e3f4ea) !important;
+    color: var(--primary-dark, #0a5c38) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.banner-soft-warning {
+    background: #fef7ec !important;
+    border-left-color: var(--accent, #f4a62a) !important;
+    color: #92400e !important;
+}
+
+.banner-soft-danger {
+    background: #fdf2f2 !important;
+    border-left-color: var(--danger, #e5483a) !important;
+    color: #991b1b !important;
+}
+
+.banner-icon-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
    8. ACCESSIBILITY: PREFERS-REDUCED-MOTION & PRINT
    ========================================================================== */
 @media (prefers-reduced-motion: reduce), print {

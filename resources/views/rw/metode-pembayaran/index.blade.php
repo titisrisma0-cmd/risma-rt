@@ -5,19 +5,25 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h1 class="page-title">
-                <i class="fas fa-wallet text-emerald me-2"></i> Metode Pembayaran Digital RW
-            </h1>
-            <p class="page-subtitle">Kelola konfigurasi rekening bank, e-wallet (DANA, GoPay, OVO, ShopeePay), dan QRIS untuk pembayaran warga</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Metode Pembayaran Digital RW</h1>
+                    <span class="badge-rt-pill">Pengurus RW</span>
+                </div>
+                <p class="page-subtitle mb-0">Kelola konfigurasi rekening bank, e-wallet (DANA, GoPay, OVO, ShopeePay), dan QRIS untuk pembayaran warga</p>
+            </div>
         </div>
 
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('pembayaran.index') }}" class="btn btn-outline-secondary px-3 py-2">
+        <div class="page-header-actions">
+            <a href="{{ route('pembayaran.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Data Pembayaran
             </a>
-            <button type="button" class="btn btn-emerald px-3 py-2 text-white" data-bs-toggle="modal" data-bs-target="#modalTambahMetode">
+            <button type="button" class="btn btn-emerald text-white" data-bs-toggle="modal" data-bs-target="#modalTambahMetode">
                 <i class="fas fa-plus me-1"></i> Tambah Metode Baru
             </button>
         </div>
@@ -50,11 +56,11 @@
     {{-- Summary Cards --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <div class="saas-card p-3">
+            <div class="stat-card accent-primary h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-medium">Total Metode</div>
-                        <div class="h3 fw-bold text-dark mb-0">{{ $metodes->count() }}</div>
+                        <div class="h3 fw-bold text-dark mb-0 stat-value">{{ $metodes->count() }}</div>
                     </div>
                     <div class="p-3 bg-light rounded-circle text-primary">
                         <i class="fas fa-credit-card fa-lg"></i>
@@ -63,11 +69,11 @@
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="saas-card p-3">
+            <div class="stat-card accent-emerald h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-medium">Status Aktif</div>
-                        <div class="h3 fw-bold text-emerald mb-0">{{ $metodes->where('is_active', true)->count() }}</div>
+                        <div class="h3 fw-bold text-emerald mb-0 stat-value">{{ $metodes->where('is_active', true)->count() }}</div>
                     </div>
                     <div class="p-3 bg-light rounded-circle text-emerald">
                         <i class="fas fa-check-circle fa-lg"></i>
@@ -76,11 +82,11 @@
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="saas-card p-3">
+            <div class="stat-card accent-danger h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-medium">Nonaktif</div>
-                        <div class="h3 fw-bold text-muted mb-0">{{ $metodes->where('is_active', false)->count() }}</div>
+                        <div class="h3 fw-bold text-muted mb-0 stat-value">{{ $metodes->where('is_active', false)->count() }}</div>
                     </div>
                     <div class="p-3 bg-light rounded-circle text-secondary">
                         <i class="fas fa-ban fa-lg"></i>
@@ -89,11 +95,11 @@
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="saas-card p-3">
+            <div class="stat-card accent-info h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-medium">QRIS & E-Wallet</div>
-                        <div class="h3 fw-bold text-info mb-0">{{ $metodes->whereIn('kategori', ['qris', 'ewallet'])->count() }}</div>
+                        <div class="h3 fw-bold text-info mb-0 stat-value">{{ $metodes->whereIn('kategori', ['qris', 'ewallet'])->count() }}</div>
                     </div>
                     <div class="p-3 bg-light rounded-circle text-info">
                         <i class="fas fa-qrcode fa-lg"></i>
@@ -104,7 +110,7 @@
     </div>
 
     {{-- Daftar Metode Pembayaran --}}
-    <div class="saas-card overflow-hidden mb-4">
+    <div class="table-card saas-card overflow-hidden mb-4">
         <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-list text-emerald me-2"></i>Daftar Konfigurasi Pembayaran</h6>
             <span class="badge bg-light text-secondary border">Hanya metode aktif yang muncul pada form warga</span>

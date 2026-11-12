@@ -42,7 +42,7 @@
     </div>
 
     @if(!$selectedRt)
-        <div class="empty-state-saas p-5 my-4">
+        <div class="empty-card empty-state-saas p-5 my-4">
             <div class="empty-state-icon">
                 <i class="fas fa-map-marked-alt"></i>
             </div>
@@ -72,7 +72,7 @@
         @endif
 
         {{-- Filter & Search di RT Terpilih --}}
-        <div class="saas-card p-3 mb-4">
+        <div class="form-card saas-card p-3 mb-4">
             <form method="GET" action="{{ route('rw.monitoring.warga') }}" class="row g-2 align-items-center">
                 <input type="hidden" name="rt_id" value="{{ $selectedRt->id }}">
                 <div class="col-md-9">
@@ -93,7 +93,7 @@
         </div>
 
         {{-- Tabel Data Warga RT Terpilih --}}
-        <div class="saas-card mb-4">
+        <div class="table-card saas-card mb-4">
             <div class="card-header-saas">
                 <h5 class="card-title-saas">
                     <i class="fas fa-users text-success"></i> Daftar Warga RT {{ $selectedRt->kode_rt }}

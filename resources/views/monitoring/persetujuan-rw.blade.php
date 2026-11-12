@@ -48,7 +48,7 @@
     </div>
 
     {{-- Main Table Card --}}
-    <div class="saas-card mb-4">
+    <div class="table-card saas-card mb-4">
         <div class="table-responsive">
             <table class="table-saas table align-middle mb-0">
                 <thead>

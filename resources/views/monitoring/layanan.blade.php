@@ -21,7 +21,7 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="saas-card p-3 mb-4">
+    <div class="form-card saas-card p-3 mb-4">
         <form method="GET" action="{{ route('rw.monitoring.layanan') }}" class="row g-3 align-items-center">
             <div class="col-md-4">
                 <label class="form-label small text-secondary mb-1">Filter Wilayah RT</label>
@@ -54,7 +54,7 @@
     </div>
 
     {{-- Tabel Monitoring Layanan --}}
-    <div class="saas-card mb-4">
+    <div class="table-card saas-card mb-4">
         <div class="card-header-saas">
             <h5 class="card-title-saas">
                 <i class="fas fa-list text-success"></i> Data Permohonan Surat Masuk

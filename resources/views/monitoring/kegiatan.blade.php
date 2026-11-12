@@ -27,7 +27,7 @@
     </div>
 
     {{-- Filter Wilayah RT --}}
-    <div class="saas-card p-3 mb-4">
+    <div class="form-card saas-card p-3 mb-4">
         <form method="GET" action="{{ route('rw.monitoring.kegiatan') }}" class="row g-2 align-items-center">
             <div class="col-md-5">
                 <div class="d-flex align-items-center gap-2">
@@ -73,7 +73,7 @@
             </div>
         @empty
             <div class="col-12">
-                <div class="empty-state-saas p-5">
+                <div class="empty-card empty-state-saas p-5">
                     <div class="empty-state-icon">
                         <i class="fas fa-calendar-times"></i>
                     </div>

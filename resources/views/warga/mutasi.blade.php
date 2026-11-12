@@ -5,20 +5,29 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h1 class="page-title">
-                <i class="fas fa-people-arrows text-emerald me-2"></i>
-                @if($user->isAdminRt())
-                    Mutasi Warga — RT {{ $user->getRtKode() ?? '01' }}
-                @else
-                    Mutasi Warga — Seluruh Wilayah RW
-                @endif
-            </h1>
-            <p class="page-subtitle">Sistem administrasi mutasi kependudukan terpadu: Mutasi Masuk, Mutasi Keluar, Mutasi Antar-RT, dan Riwayat Mutasi</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-people-arrows"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">
+                        Mutasi Warga
+                    </h1>
+                    <span class="badge-rt-pill">
+                        @if($user->isAdminRt())
+                            RT {{ $user->getRtKode() ?? '01' }}
+                        @else
+                            Wilayah RW
+                        @endif
+                    </span>
+                </div>
+                <p class="page-subtitle mb-0">Sistem administrasi mutasi kependudukan terpadu: Mutasi Masuk, Mutasi Keluar, Mutasi Antar-RT, dan Riwayat Mutasi</p>
+            </div>
         </div>
 
-        <div class="d-flex flex-wrap gap-2">
+        <div class="page-header-actions">
             @if($activeTab === 'masuk')
                 <button type="button" class="btn btn-emerald text-white px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalMutasiMasuk">
                     <i class="fas fa-user-plus me-1"></i> Daftarkan Mutasi Masuk
@@ -66,7 +75,7 @@
     @endif
 
     {{-- 4 Integrated Nav Tabs --}}
-    <div class="saas-card mb-4 p-2 bg-white border">
+    <div class="segmented-tabs p-2 mb-4 bg-white border">
         <ul class="nav nav-pills nav-fill gap-2" id="mutasiTabs">
             <li class="nav-item">
                 <a href="{{ route('warga.mutasi', ['tab' => 'masuk', 'rt_id' => request('rt_id')]) }}" 

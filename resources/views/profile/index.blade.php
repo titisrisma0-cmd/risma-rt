@@ -5,20 +5,22 @@
 @section('content')
 <div class="content-container">
     {{-- PAGE HEADER --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-saas mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Profil Pengguna</li>
-                </ol>
-            </nav>
-            <h1 class="page-title"><i class="fas fa-id-card text-success me-2"></i>Profil Saya</h1>
-            <p class="page-subtitle">Kelola informasi identitas diri, data kependudukan, alamat, dan keamanan akun.</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Profil Saya</h1>
+                    <span class="badge-rt-pill">{{ ucfirst($user->role->nama_role ?? 'Warga') }}</span>
+                </div>
+                <p class="page-subtitle mb-0">Kelola informasi identitas diri, data kependudukan, alamat, dan keamanan akun</p>
+            </div>
         </div>
-        <div>
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-saas">
-                <i class="fas fa-arrow-left me-1"></i> Kembali ke Dashboard
+        <div class="page-header-actions">
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Dashboard
             </a>
         </div>
     </div>

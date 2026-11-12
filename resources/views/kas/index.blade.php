@@ -5,17 +5,36 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header">
-        <h1 class="page-title">
-            <i class="fas fa-chart-line text-emerald me-2"></i> Laporan Kas RW
-        </h1>
-        <p class="page-subtitle">Ringkasan arus kas, pemasukan iuran warga, dan pengeluaran operasional</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Laporan Kas {{ Auth::user()->isAdminRt() ? 'RT ' . (Auth::user()->getRtKode() ?? '01') : 'RW' }}</h1>
+                    <span class="badge-rt-pill">{{ Auth::user()->isAdminRt() ? 'RT ' . (Auth::user()->getRtKode() ?? '01') : 'Pengurus RW' }}</span>
+                </div>
+                <p class="page-subtitle mb-0">Ringkasan arus kas, pemasukan iuran warga, dan pengeluaran operasional</p>
+            </div>
+        </div>
+        <div class="page-header-actions">
+            <a href="{{ route('pembayaran.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-hand-holding-usd me-1"></i> Iuran
+            </a>
+            <a href="{{ route('pengeluaran.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-shopping-cart me-1"></i> Pengeluaran
+            </a>
+            <a href="{{ route('laporan.index') }}" class="btn btn-emerald text-white">
+                <i class="fas fa-file-invoice me-1"></i> Laporan
+            </a>
+        </div>
     </div>
 
     <!-- Statistik Kas -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-emerald h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Total Pemasukan</span>
@@ -28,7 +47,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-danger h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Total Pengeluaran</span>
@@ -41,7 +60,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-info h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Saldo Akhir</span>
@@ -56,7 +75,7 @@
     </div>
 
     <!-- Tabel Pemasukan -->
-    <div class="saas-card overflow-hidden mb-4">
+    <div class="table-card saas-card overflow-hidden mb-4">
         <div class="card-header bg-white border-bottom p-3">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-arrow-down text-emerald me-2"></i> Riwayat Pemasukan Kas</h6>
         </div>
@@ -106,7 +125,7 @@
     </div>
 
     <!-- Tabel Pengeluaran -->
-    <div class="saas-card overflow-hidden">
+    <div class="table-card saas-card overflow-hidden">
         <div class="card-header bg-white border-bottom p-3">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-arrow-up text-danger me-2"></i> Riwayat Pengeluaran Kas</h6>
         </div>

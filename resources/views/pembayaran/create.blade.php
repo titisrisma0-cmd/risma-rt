@@ -5,32 +5,47 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex align-items-center gap-3">
-        <a href="{{ route('pembayaran.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Kembali
-        </a>
-        <div>
-            <h1 class="page-title mb-0">
-                <i class="fas fa-plus-circle text-emerald me-2"></i> 
-                @if(Auth::user()->hasRole('warga'))
-                    Bayar Iuran
-                @else
-                    Catat Pembayaran Iuran
-                @endif
-            </h1>
-            <p class="page-subtitle">
-                @if(Auth::user()->hasRole('warga'))
-                    Lakukan pembayaran iuran Anda dengan mudah dan aman
-                @else
-                    Catat penerimaan pembayaran iuran dari warga secara langsung
-                @endif
-            </p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">
+                        @if(Auth::user()->hasRole('warga'))
+                            Bayar Iuran
+                        @else
+                            Catat Pembayaran Iuran
+                        @endif
+                    </h1>
+                    <span class="badge-rt-pill">
+                        @if(Auth::user()->hasRole('warga'))
+                            Warga
+                        @else
+                            Pengurus
+                        @endif
+                    </span>
+                </div>
+                <p class="page-subtitle mb-0">
+                    @if(Auth::user()->hasRole('warga'))
+                        Lakukan pembayaran iuran Anda dengan mudah dan aman
+                    @else
+                        Catat penerimaan pembayaran iuran dari warga secara langsung
+                    @endif
+                </p>
+            </div>
+        </div>
+        <div class="page-header-actions">
+            <a href="{{ route('pembayaran.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar
+            </a>
         </div>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-7">
-            <div class="saas-card p-4">
+            <div class="form-card saas-card p-4">
                 <h6 class="fw-bold text-dark mb-3"><i class="fas fa-receipt text-emerald me-2"></i>Formulir Pembayaran</h6>
 
                 <form action="{{ route('pembayaran.store') }}" method="POST" enctype="multipart/form-data" id="formPembayaran">

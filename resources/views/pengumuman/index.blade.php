@@ -5,7 +5,7 @@
 @section('content')
 <div class="content-container">
     {{-- PAGE HEADER --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <header class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-saas mb-1">
@@ -13,18 +13,21 @@
                     <li class="breadcrumb-item active" aria-current="page">Pengumuman RW</li>
                 </ol>
             </nav>
-            <h1 class="page-title"><i class="fas fa-bullhorn text-success me-2"></i>Pengumuman Resmi RW</h1>
+            <h1 class="page-title mb-1"><i class="fas fa-bullhorn text-success me-2"></i>Pengumuman Resmi RW</h1>
             <p class="page-subtitle">Pusat warta informasi publik, surat edaran resmi, dan instruksi koordinasi pengurus wilayah.</p>
         </div>
 
-        @if($user->isAdminRw() || $user->hasRole('bendahara'))
-            <div>
+        <div class="page-header-actions">
+            @if($user->isAdminRw() || $user->hasRole('bendahara'))
                 <a href="{{ route('pengumuman.create') }}" class="btn btn-saas-primary">
                     <i class="fas fa-plus me-1"></i> Buat Pengumuman Baru
                 </a>
-            </div>
-        @endif
-    </div>
+            @endif
+            <a href="{{ route('dashboard') }}" class="btn btn-light border">
+                <i class="fas fa-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+    </header>
 
     @if(session('success'))
         <div class="alert alert-saas alert-saas-success mb-4">

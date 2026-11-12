@@ -35,7 +35,7 @@
     <div class="row g-3 mb-4">
         {{-- Kartu Keluarga --}}
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-emerald">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Kartu Keluarga</span>
                     <div class="stat-icon-wrapper stat-icon-green">
@@ -55,7 +55,7 @@
 
         {{-- Status Iuran --}}
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-amber">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Iuran Menunggu Verifikasi</span>
                     <div class="stat-icon-wrapper stat-icon-amber">
@@ -73,7 +73,7 @@
 
         {{-- Total Iuran Terbayar --}}
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-info">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total Iuran Telah Lunas</span>
                     <div class="stat-icon-wrapper stat-icon-blue">
@@ -93,7 +93,7 @@
 
         {{-- Permohonan Surat Saya --}}
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-primary">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Permohonan Surat Saya</span>
                     <div class="stat-icon-wrapper stat-icon-green">

@@ -5,17 +5,22 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-            <h1 class="page-title d-flex align-items-center gap-2">
-                <i class="fas fa-users text-emerald"></i>
-                <span>Data Warga</span>
-            </h1>
-            <p class="page-subtitle mb-0">
-                {{ Auth::user()->isAdminRt() ? 'Kelola data kependudukan dan status akun warga di RT Anda' : 'Kelola dan pantau seluruh data kependudukan warga RW 05 per RT' }}
-            </p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Data Warga</h1>
+                    <span class="badge-rt-pill">{{ Auth::user()->isAdminRt() ? 'RT ' . (Auth::user()->getRtKode() ?? '01') : 'Wilayah RW 01' }}</span>
+                </div>
+                <p class="page-subtitle mb-0">
+                    {{ Auth::user()->isAdminRt() ? 'Kelola data kependudukan dan status akun warga di RT Anda' : 'Kelola dan pantau seluruh data kependudukan warga RW 01 per RT' }}
+                </p>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="page-header-actions">
             @if(Auth::user()->isAdminRt() || Auth::user()->isAdminRw())
                 <a href="{{ route('warga.verifikasi.index') }}" class="btn btn-outline-emerald position-relative">
                     <i class="fas fa-user-check me-1"></i> Verifikasi Warga
@@ -52,7 +57,7 @@
     @endif
 
     <!-- FORM PENCARIAN & FILTER -->
-    <div class="saas-card p-4 mb-4">
+    <div class="form-card saas-card p-4 mb-4">
         <h6 class="fw-bold text-dark mb-3"><i class="fas fa-search text-emerald me-2"></i>Pencarian & Filter Warga</h6>
         <form method="GET" action="{{ route('warga.index') }}" class="row g-3">
             @if(Auth::user()->isAdminRw() || Auth::user()->hasRole('bendahara'))
@@ -117,7 +122,7 @@
     </div>
 
     <!-- DAFTAR DATA WARGA -->
-    <div class="saas-card overflow-hidden">
+    <div class="table-card saas-card overflow-hidden">
         <div class="card-header bg-white border-bottom p-3">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-list text-emerald me-2"></i> Daftar Warga Kependudukan</h6>
         </div>

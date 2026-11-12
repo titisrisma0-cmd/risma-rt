@@ -34,7 +34,7 @@
 @section('content')
 <div class="content-container">
     {{-- PAGE HEADER --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <header class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-saas mb-1">
@@ -43,15 +43,15 @@
                     <li class="breadcrumb-item active" aria-current="page">Keamanan & Ronda</li>
                 </ol>
             </nav>
-            <h1 class="page-title">
+            <h1 class="page-title mb-1">
                 <i class="fas fa-shield-halved text-success me-2"></i>Keamanan & Siskamling RT
                 @if(isset($myRtId) && $isRt)
-                    <span class="badge badge-soft-success fs-6 ms-1">RT {{ str_pad($myRtId, 2, '0', STR_PAD_LEFT) }}</span>
+                    <span class="badge badge-soft-success fs-6 ms-1 rounded-pill">RT {{ str_pad($myRtId, 2, '0', STR_PAD_LEFT) }}</span>
                 @endif
             </h1>
             <p class="page-subtitle">Pusat tata kelola jadwal siskamling malam, kalender regu ronda, presensi digital, dan penanganan darurat warga.</p>
         </div>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="page-header-actions">
             @if($isPengurus)
                 <button class="btn btn-saas-primary" data-bs-toggle="modal" data-bs-target="#modalTambahJadwal">
                     <i class="fas fa-calendar-plus me-1"></i>Buat Jadwal Ronda
@@ -78,11 +78,11 @@
                     <i class="fas fa-repeat me-1"></i>Ajukan Tukar Shift
                 </button>
             @endif
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-saas">
+            <a href="{{ route('dashboard') }}" class="btn btn-light border">
                 <i class="fas fa-arrow-left me-1"></i>Kembali
             </a>
         </div>
-    </div>
+    </header>
 
     {{-- ALERTS --}}
     @if(session('success'))
@@ -138,7 +138,7 @@
     {{-- STATS CARDS --}}
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-info h-100">
                 <div class="stat-icon-wrapper bg-primary-soft text-primary">
                     <i class="fas fa-calendar-day"></i>
                 </div>
@@ -150,7 +150,7 @@
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-emerald h-100">
                 <div class="stat-icon-wrapper bg-success-soft text-success">
                     <i class="fas fa-user-shield"></i>
                 </div>
@@ -162,7 +162,7 @@
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-amber h-100">
                 <div class="stat-icon-wrapper bg-warning-soft text-warning">
                     <i class="fas fa-repeat"></i>
                 </div>
@@ -174,7 +174,7 @@
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-danger h-100">
                 <div class="stat-icon-wrapper bg-danger-soft text-danger">
                     <i class="fas fa-phone-volume"></i>
                 </div>

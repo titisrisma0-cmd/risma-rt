@@ -39,7 +39,7 @@
     <div class="row g-3 mb-4">
         <!-- 1. Total Kepala Keluarga -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-info">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Kepala Keluarga</span>
                     <div class="stat-icon-wrapper stat-icon-blue">
@@ -57,7 +57,7 @@
 
         <!-- 2. Total Warga -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-emerald">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total Penduduk</span>
                     <div class="stat-icon-wrapper stat-icon-green">
@@ -75,7 +75,7 @@
 
         <!-- 3. Total Laki-laki -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-info">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Laki-laki</span>
                     <div class="stat-icon-wrapper stat-icon-blue">
@@ -93,7 +93,7 @@
 
         <!-- 4. Total Perempuan -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-danger">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Perempuan</span>
                     <div class="stat-icon-wrapper stat-icon-red">
@@ -111,7 +111,7 @@
 
         <!-- 5. Total Iuran Terkumpul -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-emerald">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Iuran Terkumpul</span>
                     <div class="stat-icon-wrapper stat-icon-green">
@@ -131,7 +131,7 @@
 
         <!-- 6. Total Tunggakan Iuran -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-amber">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Tunggakan / Pending</span>
                     <div class="stat-icon-wrapper stat-icon-amber">
@@ -151,7 +151,7 @@
 
         <!-- 7. Saldo Kas RT -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-primary">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Saldo Kas RT {{ $rtKode }}</span>
                     <div class="stat-icon-wrapper stat-icon-blue">
@@ -171,7 +171,7 @@
 
         <!-- 8. Pengumuman RW -->
         <div class="col-6 col-md-3">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-amber">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Pengumuman RW</span>
                     <div class="stat-icon-wrapper stat-icon-amber">

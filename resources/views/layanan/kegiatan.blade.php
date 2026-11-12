@@ -5,7 +5,7 @@
 @section('content')
 <div class="content-container">
     {{-- PAGE HEADER --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <header class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-saas mb-1">
@@ -14,20 +14,20 @@
                     <li class="breadcrumb-item active" aria-current="page">Kegiatan Warga</li>
                 </ol>
             </nav>
-            <h1 class="page-title"><i class="fas fa-calendar-check text-success me-2"></i>Pengelolaan Kegiatan RT & RW</h1>
+            <h1 class="page-title mb-1"><i class="fas fa-calendar-check text-success me-2"></i>Pengelolaan Kegiatan RT & RW</h1>
             <p class="page-subtitle">Agenda kegiatan warga, pendaftaran partisipasi peserta, serta dokumentasi terjadwal per periode.</p>
         </div>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="page-header-actions">
             @if($canManage)
                 <button type="button" class="btn btn-saas-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKegiatan">
                     <i class="fas fa-plus-circle me-1"></i> Buat Kegiatan Baru
                 </button>
             @endif
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-saas">
+            <a href="{{ route('dashboard') }}" class="btn btn-light border">
                 <i class="fas fa-arrow-left me-1"></i> Kembali
             </a>
         </div>
-    </div>
+    </header>
 
     {{-- ALERTS --}}
     @if(session('success'))

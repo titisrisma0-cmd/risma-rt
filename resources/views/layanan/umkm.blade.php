@@ -4,18 +4,35 @@
 
 @section('content')
 <div class="content-container umkm-page">
-    <header class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div>
-            <h1 class="page-title mb-1">
-                <i class="fas fa-store text-emerald me-2"></i>UMKM & Usaha Warga 
-                @if(isset($myRtId) && $isRt)
-                    <span class="badge-soft-emerald fs-6 ms-1">RT {{ str_pad($myRtId, 2, '0', STR_PAD_LEFT) }}</span>
-                @endif
-            </h1>
-            <p class="page-subtitle">Pemberdayaan potensi ekonomi warga lokal, etalase produk, dan promosi usaha mikro.</p>
+    {{-- Header Modul (Kaya Wadah Permukaan & Ornamen) --}}
+    <header class="page-head page-header mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <div>
+                <h1 class="page-title mb-1">
+                    UMKM & Usaha Warga 
+                    @if(isset($myRtId) && $isRt)
+                        <span class="badge badge-soft-emerald fs-6 ms-1 rounded-pill">RT {{ str_pad($myRtId, 2, '0', STR_PAD_LEFT) }}</span>
+                    @endif
+                </h1>
+                <p class="page-subtitle">Pemberdayaan potensi ekonomi warga lokal, etalase produk, dan promosi usaha mikro.</p>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
+        <div class="page-header-actions">
+            <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalToko">
+                <i class="fas fa-store me-1"></i>{{ $tokoSaya ? 'Kelola Toko Saya' : 'Daftarkan Toko Saya' }}
+            </button>
+            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalProduk">
+                <i class="fas fa-plus me-1 text-emerald"></i>Tambah Produk/Jasa
+            </button>
+            @if($isPengurus)
+                <button class="btn btn-outline-warning text-dark px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahUmkmWarga">
+                    <i class="fas fa-user-plus me-1"></i>Daftarkan Usaha Warga
+                </button>
+            @endif
+            <a href="{{ route('dashboard') }}" class="btn btn-light border"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
         </div>
     </header>
 
@@ -38,17 +55,9 @@
         </div>
     @endif
 
-    <div class="d-flex flex-wrap gap-2 mb-4">
-        <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalToko"><i class="fas fa-store me-1"></i>{{ $tokoSaya ? 'Kelola Toko Saya' : 'Daftarkan Toko Saya' }}</button>
-        <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalProduk"><i class="fas fa-plus me-1 text-emerald"></i>Tambah Produk/Jasa</button>
-        @if($isPengurus)
-            <button class="btn btn-outline-warning text-dark px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahUmkmWarga"><i class="fas fa-user-plus me-1"></i>Daftarkan Usaha Warga</button>
-        @endif
-    </div>
-
     <section class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-emerald h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Produk Aktif</span>
@@ -62,7 +71,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-amber h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Status Toko Saya</span>
@@ -76,7 +85,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-info h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Kategori Usaha</span>
@@ -91,7 +100,7 @@
         </div>
         @if($isPengurus)
             <div class="col-md-3">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-danger h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Perlu Moderasi</span>
@@ -107,22 +116,22 @@
         @endif
     </section>
 
-    <nav class="nav nav-tabs-saas mb-4" role="tablist">
+    <nav class="nav nav-tabs-saas segmented-tabs mb-4" role="tablist">
         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabKatalog" type="button"><i class="fas fa-store me-1"></i>Katalog Produk & Jasa</button>
         @if($isPengurus)
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabKelolaUmkm" type="button">
-                <i class="fas fa-briefcase me-1"></i>Daftar Toko/UMKM RT <span class="badge-soft-secondary ms-1">{{ $umkmsRt->count() }}</span>
+                <i class="fas fa-briefcase me-1"></i>Daftar Toko/UMKM RT <span class="badge bg-secondary bg-opacity-25 text-dark ms-1 rounded-pill">{{ $umkmsRt->count() }}</span>
             </button>
         @endif
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabProdukSaya" type="button">
             <i class="fas fa-boxes-stacked me-1"></i>{{ $isPengurus ? 'Kelola Semua Produk' : 'Produk Saya' }}
-            <span class="badge-soft-secondary ms-1">{{ $produkSaya->count() }}</span>
+            <span class="badge bg-secondary bg-opacity-25 text-dark ms-1 rounded-pill">{{ $produkSaya->count() }}</span>
         </button>
         @if($isPengurus)
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabModerasi" type="button">
                 <i class="fas fa-shield-halved me-1"></i>Moderasi Produk
                 @if($produkPending->count() > 0)
-                    <span class="badge-soft-danger ms-1">{{ $produkPending->count() }}</span>
+                    <span class="badge bg-danger text-white ms-1 rounded-pill">{{ $produkPending->count() }}</span>
                 @endif
             </button>
         @endif
@@ -164,48 +173,53 @@
                 </form>
             </div>
 
-            <div class="row g-3">
+            <div class="card-grid-autofill mb-4">
                 @forelse($produk as $item)
                     @php
                         $nomorWhatsapp = preg_replace('/[^0-9]/', '', $item->umkm->whatsapp ?? '');
                         if (str_starts_with($nomorWhatsapp, '0')) $nomorWhatsapp = '62' . substr($nomorWhatsapp, 1);
                         $rtKodeItem = $item->umkm?->rt?->kode_rt ?? ($item->umkm?->pemilik?->getRtKode() ?? null);
                     @endphp
-                    <div class="col-sm-6 col-lg-4 col-xl-3">
-                        <div class="saas-card h-100 overflow-hidden d-flex flex-column justify-content-between">
-                            <div>
-                                <div class="position-relative bg-light" style="height: 180px; overflow: hidden;">
-                                    @if($item->foto)
-                                        <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama_produk }}" class="w-100 h-100 object-fit-cover">
-                                    @else
-                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted"><i class="fas fa-box-open fa-3x opacity-50"></i></div>
-                                    @endif
-                                    <span class="badge-soft-warning position-absolute top-0 start-0 m-2">{{ $item->kategori }}</span>
-                                    @if($rtKodeItem)
-                                        <span class="badge bg-dark bg-opacity-75 position-absolute top-0 end-0 m-2">RT {{ $rtKodeItem }}</span>
-                                    @endif
-                                </div>
-                                <div class="p-3">
-                                    <h6 class="fw-bold mb-1 text-dark text-truncate" title="{{ $item->nama_produk }}">{{ $item->nama_produk }}</h6>
-                                    <p class="small text-secondary mb-2 text-truncate"><i class="fas fa-store me-1 text-emerald"></i>{{ $item->umkm->nama_usaha ?? 'UMKM Warga' }}</p>
-                                    <p class="small text-secondary mb-3 flex-grow-1" style="font-size: 0.85rem; min-height: 40px;">{{ str($item->deskripsi)->limit(70) }}</p>
-                                </div>
-                            </div>
-                            <div class="p-3 border-top d-flex justify-content-between align-items-center bg-white">
-                                <strong class="text-emerald fs-6">Rp {{ number_format($item->harga, 0, ',', '.') }}<small class="text-muted fw-normal">/{{ $item->satuan ?: 'pcs' }}</small></strong>
-                                @if($nomorWhatsapp)
-                                    <a href="https://wa.me/{{ $nomorWhatsapp }}?text={{ urlencode('Halo, saya tertarik dengan produk ' . $item->nama_produk . ' yang ada di RW Smart.') }}" target="_blank" class="btn btn-sm btn-outline-success">
-                                        <i class="fab fa-whatsapp me-1"></i>Pesan
-                                    </a>
+                    <div class="product-card catalog-card">
+                        <div>
+                            <div class="product-thumb-wrap">
+                                @if($item->foto)
+                                    <img src="{{ asset('storage/' . $item->foto) }}" alt="{{ $item->nama_produk }}">
+                                @else
+                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted"><i class="fas fa-box-open fa-3x opacity-50"></i></div>
+                                @endif
+                                <span class="badge-category-glass">{{ $item->kategori }}</span>
+                                @if($rtKodeItem)
+                                    <span class="badge-rt-pill">RT {{ $rtKodeItem }}</span>
                                 @endif
                             </div>
+                            <div class="p-3">
+                                <h6 class="fw-bold mb-1 text-dark text-truncate" title="{{ $item->nama_produk }}">{{ $item->nama_produk }}</h6>
+                                <p class="small text-secondary mb-2 text-truncate"><i class="fas fa-store me-1 text-emerald"></i>{{ $item->umkm->nama_usaha ?? 'UMKM Warga' }}</p>
+                                <p class="small text-secondary mb-3 line-clamp-2" style="font-size: 0.85rem; min-height: 40px;">{{ str($item->deskripsi)->limit(70) }}</p>
+                            </div>
+                        </div>
+                        <div class="p-3 border-top d-flex justify-content-between align-items-center bg-white">
+                            <strong class="text-emerald fs-6">Rp {{ number_format($item->harga, 0, ',', '.') }}<small class="text-muted fw-normal">/{{ $item->satuan ?: 'pcs' }}</small></strong>
+                            @if($nomorWhatsapp)
+                                <a href="https://wa.me/{{ $nomorWhatsapp }}?text={{ urlencode('Halo, saya tertarik dengan produk ' . $item->nama_produk . ' yang ada di RW Smart.') }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                    <i class="fab fa-whatsapp me-1"></i>Pesan
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @empty
-                    <div class="col-12">
-                        <div class="saas-card text-center py-5 text-secondary">
-                            <i class="fas fa-store-slash fa-3x mb-3 text-muted opacity-50 d-block"></i>
-                            Belum ada produk aktif yang sesuai filter pencarian.
+                    <div class="col-12" style="grid-column: 1 / -1;">
+                        <div class="empty-card">
+                            <div class="empty-svg-icon mx-auto">
+                                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+                                    <rect x="8" y="20" width="48" height="36" rx="8" stroke="currentColor" stroke-width="2.5" />
+                                    <path d="M4 20L12 8H52L60 20" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+                                    <path d="M24 32C24 36.4183 27.5817 40 32 40C36.4183 40 40 36.4183 40 32" stroke="#f4a62a" stroke-width="2.5" stroke-linecap="round" />
+                                </svg>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">Belum Ada Produk</h6>
+                            <p class="text-secondary small mb-0">Belum ada produk aktif yang sesuai filter pencarian.</p>
                         </div>
                     </div>
                 @endforelse

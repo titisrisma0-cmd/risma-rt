@@ -5,28 +5,30 @@
 @section('content')
 <div class="content-container" style="max-width: 900px;">
     {{-- PAGE HEADER --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-saas mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Notifikasi</li>
-                </ol>
-            </nav>
-            <h1 class="page-title"><i class="fas fa-bell text-success me-2"></i>Pusat Notifikasi</h1>
-            <p class="page-subtitle">Pemberitahuan aktivitas, update status permohonan, jadwal ronda, dan pengumuman.</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Pusat Notifikasi</h1>
+                    <span class="badge-rt-pill">{{ $notifikasis->where('dibaca', false)->count() }} Baru</span>
+                </div>
+                <p class="page-subtitle mb-0">Pemberitahuan aktivitas, update status permohonan, jadwal ronda, dan pengumuman</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="page-header-actions">
             @if($notifikasis->where('dibaca', false)->count())
                 <form method="POST" action="{{ route('notifikasi.read-all') }}">
                     @csrf
-                    <button type="submit" class="btn btn-outline-saas btn-sm">
+                    <button type="submit" class="btn btn-outline-secondary">
                         <i class="fas fa-check-double me-1"></i> Tandai Semua Dibaca
                     </button>
                 </form>
             @endif
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-saas btn-sm">
-                <i class="fas fa-arrow-left me-1"></i> Kembali
+            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Dashboard
             </a>
         </div>
     </div>
@@ -37,7 +39,7 @@
         </div>
     @endif
 
-    <div class="saas-card">
+    <div class="table-card saas-card">
         <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-inbox text-success me-2"></i>Daftar Pemberitahuan</h6>
             <span class="badge badge-soft-secondary">{{ $notifikasis->count() }} Notifikasi</span>

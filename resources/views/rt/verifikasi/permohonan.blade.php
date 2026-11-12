@@ -5,23 +5,31 @@
 @section('content')
 <div class="content-container permohonan-page">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h1 class="page-title">
-                <i class="fas fa-file-signature text-emerald me-2"></i>Manajemen Permohonan — RT {{ $user->getRtKode() ?? '01' }}
-            </h1>
-            <p class="page-subtitle">Verifikasi langsung tingkat RT, eskalasi permohonan ke RW, dan arsip riwayat persetujuan warga.</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Manajemen Permohonan</h1>
+                    <span class="badge-rt-pill">RT {{ $user->getRtKode() ?? '01' }}</span>
+                </div>
+                <p class="page-subtitle mb-0">Verifikasi langsung tingkat RT, eskalasi permohonan ke RW, dan arsip riwayat persetujuan warga</p>
+            </div>
         </div>
 
-        <form method="GET" action="{{ route('rt.verifikasi.permohonan') }}" class="d-flex align-items-center gap-2">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                <input type="text" name="q" value="{{ $search }}" class="form-control form-control-saas border-start-0" placeholder="Cari nama, NIK, no pengajuan...">
-            </div>
-            @if($search)
-                <a href="{{ route('rt.verifikasi.permohonan') }}" class="btn btn-outline-secondary">Reset</a>
-            @endif
-        </form>
+        <div class="page-header-actions">
+            <form method="GET" action="{{ route('rt.verifikasi.permohonan') }}" class="d-flex align-items-center gap-2">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="q" value="{{ $search }}" class="form-control form-control-saas border-start-0" placeholder="Cari nama, NIK, no pengajuan...">
+                </div>
+                @if($search)
+                    <a href="{{ route('rt.verifikasi.permohonan') }}" class="btn btn-outline-secondary">Reset</a>
+                @endif
+            </form>
+        </div>
     </div>
 
     @if(session('success'))

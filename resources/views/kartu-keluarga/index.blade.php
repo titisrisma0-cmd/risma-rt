@@ -5,20 +5,24 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h1 class="page-title">
-                <i class="fas fa-users-rectangle text-emerald me-2"></i>
-                @if($user->isAdminRt())
-                    Data Keluarga & Warga — RT {{ $user->getRtKode() ?? '01' }}
-                @else
-                    Data Keluarga & Warga — Seluruh Wilayah RW
-                @endif
-            </h1>
-            <p class="page-subtitle">Pusat administrasi kependudukan terpadu berbasis Kartu Keluarga dan Anggota Keluarga</p>
+    <header class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-users-rectangle"></i>
+            </div>
+            <div>
+                <h1 class="page-title mb-1">
+                    @if($user->isAdminRt())
+                        Data Keluarga & Warga — RT {{ $user->getRtKode() ?? '01' }}
+                    @else
+                        Data Keluarga & Warga — Seluruh Wilayah RW
+                    @endif
+                </h1>
+                <p class="page-subtitle">Pusat administrasi kependudukan terpadu berbasis Kartu Keluarga dan Anggota Keluarga</p>
+            </div>
         </div>
 
-        <div class="d-flex flex-wrap gap-2">
+        <div class="page-header-actions">
             <a href="{{ route('warga.mutasi') }}" class="btn btn-outline-warning px-3 py-2">
                 <i class="fas fa-exchange-alt me-1"></i> Mutasi Warga
             </a>
@@ -27,8 +31,11 @@
                     <i class="fas fa-plus me-1"></i> Tambah KK Baru
                 </a>
             @endif
+            <a href="{{ route('dashboard') }}" class="btn btn-light border">
+                <i class="fas fa-arrow-left me-1"></i> Dashboard
+            </a>
         </div>
-    </div>
+    </header>
 
     {{-- Alerts --}}
     @if(session('success'))

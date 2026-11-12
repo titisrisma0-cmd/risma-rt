@@ -5,33 +5,36 @@
 @section('content')
 <div class="content-container">
     {{-- PAGE HEADER --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-saas mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="#">Keuangan</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Audit RT</li>
-                </ol>
-            </nav>
-            <h1 class="page-title"><i class="fas fa-clipboard-check text-success me-2"></i>Status Audit Keuangan RT {{ $rt->kode_rt }}</h1>
-            <p class="page-subtitle">Hasil evaluasi, verifikasi berkala, dan catatan rekomendasi resmi dari Pengurus RW.</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Status Audit Keuangan RT {{ $rt->kode_rt }}</h1>
+                    <span class="badge-rt-pill">RT {{ $rt->kode_rt }}</span>
+                </div>
+                <p class="page-subtitle mb-0">Hasil evaluasi, verifikasi berkala, dan catatan rekomendasi resmi dari Pengurus RW</p>
+            </div>
         </div>
 
-        <form method="GET" action="{{ route('rw.audit.index') }}" class="d-flex gap-2">
-            <select name="bulan" class="form-select-saas" onchange="this.form.submit()">
-                @for($m = 1; $m <= 12; $m++)
-                    <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
-                        {{ \Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}
-                    </option>
-                @endfor
-            </select>
-            <select name="tahun" class="form-select-saas" onchange="this.form.submit()">
-                @for($y = date('Y') - 2; $y <= date('Y') + 1; $y++)
-                    <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
-                @endfor
-            </select>
-        </form>
+        <div class="page-header-actions">
+            <form method="GET" action="{{ route('rw.audit.index') }}" class="d-flex gap-2">
+                <select name="bulan" class="form-select form-select-sm form-control-saas" onchange="this.form.submit()">
+                    @for($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
+                            {{ \Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}
+                        </option>
+                    @endfor
+                </select>
+                <select name="tahun" class="form-select form-select-sm form-control-saas" onchange="this.form.submit()">
+                    @for($y = date('Y') - 2; $y <= date('Y') + 1; $y++)
+                        <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
+                </select>
+            </form>
+        </div>
     </div>
 
     {{-- Status Banner from RW --}}
@@ -61,7 +64,7 @@
     {{-- Kartu Ringkasan Keuangan RT --}}
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-4">
-            <div class="stat-card">
+            <div class="stat-card accent-emerald h-100">
                 <div class="stat-icon-wrapper bg-success-soft text-success">
                     <i class="fas fa-arrow-down-long"></i>
                 </div>
@@ -73,7 +76,7 @@
             </div>
         </div>
         <div class="col-12 col-md-4">
-            <div class="stat-card">
+            <div class="stat-card accent-danger h-100">
                 <div class="stat-icon-wrapper bg-danger-soft text-danger">
                     <i class="fas fa-arrow-up-long"></i>
                 </div>
@@ -85,7 +88,7 @@
             </div>
         </div>
         <div class="col-12 col-md-4">
-            <div class="stat-card">
+            <div class="stat-card accent-info h-100">
                 <div class="stat-icon-wrapper bg-primary-soft text-primary">
                     <i class="fas fa-vault"></i>
                 </div>
@@ -99,7 +102,7 @@
     </div>
 
     {{-- Audit Trail Log --}}
-    <div class="saas-card">
+    <div class="table-card saas-card">
         <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-history text-success me-2"></i>Aktivitas Transaksi Terbaru (Audit Trail)</h6>
             <span class="badge badge-soft-secondary">{{ $auditLogs->count() }} Log</span>

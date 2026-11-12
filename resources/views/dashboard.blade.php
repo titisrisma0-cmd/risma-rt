@@ -75,7 +75,7 @@
     <div class="row g-3 mb-4">
         {{-- Total RT --}}
         <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-emerald">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Wilayah RT Aktif</span>
                     <div class="stat-icon-wrapper stat-icon-green">
@@ -93,7 +93,7 @@
 
         {{-- Total KK --}}
         <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-info">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total Kepala Keluarga</span>
                     <div class="stat-icon-wrapper stat-icon-blue">
@@ -111,7 +111,7 @@
 
         {{-- Total Warga --}}
         <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-amber">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total Warga Terdaftar</span>
                     <div class="stat-icon-wrapper stat-icon-amber">
@@ -129,7 +129,7 @@
 
         {{-- Saldo Kas Gabungan --}}
         <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas">
+            <div class="stat-card-saas accent-primary">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Saldo Kas Gabungan</span>
                     <div class="stat-icon-wrapper stat-icon-green">
@@ -151,21 +151,21 @@
     {{-- Highlight Keuangan & Agenda RW --}}
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="saas-card p-3">
+            <div class="stat-card accent-emerald p-3">
                 <span class="text-secondary small fw-semibold d-block mb-1">Total Pemasukan Wilayah</span>
                 <h4 class="text-success fw-bold font-monospace mb-0">Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</h4>
                 <small class="text-secondary" style="font-size: 0.75rem;">Iuran & penerimaan resmi tahun {{ date('Y') }}</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="saas-card p-3">
+            <div class="stat-card accent-danger p-3">
                 <span class="text-secondary small fw-semibold d-block mb-1">Total Pengeluaran Wilayah</span>
                 <h4 class="text-danger fw-bold font-monospace mb-0">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</h4>
                 <small class="text-secondary" style="font-size: 0.75rem;">Operasional & belanja kegiatan wilayah</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="saas-card p-3">
+            <div class="stat-card accent-info p-3">
                 <span class="text-secondary small fw-semibold d-block mb-1">Kegiatan RW Terdekat</span>
                 @if($kegiatanRwTerdekat)
                     <h5 class="text-dark fw-bold mb-0 text-truncate">{{ $kegiatanRwTerdekat->nama_kegiatan }}</h5>
@@ -181,7 +181,7 @@
     </div>
 
     {{-- 2. MONITORING WILAYAH CEPAT (RT 01 SAMPAI RT 08) --}}
-    <div class="saas-card mb-4">
+    <div class="table-card saas-card mb-4">
         <div class="card-header-saas">
             <div>
                 <h5 class="card-title-saas">

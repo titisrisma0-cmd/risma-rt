@@ -46,29 +46,33 @@
 
 @section('content')
 <div class="content-container posyandu-page">
-    <header class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div>
-            <h1 class="page-title mb-1">
-                <i class="fas fa-baby text-emerald me-2"></i>Posyandu RW
-            </h1>
-            <p class="page-subtitle">Informasi pertumbuhan balita, jadwal pemeriksaan, imunisasi rutin, dan kartu KMS digital.</p>
+    <header class="page-head page-header mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-baby"></i>
+            </div>
+            <div>
+                <h1 class="page-title mb-1">
+                    Posyandu RW
+                </h1>
+                <p class="page-subtitle">Informasi pertumbuhan balita, jadwal pemeriksaan, imunisasi rutin, dan kartu KMS digital.</p>
+            </div>
         </div>
-        <a href="{{ route('dashboard') }}#layanan-masyarakat" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
-        </a>
+        <div class="page-header-actions">
+            @if($isPengurus)
+                <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalTambahAnak"><i class="fas fa-user-plus me-1"></i> Tambah Anak</button>
+                <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalPenimbangan"><i class="fas fa-weight-scale text-emerald me-1"></i> Input Penimbangan</button>
+                <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus text-info me-1"></i> Input Jadwal Posyandu</button>
+            @endif
+            <a href="{{ route('dashboard') }}#layanan-masyarakat" class="btn btn-light border">
+                <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
+            </a>
+        </div>
     </header>
-
-    @if($isPengurus)
-        <div class="d-flex flex-wrap gap-2 mb-4" aria-label="Akses cepat Posyandu">
-            <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalTambahAnak"><i class="fas fa-user-plus me-1"></i> Tambah Anak</button>
-            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalPenimbangan"><i class="fas fa-weight-scale text-emerald me-1"></i> Input Penimbangan</button>
-            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus text-info me-1"></i> Input Jadwal Posyandu</button>
-        </div>
-    @endif
 
     <section class="row g-3 mb-4" aria-label="Ringkasan Posyandu">
         <div class="col-sm-6 col-lg-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-info h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Jumlah Anak</span>
@@ -82,7 +86,7 @@
             </div>
         </div>
         <div class="col-sm-6 col-lg-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-emerald h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Jadwal Terdekat</span>
@@ -96,7 +100,7 @@
             </div>
         </div>
         <div class="col-sm-6 col-lg-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-amber h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Perlu Ditimbang</span>
@@ -110,7 +114,7 @@
             </div>
         </div>
         <div class="col-sm-6 col-lg-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-emerald h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="stat-label">Status Gizi</span>
@@ -127,7 +131,7 @@
         </div>
     </section>
 
-    <nav class="nav nav-tabs-saas mb-4" role="tablist">
+    <nav class="nav nav-tabs-saas segmented-tabs mb-4" role="tablist">
         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pos-ringkasan" type="button"><i class="fas fa-chart-line me-1"></i>Ringkasan & Pertumbuhan</button>
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-medis" type="button"><i class="fas fa-file-medical me-1"></i>Rekam Medis & Imunisasi</button>
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pos-tips" type="button"><i class="fas fa-lightbulb me-1"></i>Tips & Panduan Gizi</button>

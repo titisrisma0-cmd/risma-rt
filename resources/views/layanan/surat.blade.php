@@ -20,17 +20,24 @@
 
 @section('content')
 <div class="content-container layanan-page">
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h1 class="page-title mb-1">
-                <i class="fas fa-envelope-open-text text-emerald me-2"></i> Surat Menyurat
-            </h1>
-            <p class="page-subtitle">Pengajuan surat pengantar RT & RW yang transparan dan dapat dipantau langsung dari rumah.</p>
+    <header class="page-head page-header mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <div>
+                <h1 class="page-title mb-1">
+                    Surat Menyurat
+                </h1>
+                <p class="page-subtitle">Pengajuan surat pengantar RT & RW yang transparan dan dapat dipantau langsung dari rumah.</p>
+            </div>
         </div>
-        <a href="{{ route('dashboard') }}#layanan-masyarakat" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Kembali ke Dashboard
-        </a>
-    </div>
+        <div class="page-header-actions">
+            <a href="{{ route('dashboard') }}#layanan-masyarakat" class="btn btn-light border">
+                <i class="fas fa-arrow-left me-1"></i> Kembali ke Dashboard
+            </a>
+        </div>
+    </header>
 
     @if(!$isPengurus)
         <div class="row g-3 mb-4">

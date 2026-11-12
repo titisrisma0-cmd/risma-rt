@@ -111,7 +111,7 @@
         <div class="tab-pane fade show active" id="tab-ringkasan" role="tabpanel">
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <div class="stat-card-saas">
+                    <div class="stat-card-saas accent-emerald">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="stat-label">Pemasukan Iuran / Kas (Periode)</span>
                             <div class="stat-icon-wrapper stat-icon-green">
@@ -127,7 +127,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stat-card-saas">
+                    <div class="stat-card-saas accent-danger">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="stat-label">Pengeluaran Seluruh RT (Periode)</span>
                             <div class="stat-icon-wrapper stat-icon-red">
@@ -143,7 +143,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="stat-card-saas">
+                    <div class="stat-card-saas accent-info">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="stat-label">Saldo Kas Gabungan Seluruh RT</span>
                             <div class="stat-icon-wrapper stat-icon-blue">
@@ -160,7 +160,7 @@
                 </div>
             </div>
 
-            <div class="saas-card mb-4">
+            <div class="table-card saas-card mb-4">
                 <div class="card-header-saas">
                     <h5 class="card-title-saas">
                         <i class="fas fa-sitemap text-success"></i> Rekapitulasi Wilayah RT 01 – RT 08 (Periode: {{ \Carbon\Carbon::create($tahun, $bulan, 1)->translatedFormat('F Y') }})

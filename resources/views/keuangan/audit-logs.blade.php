@@ -29,7 +29,7 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="saas-card p-3 mb-4">
+    <div class="form-card saas-card p-3 mb-4">
         <form method="GET" action="{{ route('rw.audit.riwayat') }}" class="row g-2 align-items-end">
             @if($user->isAdminRw() || $user->hasRole('bendahara'))
                 <div class="col-md-2">
@@ -90,7 +90,7 @@
     </div>
 
     {{-- Tabel Audit Trail --}}
-    <div class="saas-card mb-4">
+    <div class="table-card saas-card mb-4">
         <div class="card-header-saas">
             <h5 class="card-title-saas"><i class="fas fa-list text-success"></i> Catatan Audit Trail Wilayah</h5>
             <span class="badge badge-soft-primary">{{ $logs->total() }} Log Tercatat</span>

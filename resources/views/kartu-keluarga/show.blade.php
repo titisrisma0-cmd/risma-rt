@@ -5,26 +5,32 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <a href="{{ route('kartu-keluarga.index') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> Kembali ke Daftar
-                </a>
-                <h1 class="page-title mb-0">Kartu Keluarga: {{ $kartuKeluarga->no_kk }}</h1>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-id-card"></i>
             </div>
-            <p class="page-subtitle">Wilayah RT {{ optional($kartuKeluarga->rt)->kode_rt ?? '-' }} / RW 01</p>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Kartu Keluarga: {{ $kartuKeluarga->no_kk }}</h1>
+                    <span class="badge-rt-pill">RT {{ optional($kartuKeluarga->rt)->kode_rt ?? '-' }}</span>
+                </div>
+                <p class="page-subtitle mb-0">Wilayah RT {{ optional($kartuKeluarga->rt)->kode_rt ?? '-' }} / RW 01 &bull; Kepala Keluarga: {{ $kartuKeluarga->nama_kepala_keluarga }}</p>
+            </div>
         </div>
 
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('kartu-keluarga.cetak', $kartuKeluarga) }}" target="_blank" class="btn btn-outline-secondary px-3 py-2">
-                <i class="fas fa-print me-1 text-primary"></i> Cetak Dokumen KK
+        <div class="page-header-actions">
+            <a href="{{ route('kartu-keluarga.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar
+            </a>
+            <a href="{{ route('kartu-keluarga.cetak', $kartuKeluarga) }}" target="_blank" class="btn btn-outline-secondary">
+                <i class="fas fa-print me-1 text-primary"></i> Cetak KK
             </a>
             @if($user->isAdminRt() || $user->isAdminRw())
-                <button type="button" class="btn btn-emerald text-white px-3 py-2" data-bs-toggle="modal" data-bs-target="#tambahAnggotaModal">
+                <button type="button" class="btn btn-emerald text-white" data-bs-toggle="modal" data-bs-target="#tambahAnggotaModal">
                     <i class="fas fa-user-plus me-1"></i> Tambah Anggota
                 </button>
-                <a href="{{ route('kartu-keluarga.edit', $kartuKeluarga) }}" class="btn btn-outline-warning px-3 py-2">
+                <a href="{{ route('kartu-keluarga.edit', $kartuKeluarga) }}" class="btn btn-outline-warning">
                     <i class="fas fa-edit me-1"></i> Edit KK
                 </a>
             @endif
@@ -58,7 +64,7 @@
     {{-- Info Card KK --}}
     <div class="row g-3 mb-4">
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-emerald h-100">
                 <div class="text-secondary small mb-1 fw-medium">Kepala Keluarga</div>
                 <div class="h5 text-dark fw-bold mb-1 text-uppercase">{{ $kartuKeluarga->nama_kepala_keluarga }}</div>
                 <div class="small text-emerald"><i class="fas fa-user-tie me-1"></i> Penanggung Jawab</div>
@@ -66,7 +72,7 @@
         </div>
 
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-info h-100">
                 <div class="text-secondary small mb-1 fw-medium">Wilayah RT / RW</div>
                 <div class="h5 text-dark fw-bold mb-1">RT {{ optional($kartuKeluarga->rt)->kode_rt ?? '-' }} / RW 01</div>
                 <div class="small text-info"><i class="fas fa-map-marker-alt me-1"></i> Risma Smart RW</div>
@@ -74,7 +80,7 @@
         </div>
 
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-amber h-100">
                 <div class="text-secondary small mb-1 fw-medium">Status Kepemilikan Rumah</div>
                 <div class="h5 text-dark fw-bold mb-1 text-capitalize">{{ $kartuKeluarga->status_rumah }}</div>
                 <div class="small text-warning"><i class="fas fa-home me-1"></i> Hunian {{ $kartuKeluarga->status_rumah }}</div>
@@ -82,7 +88,7 @@
         </div>
 
         <div class="col-md-6 col-xl-3">
-            <div class="stat-card h-100">
+            <div class="stat-card accent-primary h-100">
                 <div class="text-secondary small mb-1 fw-medium">Total Anggota Terdaftar</div>
                 <div class="h5 text-dark fw-bold mb-1">{{ $kartuKeluarga->anggota->count() }} Orang</div>
                 <div class="small text-emerald"><i class="fas fa-users me-1"></i> Warga Aktif</div>
@@ -104,7 +110,7 @@
     </div>
 
     {{-- Daftar Anggota Keluarga --}}
-    <div class="saas-card overflow-hidden mb-4">
+    <div class="table-card saas-card overflow-hidden mb-4">
         <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
             <h6 class="text-dark mb-0 fw-bold"><i class="fas fa-users text-emerald me-2"></i>Daftar Anggota Keluarga</h6>
             <span class="badge-soft-emerald px-3 py-1">

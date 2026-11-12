@@ -5,23 +5,28 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-            <h1 class="page-title d-flex align-items-center gap-2">
-                <i class="fas fa-user-check text-emerald"></i>
-                <span>Verifikasi Pendaftaran Warga</span>
-            </h1>
-            <p class="page-subtitle mb-0">
-                {{ $user->isAdminRt() ? 'Validasi dan konfirmasi pendaftaran akun warga mandiri untuk wilayah RT Anda' : 'Monitoring verifikasi pendaftaran warga di seluruh wilayah RW 05' }}
-            </p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Verifikasi Pendaftaran Warga</h1>
+                    <span class="badge-rt-pill">{{ $user->isAdminRt() ? 'RT ' . ($user->getRtKode() ?? '01') : 'Pengurus RW' }}</span>
+                </div>
+                <p class="page-subtitle mb-0">
+                    {{ $user->isAdminRt() ? 'Validasi dan konfirmasi pendaftaran akun warga mandiri untuk wilayah RT Anda' : 'Monitoring verifikasi pendaftaran warga di seluruh wilayah RW 01' }}
+                </p>
+            </div>
         </div>
 
-        @if($user->isAdminRw())
-            <div class="d-flex align-items-center gap-2">
+        <div class="page-header-actions">
+            @if($user->isAdminRw())
                 <form method="GET" action="{{ route('warga.verifikasi.index') }}" class="d-flex align-items-center gap-2">
                     <label class="small text-secondary fw-semibold text-nowrap mb-0">Filter RT:</label>
                     <select name="rt_id" class="form-select form-select-sm form-control-saas" onchange="this.form.submit()">
-                        <option value="">Semua RT (RW 05)</option>
+                        <option value="">Semua RT (RW 01)</option>
                         @foreach($rts as $rtOpt)
                             <option value="{{ $rtOpt->id }}" {{ $selectedRtId == $rtOpt->id ? 'selected' : '' }}>
                                 RT {{ $rtOpt->kode_rt }}
@@ -29,8 +34,11 @@
                         @endforeach
                     </select>
                 </form>
-            </div>
-        @endif
+            @endif
+            <a href="{{ route('warga.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-users me-1"></i> Data Warga
+            </a>
+        </div>
     </div>
 
     {{-- Alert Messages --}}
@@ -50,11 +58,11 @@
     {{-- Stats Cards --}}
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-4">
-            <div class="saas-card p-3 border-start border-4 border-warning">
+            <div class="stat-card accent-amber h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-medium">Menunggu Verifikasi</div>
-                        <h3 class="fw-bold mb-0 text-dark">{{ $stats['pending'] }}</h3>
+                        <h3 class="fw-bold mb-0 text-dark stat-value">{{ $stats['pending'] }}</h3>
                     </div>
                     <div class="badge-soft-warning p-3 rounded-circle">
                         <i class="fas fa-user-clock fs-4"></i>
@@ -63,11 +71,11 @@
             </div>
         </div>
         <div class="col-12 col-md-4">
-            <div class="saas-card p-3 border-start border-4 border-success">
+            <div class="stat-card accent-emerald h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-medium">Warga Aktif</div>
-                        <h3 class="fw-bold mb-0 text-dark">{{ $stats['aktif'] }}</h3>
+                        <h3 class="fw-bold mb-0 text-dark stat-value">{{ $stats['aktif'] }}</h3>
                     </div>
                     <div class="badge-soft-emerald p-3 rounded-circle">
                         <i class="fas fa-user-check fs-4"></i>
@@ -76,11 +84,11 @@
             </div>
         </div>
         <div class="col-12 col-md-4">
-            <div class="saas-card p-3 border-start border-4 border-danger">
+            <div class="stat-card accent-danger h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small fw-medium">Pendaftaran Ditolak</div>
-                        <h3 class="fw-bold mb-0 text-dark">{{ $stats['ditolak'] }}</h3>
+                        <h3 class="fw-bold mb-0 text-dark stat-value">{{ $stats['ditolak'] }}</h3>
                     </div>
                     <div class="badge-soft-danger p-3 rounded-circle">
                         <i class="fas fa-user-xmark fs-4"></i>
@@ -91,7 +99,7 @@
     </div>
 
     {{-- Main Verification Card --}}
-    <div class="saas-card overflow-hidden">
+    <div class="table-card saas-card overflow-hidden">
         <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
             <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
                 <i class="fas fa-list-check text-emerald"></i>

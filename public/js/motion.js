@@ -43,19 +43,21 @@
 
     // 3. Selective Auto-Tagging Matrix
     const AUTO = [
-        // Headers & Titles
-        ['.page-header-saas, .section-header-center, .page-header, .brand-heading, h1.page-title, h1.hero-title', 'rise'],
+        // Headers & Titles (Surface Card Headers)
+        ['.page-head, .page-header-saas, .section-header-center, .page-header, .brand-heading, h1.page-title, h1.hero-title', 'rise'],
         ['.page-header-actions, .hero-cta-group', 'right'],
         // Banners, Badges & Alerts
-        ['.alert, .alert-saas, .hero-badge, .hero-trust-bar', 'left'],
+        ['.banner-soft, .alert, .alert-saas, .hero-badge, .hero-trust-bar', 'left'],
         // Summary & KPI Metric Cards
-        ['.stat-card-saas, .stat-card, .metric-card, .stats-grid-card .stat-item', 'zoom'],
-        // Feature & Service Modules
-        ['.quick-service-card, .service-tile, .module-card, .feature-item', 'zoom'],
+        ['.stat-tile, .stat-card-saas, .stat-card, .metric-card, .stats-grid-card .stat-item', 'zoom'],
+        // Segmented Tabs & Navigations
+        ['.nav-tabs-saas, .segmented-tabs', 'rise'],
+        // Feature & Service Modules & Product Cards
+        ['.product-card, .catalog-card, .quick-service-card, .service-tile, .module-card, .feature-item', 'zoom'],
         // Ronda / Schedule cards
         ['.schedule-card, .ronda-card', 'right'],
         // Content Cards (only if not directly wrapping a data table to avoid double nested animation)
-        ['.saas-card, .card, .feature-card, .service-card, .role-card, .step-card, .security-box, .cta-box, .box', 'rise'],
+        ['.form-card, .table-card, .saas-card, .card, .feature-card, .service-card, .role-card, .step-card, .security-box, .cta-box, .box', 'rise'],
         // Card Headers (for cards with tables)
         ['.card-header-saas, .card-header', 'rise'],
         // Table Rows (up to first 12 rows for optimal performance)
@@ -63,9 +65,9 @@
         // Progress Bars & Fill Meters
         ['.progress-bar, .bar-fill', 'bar'],
         // Chips, Demo accounts, Badges
-        ['.demo-pill, .badge-chip', 'pop'],
+        ['.demo-pill, .badge-chip, .badge-category-glass', 'pop'],
         // Empty State Displays
-        ['.empty-state, td.text-center.py-5', 'rise'],
+        ['.empty-card, .empty-state, td.text-center.py-5', 'rise'],
         // Form field groups (when standalone)
         ['form .mb-3, form .row.g-3, .form-group', 'rise']
     ];

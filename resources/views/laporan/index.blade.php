@@ -5,17 +5,35 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h1 class="page-title">
-                <i class="fas fa-file-invoice text-emerald me-2"></i>
-                {{ Auth::user()->isAdminRw() ? 'Laporan Agregat Wilayah RW' : 'Laporan Operasional RT' }}
-            </h1>
-            <p class="page-subtitle">
-                {{ Auth::user()->isAdminRw() 
-                    ? 'Pusat ekspor laporan agregat kependudukan, keuangan, kegiatan, dan audit seluruh RT' 
-                    : 'Generate laporan penerimaan iuran, kas, dan operasional warga di lingkungan RT' }}
-            </p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-file-invoice"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">
+                        {{ Auth::user()->isAdminRw() ? 'Laporan Agregat Wilayah RW' : 'Laporan Operasional RT' }}
+                    </h1>
+                    <span class="badge-rt-pill">{{ Auth::user()->isAdminRw() ? 'Pengurus RW' : 'RT ' . (Auth::user()->getRtKode() ?? '01') }}</span>
+                </div>
+                <p class="page-subtitle mb-0">
+                    {{ Auth::user()->isAdminRw() 
+                        ? 'Pusat ekspor laporan agregat kependudukan, keuangan, kegiatan, dan audit seluruh RT' 
+                        : 'Generate laporan penerimaan iuran, kas, dan operasional warga di lingkungan RT' }}
+                </p>
+            </div>
+        </div>
+        <div class="page-header-actions">
+            @if(Auth::user()->isAdminRw())
+                <a href="{{ route('rw.audit.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-wallet me-1"></i> Keuangan & Audit RT
+                </a>
+            @else
+                <a href="{{ route('kas.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-chart-line me-1"></i> Buku Kas RT
+                </a>
+            @endif
         </div>
     </div>
 
@@ -29,7 +47,7 @@
     <div class="row g-4 mb-4">
         {{-- Form Generate Laporan Agregat --}}
         <div class="{{ Auth::user()->isAdminRt() ? 'col-lg-7' : 'col-lg-8' }}">
-            <div class="saas-card overflow-hidden">
+            <div class="form-card saas-card overflow-hidden">
                 <div class="card-header bg-white border-bottom p-3">
                     <h6 class="mb-0 fw-bold text-dark">
                         <i class="fas fa-chart-bar text-emerald me-2"></i>
@@ -104,7 +122,7 @@
         {{-- Form Laporan Per Warga (HANYA DITAMPILKAN UNTUK KETUA RT) --}}
         @if(Auth::user()->isAdminRt())
             <div class="col-lg-5">
-                <div class="saas-card overflow-hidden">
+                <div class="form-card saas-card overflow-hidden">
                     <div class="card-header bg-white border-bottom p-3">
                         <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-user text-emerald me-2"></i>Laporan Per Warga (RT)</h6>
                     </div>
@@ -159,7 +177,7 @@
     </div>
 
     {{-- Riwayat Laporan Tersimpan --}}
-    <div class="saas-card overflow-hidden">
+    <div class="table-card saas-card overflow-hidden">
         <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-history text-emerald me-2"></i>Riwayat Laporan Digenerate</h6>
             <span class="badge-soft-secondary">{{ $laporan->count() }} Dokumen</span>

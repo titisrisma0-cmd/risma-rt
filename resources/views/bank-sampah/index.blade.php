@@ -4,18 +4,32 @@
 
 @section('content')
 <div class="content-container bank-page">
-    <header class="page-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div>
-            <h1 class="page-title mb-1">
-                <i class="fas fa-recycle text-emerald me-2"></i>Bank Sampah RT 
-                @if(isset($rtId) && $rtId)
-                    <span class="badge-soft-emerald fs-6 ms-1">RT {{ str_pad($rtId, 2, '0', STR_PAD_LEFT) }}</span>
-                @endif
-            </h1>
-            <p class="page-subtitle">Pengelolaan jadwal pengumpulan, verifikasi setoran, saldo, pencairan dana, dan edukasi daur ulang.</p>
+    <header class="page-head page-header mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-recycle"></i>
+            </div>
+            <div>
+                <h1 class="page-title mb-1">
+                    Bank Sampah RT 
+                    @if(isset($rtId) && $rtId)
+                        <span class="badge badge-soft-emerald fs-6 ms-1 rounded-pill">RT {{ str_pad($rtId, 2, '0', STR_PAD_LEFT) }}</span>
+                    @endif
+                </h1>
+                <p class="page-subtitle">Pengelolaan jadwal pengumpulan, verifikasi setoran, saldo, pencairan dana, dan edukasi daur ulang.</p>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
+        <div class="page-header-actions">
+            @if(!($schemaReady ?? false))
+                {{-- schema not ready --}}
+            @elseif(!$isPengurus)
+                <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalSetoran"><i class="fas fa-plus me-1"></i>Setor Sampah</button>
+                <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalTarikSaldo"><i class="fas fa-money-bill-wave me-1 text-emerald"></i>Tarik Saldo</button>
+            @else
+                <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus me-1"></i>Buat Jadwal Pengumpulan</button>
+                <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalHarga"><i class="fas fa-tags me-1 text-emerald"></i>Atur Harga Sampah</button>
+            @endif
+            <a href="{{ route('dashboard') }}" class="btn btn-light border"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
         </div>
     </header>
 
@@ -23,14 +37,9 @@
         <div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Tabel Bank Sampah belum siap. Silakan periksa konfigurasi database.</div>
     @elseif(!$isPengurus)
         {{-- VIEW UNTUK WARGA --}}
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalSetoran"><i class="fas fa-plus me-1"></i>Setor Sampah</button>
-            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalTarikSaldo"><i class="fas fa-money-bill-wave me-1 text-emerald"></i>Tarik Saldo</button>
-        </div>
-
         <section class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-emerald h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Saldo Tersedia</span>
@@ -43,7 +52,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-info h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Total Sampah Terkumpul</span>
@@ -56,7 +65,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-amber h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Riwayat Setoran Saya</span>
@@ -70,7 +79,7 @@
             </div>
         </section>
 
-        <nav class="nav nav-tabs-saas mb-4" role="tablist">
+        <nav class="nav nav-tabs-saas segmented-tabs mb-4" role="tablist">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-setoran" type="button"><i class="fas fa-clock-rotate-left me-1"></i>Riwayat Setoran</button>
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-penarikan-warga" type="button"><i class="fas fa-money-bill-transfer me-1"></i>Riwayat Pencairan</button>
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jadwal-warga" type="button"><i class="fas fa-calendar-days me-1"></i>Jadwal Penjemputan</button>
@@ -314,14 +323,9 @@
 
     @else
         {{-- VIEW UNTUK PENGURUS RT / RW --}}
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus me-1"></i>Buat Jadwal Pengumpulan</button>
-            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalHarga"><i class="fas fa-tags me-1 text-emerald"></i>Atur Harga Sampah</button>
-        </div>
-
         <section class="row g-3 mb-4">
             <div class="col-md-3">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-amber h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Menunggu Setoran</span>
@@ -335,7 +339,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-info h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Menunggu Pencairan</span>
@@ -349,7 +353,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-emerald h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Sampah Tervalidasi</span>
@@ -363,7 +367,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="stat-card h-100">
+                <div class="stat-card accent-emerald h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="stat-label">Nasabah Aktif</span>
@@ -378,7 +382,7 @@
             </div>
         </section>
 
-        <nav class="nav nav-tabs-saas mb-4" role="tablist">
+        <nav class="nav nav-tabs-saas segmented-tabs mb-4" role="tablist">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-admin-setoran" type="button">
                 <i class="fas fa-circle-check me-1"></i>Verifikasi Setoran
                 @if($setoranPending->count() > 0)

@@ -5,7 +5,7 @@
 @section('content')
 <div class="content-container">
     {{-- PAGE HEADER --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <header class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-saas mb-1">
@@ -14,19 +14,19 @@
                     <li class="breadcrumb-item active" aria-current="page">Aspirasi Warga</li>
                 </ol>
             </nav>
-            <h1 class="page-title">
+            <h1 class="page-title mb-1">
                 <i class="fas fa-comment-dots text-success me-2"></i>{{ $canManage ? 'Pusat Pengelolaan Aspirasi & Aduan Warga' : 'Aspirasi & Pengaduan Warga' }}
             </h1>
             <p class="page-subtitle">
                 {{ $canManage ? 'Monitoring aspirasi, verifikasi penanganan keluhan, respon resmi RT, dan eskalasi ke tingkat RW.' : 'Sampaikan masukan, aspirasi fasilitas, atau keluhan lingkungan kepada pengurus RT secara cepat dan transparan.' }}
             </p>
         </div>
-        <div>
-            <a href="{{ route('dashboard') }}" class="btn btn-outline-saas">
+        <div class="page-header-actions">
+            <a href="{{ route('dashboard') }}" class="btn btn-light border">
                 <i class="fas fa-arrow-left me-1"></i> Dashboard
             </a>
         </div>
-    </div>
+    </header>
 
     {{-- ALERTS --}}
     @if(session('success'))
@@ -51,7 +51,7 @@
     {{-- SUMMARY STATS --}}
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-info h-100">
                 <div class="stat-icon-wrapper bg-primary-soft text-primary">
                     <i class="fas fa-inbox"></i>
                 </div>
@@ -63,7 +63,7 @@
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-amber h-100">
                 <div class="stat-icon-wrapper bg-warning-soft text-warning">
                     <i class="fas fa-bell"></i>
                 </div>
@@ -75,7 +75,7 @@
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-info h-100">
                 <div class="stat-icon-wrapper bg-info-soft text-info">
                     <i class="fas fa-spinner"></i>
                 </div>
@@ -87,7 +87,7 @@
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stat-card">
+            <div class="stat-card accent-emerald h-100">
                 <div class="stat-icon-wrapper bg-success-soft text-success">
                     <i class="fas fa-circle-check"></i>
                 </div>

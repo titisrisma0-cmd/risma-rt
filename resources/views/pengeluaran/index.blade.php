@@ -5,21 +5,27 @@
 @section('content')
 <div class="content-container">
     {{-- Page Header --}}
-    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h1 class="page-title">
-                <i class="fas fa-shopping-cart text-emerald me-2"></i> Manajemen Pengeluaran
-            </h1>
-            <p class="page-subtitle">Kelola dan pantau semua pengeluaran operasional kas</p>
+    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">Manajemen Pengeluaran</h1>
+                    <span class="badge-rt-pill">RT {{ Auth::user()->getRtKode() ?? '01' }}</span>
+                </div>
+                <p class="page-subtitle mb-0">Kelola dan pantau semua pengeluaran operasional kas</p>
+            </div>
         </div>
-        <div>
+        <div class="page-header-actions">
             <a href="{{ route('pengeluaran.create') }}" class="btn btn-emerald text-white">
                 <i class="fas fa-plus-circle me-1"></i> Tambah Pengeluaran
             </a>
         </div>
     </div>
 
-    <div class="saas-card overflow-hidden">
+    <div class="table-card saas-card overflow-hidden">
         <div class="card-header bg-white border-bottom p-3">
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-list text-emerald me-2"></i> Daftar Pengeluaran</h6>
         </div>

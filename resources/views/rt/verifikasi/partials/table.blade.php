@@ -1,4 +1,4 @@
-<div class="saas-card overflow-hidden">
+<div class="table-card saas-card overflow-hidden">
     <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
         <h6 class="mb-0 fw-bold text-dark">
             <i class="fas fa-inbox text-emerald me-2"></i>{{ $title ?? 'Daftar Permohonan' }}
