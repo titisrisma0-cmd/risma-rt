@@ -89,6 +89,18 @@
                         <i class="fas fa-id-card"></i>
                         <span>Data Keluarga & Warga</span>
                     </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('warga.verifikasi.*') ? 'active' : '' }}" href="{{ route('warga.verifikasi.index') }}">
+                        <i class="fas fa-user-check"></i>
+                        <span>Verifikasi Warga</span>
+                        @php
+                            $pendingRtCount = \App\Models\UserProfile::where('status', 'pending')
+                                ->where('rt_id', Auth::user()->managedRtId())
+                                ->count();
+                        @endphp
+                        @if($pendingRtCount > 0)
+                            <span class="badge bg-danger ms-auto rounded-pill">{{ $pendingRtCount }}</span>
+                        @endif
+                    </a>
                     <a class="sidebar-nav-item {{ request()->routeIs('warga.mutasi*') ? 'active' : '' }}" href="{{ route('warga.mutasi') }}">
                         <i class="fas fa-exchange-alt"></i>
                         <span>Mutasi Warga</span>
@@ -260,14 +272,22 @@
                 </div>
 
                 <div class="sidebar-group">
-                    <div class="sidebar-group-title">Wilayah</div>
+                    <div class="sidebar-group-title">Wilayah & Kependudukan</div>
                     <a class="sidebar-nav-item {{ request()->routeIs('rts.*') ? 'active' : '' }}" href="{{ route('rts.index') }}">
                         <i class="fas fa-sitemap"></i>
                         <span>Manajemen RT</span>
                     </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('warga.index', 'warga.show', 'warga.edit') ? 'active' : '' }}" href="{{ route('warga.index') }}">
+                        <i class="fas fa-users"></i>
+                        <span>Data Kependudukan (Warga)</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('warga.verifikasi.*') ? 'active' : '' }}" href="{{ route('warga.verifikasi.index') }}">
+                        <i class="fas fa-user-check"></i>
+                        <span>Monitoring Verifikasi</span>
+                    </a>
                     <a class="sidebar-nav-item {{ request()->routeIs('rw.monitoring.warga') ? 'active' : '' }}" href="{{ route('rw.monitoring.warga') }}">
                         <i class="fas fa-users-viewfinder"></i>
-                        <span>Monitoring Warga</span>
+                        <span>Monitoring Wilayah</span>
                     </a>
                 </div>
 
@@ -276,6 +296,10 @@
                     <a class="sidebar-nav-item {{ request()->routeIs('rw.audit.*') && !request()->routeIs('rw.audit.riwayat') ? 'active' : '' }}" href="{{ route('rw.audit.index') }}">
                         <i class="fas fa-wallet"></i>
                         <span>Keuangan & Audit RT</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('rw.metode-pembayaran.*') ? 'active' : '' }}" href="{{ route('rw.metode-pembayaran.index') }}">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Metode Pembayaran</span>
                     </a>
                 </div>
 

@@ -190,30 +190,66 @@
 
     {{-- Widget Ronda Malam Warga --}}
     @if(isset($rondaSayaTerdekat) && $rondaSayaTerdekat)
+        @php
+            $userProfId = optional($user->profile)->id;
+            $myAbs = $rondaSayaTerdekat->absensi->first(function ($a) use ($user, $userProfId) {
+                return ($a->user_id && $a->user_id === $user->id) || ($userProfId && $a->user_profile_id === $userProfId);
+            });
+            $statusAbsensi = $myAbs ? ucfirst($myAbs->status) : 'Belum Hadir';
+            $jamShift = ($rondaSayaTerdekat->jam_mulai && $rondaSayaTerdekat->jam_selesai) 
+                ? "{$rondaSayaTerdekat->jam_mulai} - {$rondaSayaTerdekat->jam_selesai} WIB" 
+                : "22:00 - 02:00 WIB";
+        @endphp
         <div class="saas-card p-3 p-md-4 mb-4 border-start border-4 border-success">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="stat-icon-wrapper stat-icon-green flex-shrink-0" style="width: 52px; height: 52px; font-size: 1.4rem;">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon-wrapper stat-icon-green flex-shrink-0 mt-1" style="width: 52px; height: 52px; font-size: 1.4rem;">
                         <i class="fas fa-shield-halved"></i>
                     </div>
                     <div>
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
                             <h6 class="fw-bold text-dark mb-0 fs-6">Jadwal Tugas Ronda Malam Anda</h6>
                             <span class="badge badge-soft-success">Shift {{ ucfirst($rondaSayaTerdekat->shift) }}</span>
+                            <span class="badge bg-light text-dark border"><i class="fas fa-clock me-1 text-success"></i>{{ $jamShift }}</span>
+                            @if($myAbs && $myAbs->status === 'hadir')
+                                <span class="badge-soft-emerald"><i class="fas fa-check-circle me-1"></i>Hadir</span>
+                            @elseif($myAbs && $myAbs->status === 'izin')
+                                <span class="badge-soft-warning"><i class="fas fa-envelope-open-text me-1"></i>Izin</span>
+                            @else
+                                <span class="badge bg-light text-secondary border"><i class="fas fa-user-clock me-1"></i>Belum Hadir</span>
+                            @endif
                         </div>
-                        <div class="text-secondary small mt-1">
+                        <div class="text-secondary small mt-1 mb-2">
                             <i class="fas fa-calendar-day me-1 text-success"></i>
                             <strong>{{ \Carbon\Carbon::parse($rondaSayaTerdekat->tanggal)->isoFormat('dddd, D MMMM Y') }}</strong>
                             <span class="mx-2">&bull;</span>
                             <i class="fas fa-map-marker-alt me-1 text-success"></i>
                             {{ $rondaSayaTerdekat->lokasi_pos ?? 'Pos Ronda RT' }}
                         </div>
+                        {{-- Rekan Satu Regu --}}
+                        <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                            <span class="small text-muted fw-semibold me-1"><i class="fas fa-users text-success me-1"></i>Rekan Satu Regu:</span>
+                            @forelse($rondaSayaTerdekat->petugas as $petugasItem)
+                                @php
+                                    $namaP = $petugasItem->nama_petugas;
+                                    $isMe = ($petugasItem->user_id === $user->id) || ($userProfId && $petugasItem->user_profile_id === $userProfId);
+                                @endphp
+                                <span class="badge {{ $isMe ? 'bg-success text-white' : 'bg-white text-dark border border-secondary border-opacity-25' }} px-2 py-1 shadow-xs fw-semibold">
+                                    {{ $namaP }} {{ $isMe ? '(Anda)' : '' }}
+                                </span>
+                            @empty
+                                <span class="text-muted small">Belum ada rekan regu yang tercatat.</span>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+                    <a href="{{ route('layanan.ronda.index') }}#modalTukar" class="btn btn-outline-warning btn-sm px-3 shadow-xs">
+                        <i class="fas fa-exchange-alt me-1"></i> Ajukan Tukar Shift
+                    </a>
                     <a href="{{ route('layanan.ronda.index') }}" class="btn btn-emerald text-white btn-sm px-3 shadow-xs">
-                        <i class="fas fa-calendar-check me-1"></i> Buka Modul Ronda
+                        <i class="fas fa-calendar-check me-1"></i> Detail Ronda
                     </a>
                 </div>
             </div>

@@ -220,6 +220,21 @@
         </div>
         <div class="row g-3">
             <div class="col-6 col-md-3 col-xl">
+                <a href="{{ route('warga.verifikasi.index') }}" class="quick-service-card position-relative">
+                    @php
+                        $pendingCountRt = \App\Models\UserProfile::where('status', 'pending')->where('rt_id', $rtId)->count();
+                    @endphp
+                    @if($pendingCountRt > 0)
+                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-pill">{{ $pendingCountRt }}</span>
+                    @endif
+                    <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <span class="quick-service-title">Verifikasi Warga</span>
+                    <span class="quick-service-desc">{{ $pendingCountRt }} Menunggu</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-xl">
                 <a href="{{ route('bank-sampah.index') }}" class="quick-service-card">
                     <div class="quick-service-icon bg-success bg-opacity-10 text-success">
                         <i class="fas fa-recycle"></i>

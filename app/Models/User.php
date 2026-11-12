@@ -28,6 +28,44 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class, 'user_id');
     }
 
+    public function getAgeAttribute(): ?int
+    {
+        $ttl = $this->tanggal_lahir ?? optional($this->profile)->tanggal_lahir;
+        if (! $ttl) {
+            return null;
+        }
+
+        if ($ttl instanceof \Carbon\CarbonInterface) {
+            return $ttl->age;
+        }
+
+        try {
+            return \Carbon\Carbon::parse($ttl)->age;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    public function getNamaLengkapAttribute(): string
+    {
+        return (string) (optional($this->profile)->nama_lengkap ?? $this->name ?? '');
+    }
+
+    public function getSiapRondaAttribute(): bool
+    {
+        return (bool) (optional($this->profile)->siap_ronda ?? true);
+    }
+
+    public function getStatusHubunganKeluargaAttribute(): ?string
+    {
+        return optional($this->profile)->status_hubungan_keluarga;
+    }
+
+    public function petugasRondas()
+    {
+        return $this->hasMany(PetugasRonda::class, 'user_id');
+    }
+
     public function managedRt()
     {
         return $this->belongsTo(Rt::class, 'rt_id');

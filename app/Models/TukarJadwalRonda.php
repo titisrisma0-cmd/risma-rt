@@ -12,6 +12,7 @@ class TukarJadwalRonda extends Model
     protected $fillable = [
         'rt_id',
         'user_id',
+        'jenis_pengajuan',
         'jadwal_ronda_asal_id',
         'target_user_id',
         'target_jadwal_ronda_id',
@@ -20,10 +21,12 @@ class TukarJadwalRonda extends Model
         'catatan_rt',
         'approved_by',
         'approved_at',
+        'target_user_approved_at',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
+        'target_user_approved_at' => 'datetime',
     ];
 
     public function rt()

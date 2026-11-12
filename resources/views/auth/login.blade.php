@@ -560,12 +560,50 @@
                             
                             <form method="POST" action="{{ route('register') }}">
                                 @csrf
+                                @php
+                                    $regRts = \App\Models\Rt::orderBy('kode_rt')->get();
+                                @endphp
+
                                 <div class="row g-3 mb-3">
                                     <div class="col-12 col-sm-6">
+                                        <label class="form-label-custom">Wilayah RW</label>
+                                        <div class="input-group-saas">
+                                            <span class="input-icon"><i class="fas fa-building"></i></span>
+                                            <input type="text" class="form-control" value="RW 05 SMART" readonly style="background-color: #F8FAFC;">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label-custom">Wilayah RT Domisili <span class="text-danger">*</span></label>
+                                        <div class="input-group-saas">
+                                            <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                            <select name="rt_id" required>
+                                                <option value="" disabled {{ old('rt_id') ? '' : 'selected' }}>-- Pilih RT Domisili --</option>
+                                                @foreach($regRts as $rtOpt)
+                                                    <option value="{{ $rtOpt->id }}" {{ old('rt_id') == $rtOpt->id ? 'selected' : '' }}>
+                                                        RT {{ $rtOpt->kode_rt }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12">
                                         <label class="form-label-custom">Nama Lengkap Sesuai KTP <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
                                             <span class="input-icon"><i class="fas fa-user"></i></span>
-                                            <input type="text" name="name" placeholder="Nama lengkap" value="{{ old('name') }}" required>
+                                            <input type="text" name="name" placeholder="Nama lengkap sesuai KTP" value="{{ old('name') }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label-custom">Nomor Induk Kependudukan (NIK) <span class="text-danger">*</span></label>
+                                        <div class="input-group-saas">
+                                            <span class="input-icon"><i class="fas fa-address-card"></i></span>
+                                            <input type="text" name="nik" placeholder="16 digit NIK" value="{{ old('nik') }}" maxlength="16" required>
                                         </div>
                                     </div>
                                     
@@ -573,7 +611,7 @@
                                         <label class="form-label-custom">Nomor Kartu Keluarga (KK) <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
                                             <span class="input-icon"><i class="fas fa-id-card"></i></span>
-                                            <input type="text" name="no_kk" placeholder="16 digit No. KK" value="{{ old('no_kk') }}" required>
+                                            <input type="text" name="no_kk" placeholder="16 digit No. KK" value="{{ old('no_kk') }}" maxlength="16" required>
                                         </div>
                                     </div>
                                 </div>
@@ -628,7 +666,7 @@
                                 
                                 <div class="alert-saas alert-saas-info mb-4">
                                     <i class="fas fa-circle-info fs-5"></i>
-                                    <div>Setelah mendaftar, akun Anda akan diverifikasi oleh Admin RW sesuai data kependudukan.</div>
+                                    <div>Setelah mendaftar, akun Anda akan diverifikasi oleh Ketua RT sesuai data kependudukan.</div>
                                 </div>
                                 
                                 <button type="submit" class="btn-submit-saas">

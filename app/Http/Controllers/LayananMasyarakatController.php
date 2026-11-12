@@ -933,9 +933,13 @@ class LayananMasyarakatController extends Controller
                 ->latest()
                 ->get();
 
-            $wargas = $this->wargaQuery()
-                ->where(fn ($q) => $q->where('rt_id', $myRtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $myRtId)))
-                ->orderBy('name')
+            $wargas = UserProfile::with(['user', 'kartuKeluarga', 'wilayahRt'])
+                ->where(function ($q) use ($myRtId) {
+                    $q->where('rt_id', $myRtId)
+                      ->orWhereHas('user', fn ($u) => $u->where('rt_id', $myRtId));
+                })
+                ->where(fn ($q) => $q->where('status', 'aktif')->orWhereNull('status'))
+                ->orderBy('nama_lengkap')
                 ->get();
         } elseif ($isRw) {
             $filterRt = $request->input('rt_id');
@@ -955,7 +959,16 @@ class LayananMasyarakatController extends Controller
                 ->latest()
                 ->get();
 
-            $wargas = $this->wargaQuery()->orderBy('name')->get();
+            $wargas = UserProfile::with(['user', 'kartuKeluarga', 'wilayahRt'])
+                ->when($filterRt, function ($q) use ($filterRt) {
+                    $q->where(function ($sq) use ($filterRt) {
+                        $sq->where('rt_id', $filterRt)
+                           ->orWhereHas('user', fn ($u) => $u->where('rt_id', $filterRt));
+                    });
+                })
+                ->where(fn ($q) => $q->where('status', 'aktif')->orWhereNull('status'))
+                ->orderBy('nama_lengkap')
+                ->get();
         } else {
             $jadwals = JadwalRonda::with(['petugas.user', 'absensi.user'])
                 ->where(function ($q) use ($myRtId) {
@@ -982,18 +995,35 @@ class LayananMasyarakatController extends Controller
                 ->limit(10)
                 ->get();
 
-            $wargas = $this->wargaQuery()
+            $wargas = UserProfile::with(['user', 'kartuKeluarga', 'wilayahRt'])
                 ->where(function ($q) use ($myRtId) {
                     if ($myRtId) {
-                        $q->where('rt_id', $myRtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $myRtId));
+                        $q->where('rt_id', $myRtId)
+                          ->orWhereHas('user', fn ($u) => $u->where('rt_id', $myRtId));
                     }
                 })
-                ->orderBy('name')
+                ->where(fn ($q) => $q->where('status', 'aktif')->orWhereNull('status'))
+                ->orderBy('nama_lengkap')
                 ->get();
         }
 
-        $jadwalSaya = $jadwals->filter(fn ($jadwal) => $jadwal->petugas->contains('user_id', $user->id))->values();
+        $nowJakarta = \Carbon\Carbon::now('Asia/Jakarta');
+        $todayJakarta = $nowJakarta->toDateString();
+        $userProfileId = optional($user->profile)->id;
+
+        $jadwalSaya = $jadwals->filter(function ($jadwal) use ($user, $userProfileId) {
+            return $jadwal->petugas->contains(function ($p) use ($user, $userProfileId) {
+                return ($p->user_id && $p->user_id === $user->id) ||
+                       ($userProfileId && $p->user_profile_id === $userProfileId);
+            });
+        })->values();
+
         $activePanicReports = $panicReports->where('status', 'aktif');
+
+        // Pisahkan jadwal hari ini, mendatang, dan riwayat (Asia/Jakarta)
+        $jadwalHariIni = $jadwals->filter(fn ($j) => \Carbon\Carbon::parse($j->tanggal)->setTimezone('Asia/Jakarta')->toDateString() === $todayJakarta)->values();
+        $jadwalMendatang = $jadwals->filter(fn ($j) => \Carbon\Carbon::parse($j->tanggal)->setTimezone('Asia/Jakarta')->toDateString() > $todayJakarta)->sortBy('tanggal')->values();
+        $jadwalRiwayat = $jadwals->filter(fn ($j) => \Carbon\Carbon::parse($j->tanggal)->setTimezone('Asia/Jakarta')->toDateString() < $todayJakarta)->sortByDesc('tanggal')->values();
 
         $startOfMonth = now()->startOfMonth();
         $endOfMonth = now()->endOfMonth();
@@ -1005,18 +1035,31 @@ class LayananMasyarakatController extends Controller
         ];
 
         // Format data jadwal untuk kalender frontend interaktif
-        $calendarJadwals = $jadwals->map(function ($j) use ($user, $tukarJadwals) {
+        $calendarJadwals = $jadwals->map(function ($j) use ($user, $userProfileId, $tukarJadwals) {
             $tukarReq = $tukarJadwals->firstWhere('jadwal_ronda_asal_id', $j->id);
-            $hasSwapPending = $tukarReq && $tukarReq->status === 'menunggu';
-            $myAbsensi = $j->absensi->firstWhere('user_id', $user->id);
+            $hasSwapPending = $tukarReq && in_array($tukarReq->status, ['menunggu', 'menunggu_rekan', 'menunggu_rt']);
+            
+            $myAbsensi = $j->absensi->first(function ($a) use ($user, $userProfileId) {
+                return ($a->user_id && $a->user_id === $user->id) ||
+                       ($userProfileId && $a->user_profile_id === $userProfileId);
+            });
+
+            $isMine = $j->petugas->contains(function ($p) use ($user, $userProfileId) {
+                return ($p->user_id && $p->user_id === $user->id) ||
+                       ($userProfileId && $p->user_profile_id === $userProfileId);
+            });
 
             return [
                 'id' => $j->id,
                 'tanggal' => $j->tanggal instanceof \Carbon\CarbonInterface ? $j->tanggal->format('Y-m-d') : substr((string)$j->tanggal, 0, 10),
                 'shift' => ucfirst($j->shift),
+                'jam_shift' => ($j->jam_mulai && $j->jam_selesai) ? "{$j->jam_mulai} - {$j->jam_selesai}" : null,
                 'lokasi' => $j->lokasi_pos ?: 'Pos Ronda RT',
-                'petugas' => $j->petugas->map(fn($p) => optional($p->user)->name ?? 'Warga')->values()->toArray(),
-                'is_mine' => $j->petugas->contains('user_id', $user->id),
+                'petugas' => $j->petugas->map(function ($p) {
+                    return $p->nama_petugas;
+                })->values()->toArray(),
+                'petugas_count' => $j->petugas->count(),
+                'is_mine' => $isMine,
                 'has_swap_pending' => $hasSwapPending,
                 'my_absensi' => $myAbsensi ? $myAbsensi->status : null,
                 'status' => $j->status,
@@ -1031,6 +1074,10 @@ class LayananMasyarakatController extends Controller
             'kontaks' => KontakDarurat::where('status', true)->orderBy('kategori')->get(),
             'jadwals' => $jadwals,
             'jadwalSaya' => $jadwalSaya,
+            'jadwalHariIni' => $jadwalHariIni,
+            'jadwalMendatang' => $jadwalMendatang,
+            'jadwalRiwayat' => $jadwalRiwayat,
+            'todayJakarta' => $todayJakarta,
             'tukarJadwals' => $tukarJadwals,
             'wargas' => $wargas,
             'panicReports' => $panicReports,
@@ -1053,9 +1100,10 @@ class LayananMasyarakatController extends Controller
                 'jumlah_hari' => ['nullable', 'integer', 'min:1', 'max:31'],
                 'jumlah_petugas' => ['nullable', 'integer', 'min:1', 'max:10'],
                 'shift' => ['required', 'string', 'max:255'],
+                'jam_mulai' => ['nullable', 'string', 'max:10'],
+                'jam_selesai' => ['nullable', 'string', 'max:10'],
                 'lokasi_pos' => ['nullable', 'string', 'max:255'],
                 'petugas' => ['nullable', 'array'],
-                'petugas.*' => ['exists:users,id'],
                 'rt_id' => ['nullable', 'exists:rts,id'],
             ]);
 
@@ -1066,8 +1114,9 @@ class LayananMasyarakatController extends Controller
             $poolPetugas = collect($validated['petugas'] ?? []);
 
             if ($mode === 'acak' && $poolPetugas->isEmpty()) {
-                $poolPetugas = $this->wargaQuery()
-                    ->when($rtId, fn ($q) => $q->where(fn ($sub) => $sub->where('rt_id', $rtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $rtId))))
+                $poolPetugas = UserProfile::where('rt_id', $rtId)
+                    ->where('status', 'aktif')
+                    ->where('jenis_kelamin', 'L')
                     ->pluck('id');
             }
 
@@ -1076,6 +1125,8 @@ class LayananMasyarakatController extends Controller
                     'rt_id' => $rtId,
                     'tanggal' => \Carbon\Carbon::parse($validated['tanggal'])->addDays($index),
                     'shift' => $validated['shift'],
+                    'jam_mulai' => $validated['jam_mulai'] ?? '22:00',
+                    'jam_selesai' => $validated['jam_selesai'] ?? '02:00',
                     'lokasi_pos' => $validated['lokasi_pos'] ?? 'Pos Ronda RT',
                     'created_by' => $user->id,
                     'status' => 'aktif',
@@ -1085,25 +1136,319 @@ class LayananMasyarakatController extends Controller
                     ? $poolPetugas->shuffle()->take($jumlahPetugas)
                     : $poolPetugas;
 
-                foreach ($petugasTerpilih as $userId) {
-                    PetugasRonda::firstOrCreate([
-                        'jadwal_ronda_id' => $jadwal->id,
-                        'user_id' => $userId,
-                    ]);
+                foreach ($petugasTerpilih as $officerId) {
+                    $profile = UserProfile::find($officerId);
+                    $profileId = null;
+                    $userId = null;
 
-                    Notifikasi::create([
-                        'user_id' => $userId,
-                        'from_user_id' => $user->id,
-                        'tipe' => 'ronda',
-                        'judul' => 'Jadwal Tugas Ronda RT',
-                        'pesan' => "Anda dijadwalkan ronda pada " . $jadwal->tanggal->isoFormat('dddd, D MMMM Y') . " ({$jadwal->shift}) di {$jadwal->lokasi_pos}.",
-                        'dibaca' => false,
-                    ]);
+                    if ($profile) {
+                        $profileId = $profile->id;
+                        $userId = $profile->user_id;
+                    } else {
+                        $u = User::find($officerId);
+                        if ($u) {
+                            $userId = $u->id;
+                            $profileId = optional($u->profile)->id;
+                        }
+                    }
+
+                    if ($profileId || $userId) {
+                        PetugasRonda::firstOrCreate([
+                            'jadwal_ronda_id' => $jadwal->id,
+                            'user_profile_id' => $profileId,
+                            'user_id' => $userId,
+                        ]);
+
+                        if ($userId) {
+                            Notifikasi::create([
+                                'user_id' => $userId,
+                                'from_user_id' => $user->id,
+                                'tipe' => 'ronda',
+                                'judul' => 'Jadwal Tugas Ronda RT',
+                                'pesan' => "Anda dijadwalkan ronda pada " . $jadwal->tanggal->isoFormat('dddd, D MMMM Y') . " ({$jadwal->shift}) di {$jadwal->lokasi_pos}.",
+                                'dibaca' => false,
+                            ]);
+                        }
+                    }
                 }
             }
         });
 
         return back()->with('success', 'Jadwal ronda berhasil dibuat dan notifikasi tugas telah dikirim.');
+    }
+
+    public function generatePreviewRonda(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user->isAdminRt() || $user->isAdminRw() || $user->hasRole('admin'), 403);
+
+        $validated = $request->validate([
+            'bulan' => ['required', 'integer', 'between:1,12'],
+            'tahun' => ['required', 'integer', 'min:2020', 'max:2050'],
+            'jumlah_petugas' => ['required', 'integer', 'min:1', 'max:10'],
+            'jumlah_shift' => ['required', 'integer', 'in:1,2'],
+            'jam_mulai_1' => ['required', 'string'],
+            'jam_selesai_1' => ['required', 'string'],
+            'jam_mulai_2' => ['nullable', 'string'],
+            'jam_selesai_2' => ['nullable', 'string'],
+            'lokasi_pos' => ['nullable', 'string', 'max:255'],
+            'rt_id' => ['nullable', 'exists:rts,id'],
+        ]);
+
+        $rtId = $user->isAdminRt() ? $user->managedRtId() : ($validated['rt_id'] ?? null);
+        $bulan = (int) $validated['bulan'];
+        $tahun = (int) $validated['tahun'];
+        $jumlahPetugas = (int) $validated['jumlah_petugas'];
+        $jumlahShift = (int) $validated['jumlah_shift'];
+        $lokasiPos = $validated['lokasi_pos'] ?: ('Pos Ronda RT ' . ($user->isAdminRt() ? $user->getRtKode() : ''));
+
+        // Query eligible citizens:
+        // - Laki-laki
+        // - Status aktif di RT ini
+        // - siap_ronda != false (null or true)
+        // - Bukan lansia (>= 60) kecuali siap_ronda == true
+        // - Usia >= 17 atau menikah jika tanggal_lahir ada
+        $eligibleProfiles = UserProfile::with('user')
+            ->where('rt_id', $rtId)
+            ->where('status', 'aktif')
+            ->where('jenis_kelamin', 'L')
+            ->where(function ($q) {
+                $q->whereNull('siap_ronda')->orWhere('siap_ronda', true);
+            })
+            ->get()
+            ->filter(function ($profile) {
+                if ($profile->tanggal_lahir) {
+                    $age = $profile->age;
+                    if ($age !== null && $age < 17 && !in_array(strtolower((string) $profile->status_perkawinan), ['kawin', 'menikah'])) {
+                        return false;
+                    }
+                    if ($age !== null && $age >= 60 && $profile->siap_ronda !== true) {
+                        return false;
+                    }
+                }
+                return true;
+            })
+            ->values();
+
+        if ($eligibleProfiles->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada warga laki-laki dewasa yang eligible untuk jadwal ronda pada wilayah RT ini. Pastikan data kependudukan warga telah ditambahkan.',
+            ], 422);
+        }
+
+        $startDate = \Carbon\Carbon::create($tahun, $bulan, 1, 0, 0, 0, 'Asia/Jakarta');
+        $daysInMonth = $startDate->daysInMonth;
+
+        // Separate priorities: Kepala Keluarga prioritized
+        $kepalaKeluarga = $eligibleProfiles->filter(fn($p) => strtolower((string)$p->status_hubungan_keluarga) === 'kepala keluarga')->shuffle()->values();
+        $anggotaLain = $eligibleProfiles->reject(fn($p) => strtolower((string)$p->status_hubungan_keluarga) === 'kepala keluarga')->shuffle()->values();
+
+        $pool = $kepalaKeluarga->concat($anggotaLain)->values();
+
+        // Track assignments and spacing
+        $dutyCounts = [];
+        $lastDutyDay = [];
+        foreach ($pool as $p) {
+            $dutyCounts[$p->id] = 0;
+            $lastDutyDay[$p->id] = -999;
+        }
+
+        $jadwalList = [];
+        $shiftConfigs = [
+            1 => [
+                'name' => 'Shift 1',
+                'mulai' => $validated['jam_mulai_1'],
+                'selesai' => $validated['jam_selesai_1'],
+            ]
+        ];
+
+        if ($jumlahShift === 2) {
+            $shiftConfigs[2] = [
+                'name' => 'Shift 2',
+                'mulai' => $validated['jam_mulai_2'] ?: '02:00',
+                'selesai' => $validated['jam_selesai_2'] ?: '05:00',
+            ];
+        }
+
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $date = \Carbon\Carbon::create($tahun, $bulan, $day, 0, 0, 0, 'Asia/Jakarta');
+            $dateStr = $date->format('Y-m-d');
+            $dateFormatted = $date->isoFormat('dddd, D MMMM Y');
+
+            $assignedTonight = [];
+
+            foreach ($shiftConfigs as $shiftNum => $shiftConf) {
+                $candidates = $pool->filter(fn($p) => !in_array($p->id, $assignedTonight));
+
+                if ($candidates->count() < $jumlahPetugas && $pool->count() < ($jumlahPetugas * $jumlahShift)) {
+                    $candidates = $pool; // Fallback only when pool is smaller than required nightly slots
+                }
+
+                $sortedCandidates = $candidates->sort(function ($a, $b) use ($dutyCounts, $lastDutyDay, $day) {
+                    $countA = $dutyCounts[$a->id] ?? 0;
+                    $countB = $dutyCounts[$b->id] ?? 0;
+                    if ($countA !== $countB) {
+                        return $countA <=> $countB;
+                    }
+                    $lastA = $lastDutyDay[$a->id] ?? -999;
+                    $lastB = $lastDutyDay[$b->id] ?? -999;
+                    $restA = $day - $lastA;
+                    $restB = $day - $lastB;
+                    if ($restA !== $restB) {
+                        return $restB <=> $restA;
+                    }
+                    return rand(-1, 1);
+                })->values();
+
+                $chosen = $sortedCandidates->take($jumlahPetugas);
+
+                $petugasData = [];
+                foreach ($chosen as $officer) {
+                    $assignedTonight[] = $officer->id;
+                    $dutyCounts[$officer->id] = ($dutyCounts[$officer->id] ?? 0) + 1;
+                    $lastDutyDay[$officer->id] = $day;
+
+                    $petugasData[] = [
+                        'user_profile_id' => $officer->id,
+                        'user_id' => $officer->user_id,
+                        'nama' => $officer->nama_lengkap ?? optional($officer->user)->name ?? 'Warga',
+                        'nik' => $officer->nik,
+                        'no_hp' => $officer->no_hp,
+                    ];
+                }
+
+                $jadwalList[] = [
+                    'tanggal' => $dateStr,
+                    'tanggal_formatted' => $dateFormatted,
+                    'shift' => $shiftConf['name'],
+                    'jam_mulai' => $shiftConf['mulai'],
+                    'jam_selesai' => $shiftConf['selesai'],
+                    'lokasi_pos' => $lokasiPos,
+                    'petugas' => $petugasData,
+                ];
+            }
+        }
+
+        $petugasRekap = $pool->map(function ($p) use ($dutyCounts) {
+            return [
+                'user_profile_id' => $p->id,
+                'nama' => $p->nama_lengkap ?? optional($p->user)->name,
+                'is_kk' => strtolower((string)$p->status_hubungan_keluarga) === 'kepala keluarga',
+                'total_tugas' => $dutyCounts[$p->id] ?? 0,
+            ];
+        })->sortByDesc('total_tugas')->values();
+
+        $warning = null;
+        if ($pool->count() < ($jumlahPetugas * $jumlahShift)) {
+            $warning = "Perhatian: Jumlah warga laki-laki eligible di RT ini ({$pool->count()} orang) lebih sedikit dari total kebutuhan per malam (" . ($jumlahPetugas * $jumlahShift) . " petugas). Jadwal didistribusikan semaksimal mungkin.";
+        }
+
+        return response()->json([
+            'success' => true,
+            'meta' => [
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'nama_bulan' => $startDate->isoFormat('MMMM Y'),
+                'total_jadwal' => count($jadwalList),
+                'total_eligible' => $pool->count(),
+                'jumlah_petugas' => $jumlahPetugas,
+                'jumlah_shift' => $jumlahShift,
+                'lokasi_pos' => $lokasiPos,
+                'warning' => $warning,
+            ],
+            'available_officers' => $pool->map(fn($p) => [
+                'user_profile_id' => $p->id,
+                'user_id' => $p->user_id,
+                'nama' => $p->nama_lengkap ?? optional($p->user)->name,
+            ])->values(),
+            'petugas_rekap' => $petugasRekap,
+            'jadwals' => $jadwalList,
+        ]);
+    }
+
+    public function simpanJadwalOtomatis(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user->isAdminRt() || $user->isAdminRw() || $user->hasRole('admin'), 403);
+
+        $validated = $request->validate([
+            'jadwals' => ['required', 'array', 'min:1'],
+            'jadwals.*.tanggal' => ['required', 'date'],
+            'jadwals.*.shift' => ['required', 'string'],
+            'jadwals.*.jam_mulai' => ['nullable', 'string'],
+            'jadwals.*.jam_selesai' => ['nullable', 'string'],
+            'jadwals.*.lokasi_pos' => ['nullable', 'string'],
+            'jadwals.*.petugas' => ['required', 'array', 'min:1'],
+            'jadwals.*.petugas.*.user_profile_id' => ['required', 'exists:user_profiles,id'],
+            'jadwals.*.petugas.*.user_id' => ['nullable'],
+            'rt_id' => ['nullable', 'exists:rts,id'],
+        ]);
+
+        $rtId = $user->isAdminRt() ? $user->managedRtId() : ($validated['rt_id'] ?? null);
+
+        $savedCount = DB::transaction(function () use ($validated, $rtId, $user) {
+            $count = 0;
+            $notifiedUsers = [];
+
+            foreach ($validated['jadwals'] as $item) {
+                $jadwal = JadwalRonda::create([
+                    'rt_id' => $rtId,
+                    'tanggal' => $item['tanggal'],
+                    'shift' => $item['shift'],
+                    'jam_mulai' => $item['jam_mulai'] ?? '22:00',
+                    'jam_selesai' => $item['jam_selesai'] ?? '02:00',
+                    'lokasi_pos' => $item['lokasi_pos'] ?? 'Pos Ronda RT',
+                    'created_by' => $user->id,
+                    'status' => 'aktif',
+                ]);
+
+                foreach ($item['petugas'] as $pData) {
+                    $profileId = $pData['user_profile_id'];
+                    $profile = UserProfile::find($profileId);
+                    $userId = $pData['user_id'] ?? ($profile ? $profile->user_id : null);
+
+                    PetugasRonda::create([
+                        'jadwal_ronda_id' => $jadwal->id,
+                        'user_profile_id' => $profileId,
+                        'user_id' => $userId,
+                    ]);
+
+                    if ($userId && !isset($notifiedUsers[$userId . '_' . $item['tanggal']])) {
+                        Notifikasi::create([
+                            'user_id' => $userId,
+                            'from_user_id' => $user->id,
+                            'tipe' => 'ronda',
+                            'judul' => 'Jadwal Ronda Malam Baru',
+                            'pesan' => "Anda dijadwalkan tugas ronda pada " . \Carbon\Carbon::parse($jadwal->tanggal)->isoFormat('dddd, D MMMM Y') . " ({$jadwal->shift}, {$jadwal->jam_mulai}-{$jadwal->jam_selesai}) di {$jadwal->lokasi_pos}.",
+                            'dibaca' => false,
+                        ]);
+                        $notifiedUsers[$userId . '_' . $item['tanggal']] = true;
+                    }
+                }
+                $count++;
+            }
+
+            AuditLog::record(
+                action: 'generate_jadwal_ronda',
+                entityType: 'jadwal_ronda',
+                entityId: $rtId,
+                deskripsi: "Generate otomatis {$count} jadwal ronda malam oleh {$user->name}",
+                rtId: $rtId,
+                userId: $user->id
+            );
+
+            return $count;
+        });
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menyimpan {$savedCount} jadwal ronda ke dalam sistem.",
+            ]);
+        }
+
+        return redirect()->route('layanan.ronda.index')->with('success', "Berhasil menjadwalkan {$savedCount} giliran ronda untuk warga.");
     }
 
     public function updateJadwalRonda(Request $request, JadwalRonda $jadwal)
@@ -1120,7 +1465,6 @@ class LayananMasyarakatController extends Controller
             'lokasi_pos' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'in:aktif,selesai,dibatalkan'],
             'petugas' => ['nullable', 'array'],
-            'petugas.*' => ['exists:users,id'],
         ]);
 
         $jadwal->update([
@@ -1132,20 +1476,40 @@ class LayananMasyarakatController extends Controller
 
         if (isset($validated['petugas'])) {
             PetugasRonda::where('jadwal_ronda_id', $jadwal->id)->delete();
-            foreach ($validated['petugas'] as $userId) {
-                PetugasRonda::create([
-                    'jadwal_ronda_id' => $jadwal->id,
-                    'user_id' => $userId,
-                ]);
+            foreach ($validated['petugas'] as $officerId) {
+                $profile = UserProfile::find($officerId);
+                $profileId = null;
+                $userId = null;
 
-                Notifikasi::create([
-                    'user_id' => $userId,
-                    'from_user_id' => $user->id,
-                    'tipe' => 'ronda',
-                    'judul' => 'Pembaruan Jadwal Tugas Ronda RT',
-                    'pesan' => "Jadwal tugas ronda Anda pada {$jadwal->tanggal->isoFormat('dddd, D MMMM Y')} ({$jadwal->shift}) telah diperbarui oleh Ketua RT.",
-                    'dibaca' => false,
-                ]);
+                if ($profile) {
+                    $profileId = $profile->id;
+                    $userId = $profile->user_id;
+                } else {
+                    $u = User::find($officerId);
+                    if ($u) {
+                        $userId = $u->id;
+                        $profileId = optional($u->profile)->id;
+                    }
+                }
+
+                if ($profileId || $userId) {
+                    PetugasRonda::create([
+                        'jadwal_ronda_id' => $jadwal->id,
+                        'user_profile_id' => $profileId,
+                        'user_id' => $userId,
+                    ]);
+
+                    if ($userId) {
+                        Notifikasi::create([
+                            'user_id' => $userId,
+                            'from_user_id' => $user->id,
+                            'tipe' => 'ronda',
+                            'judul' => 'Pembaruan Jadwal Tugas Ronda RT',
+                            'pesan' => "Jadwal tugas ronda Anda pada {$jadwal->tanggal->isoFormat('dddd, D MMMM Y')} ({$jadwal->shift}) telah diperbarui oleh Ketua RT.",
+                            'dibaca' => false,
+                        ]);
+                    }
+                }
             }
         }
 
@@ -1257,51 +1621,58 @@ class LayananMasyarakatController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
+            'jenis_pengajuan' => ['required', 'in:tukar_rekan,minta_pengganti'],
             'jadwal_ronda_asal_id' => ['required', 'exists:jadwal_rondas,id'],
             'target_user_id' => ['nullable', 'exists:users,id', 'different:' . $user->id],
             'target_jadwal_ronda_id' => ['nullable', 'exists:jadwal_rondas,id', 'different:jadwal_ronda_asal_id'],
             'alasan' => ['required', 'string', 'max:500'],
         ]);
 
-        $rtId = $user->managedRtId() ?? $user->profile?->rt_id;
+        $rtId = $user->managedRtId() ?? optional($user->profile)->rt_id;
+        $jenis = $validated['jenis_pengajuan'];
+        $status = $jenis === 'tukar_rekan' ? 'menunggu_rekan' : 'menunggu_rt';
+
+        if ($jenis === 'tukar_rekan' && empty($validated['target_user_id'])) {
+            return back()->with('error', 'Silakan tentukan rekan warga yang diajak bertukar jadwal.');
+        }
 
         $tukar = TukarJadwalRonda::create([
             'rt_id' => $rtId,
             'user_id' => $user->id,
+            'jenis_pengajuan' => $jenis,
             'jadwal_ronda_asal_id' => $validated['jadwal_ronda_asal_id'],
             'target_user_id' => $validated['target_user_id'] ?? null,
             'target_jadwal_ronda_id' => $validated['target_jadwal_ronda_id'] ?? null,
             'alasan' => $validated['alasan'],
-            'status' => 'menunggu',
+            'status' => $status,
         ]);
 
-        // Kirim notifikasi ke Ketua RT
-        $rtUsers = User::whereHas('role', fn ($r) => $r->whereIn('nama_role', ['ketua_rt', 'admin']))->get();
-        foreach ($rtUsers as $rtUser) {
-            if ($rtUser->managedRtId() === $rtId) {
-                Notifikasi::create([
-                    'user_id' => $rtUser->id,
-                    'from_user_id' => $user->id,
-                    'tipe' => 'ronda',
-                    'judul' => 'Pengajuan Tukar Jadwal Ronda',
-                    'pesan' => "Warga {$user->name} mengajukan penukaran jadwal ronda: {$tukar->alasan}.",
-                    'dibaca' => false,
-                ]);
-            }
-        }
-
-        if (!empty($validated['target_user_id'])) {
+        if ($jenis === 'tukar_rekan' && !empty($validated['target_user_id'])) {
             Notifikasi::create([
                 'user_id' => $validated['target_user_id'],
                 'from_user_id' => $user->id,
                 'tipe' => 'ronda',
                 'judul' => 'Permintaan Tukar Jadwal Ronda',
-                'pesan' => "{$user->name} mengajukan tukar jadwal ronda dengan Anda. Alasan: {$validated['alasan']}.",
+                'pesan' => "{$user->name} mengajak Anda bertukar jadwal ronda. Alasan: {$validated['alasan']}. Harap berikan persetujuan Anda.",
                 'dibaca' => false,
             ]);
+        } else {
+            $rtUsers = User::whereHas('role', fn ($r) => $r->whereIn('nama_role', ['rt', 'admin']))->get();
+            foreach ($rtUsers as $rtUser) {
+                if ($rtUser->managedRtId() === $rtId) {
+                    Notifikasi::create([
+                        'user_id' => $rtUser->id,
+                        'from_user_id' => $user->id,
+                        'tipe' => 'ronda',
+                        'judul' => 'Permohonan Pengganti Ronda Warga',
+                        'pesan' => "Warga {$user->name} mengajukan permohonan penggantian jadwal ronda. Alasan: {$validated['alasan']}.",
+                        'dibaca' => false,
+                    ]);
+                }
+            }
         }
 
-        return back()->with('success', 'Permintaan tukar jadwal ronda berhasil dikirimkan.');
+        return back()->with('success', 'Permohonan pertukaran jadwal ronda berhasil dikirimkan.');
     }
 
     public function responTukarRonda(Request $request, TukarJadwalRonda $tukar)
@@ -1315,60 +1686,121 @@ class LayananMasyarakatController extends Controller
 
         $validated = $request->validate([
             'status' => ['required', 'in:disetujui,ditolak'],
+            'pengganti_user_id' => ['nullable', 'exists:users,id'],
             'catatan_rt' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($tukar, $validated, $user) {
-            if ($validated['status'] === 'disetujui') {
-                if ($tukar->target_user_id) {
-                    PetugasRonda::where('jadwal_ronda_id', $tukar->jadwal_ronda_asal_id)
-                        ->where('user_id', $tukar->user_id)
-                        ->update(['user_id' => $tukar->target_user_id]);
+        DB::transaction(function () use ($tukar, $validated, $user, $isTarget, $isRt, $isRw) {
+            // Tahap 1: Rekan menyetujui / menolak ajakan bertukar
+            if ($isTarget && $tukar->status === 'menunggu_rekan') {
+                if ($validated['status'] === 'disetujui') {
+                    $tukar->update([
+                        'target_user_approved_at' => now(),
+                        'status' => 'menunggu_rt',
+                    ]);
 
-                    if ($tukar->target_jadwal_ronda_id) {
-                        PetugasRonda::where('jadwal_ronda_id', $tukar->target_jadwal_ronda_id)
-                            ->where('user_id', $tukar->target_user_id)
-                            ->update(['user_id' => $tukar->user_id]);
+                    $rtUsers = User::whereHas('role', fn ($r) => $r->whereIn('nama_role', ['rt', 'admin']))->get();
+                    foreach ($rtUsers as $rtUser) {
+                        if ($rtUser->managedRtId() === $tukar->rt_id) {
+                            Notifikasi::create([
+                                'user_id' => $rtUser->id,
+                                'from_user_id' => $user->id,
+                                'tipe' => 'ronda',
+                                'judul' => 'Persetujuan Rekan: Tukar Shift Ronda',
+                                'pesan' => "Warga {$tukar->user->name} dan {$user->name} telah sepakat bertukar jadwal ronda. Menunggu persetujuan akhir Anda.",
+                                'dibaca' => false,
+                            ]);
+                        }
                     }
-                }
 
-                $tukar->update([
-                    'status' => 'disetujui',
-                    'approved_by' => $user->id,
-                    'approved_at' => now(),
-                    'catatan_rt' => $validated['catatan_rt'] ?? null,
-                ]);
-
-                foreach (array_filter([$tukar->user_id, $tukar->target_user_id]) as $uid) {
                     Notifikasi::create([
-                        'user_id' => $uid,
+                        'user_id' => $tukar->user_id,
                         'from_user_id' => $user->id,
                         'tipe' => 'ronda',
-                        'judul' => 'Tukar Jadwal Ronda Disetujui RT',
-                        'pesan' => "Ketua RT telah menyetujui pertukaran jadwal ronda Anda. Jadwal telah otomatis diperbarui.",
+                        'judul' => 'Rekan Menyetujui Pertukaran Shift',
+                        'pesan' => "Rekan Anda ({$user->name}) telah menyetujui pertukaran jadwal. Permohonan saat ini diteruskan ke Ketua RT untuk persetujuan akhir.",
+                        'dibaca' => false,
+                    ]);
+                } else {
+                    $tukar->update([
+                        'status' => 'ditolak',
+                        'catatan_rt' => 'Ditolak oleh rekan: ' . ($validated['catatan_rt'] ?? '-'),
+                    ]);
+
+                    Notifikasi::create([
+                        'user_id' => $tukar->user_id,
+                        'from_user_id' => $user->id,
+                        'tipe' => 'ronda',
+                        'judul' => 'Rekan Menolak Pertukaran Shift',
+                        'pesan' => "Rekan Anda ({$user->name}) menolak permohonan pertukaran jadwal ronda.",
                         'dibaca' => false,
                     ]);
                 }
-            } else {
-                $tukar->update([
-                    'status' => 'ditolak',
-                    'approved_by' => $user->id,
-                    'approved_at' => now(),
-                    'catatan_rt' => $validated['catatan_rt'] ?? null,
-                ]);
+                return;
+            }
 
-                Notifikasi::create([
-                    'user_id' => $tukar->user_id,
-                    'from_user_id' => $user->id,
-                    'tipe' => 'ronda',
-                    'judul' => 'Tukar Jadwal Ronda Ditolak RT',
-                    'pesan' => "Pengajuan tukar jadwal ronda Anda ditolak RT: " . ($validated['catatan_rt'] ?? '-'),
-                    'dibaca' => false,
-                ]);
+            // Tahap 2: Ketua RT / Pengurus memberikan persetujuan akhir
+            if ($isRt || $isRw) {
+                if ($validated['status'] === 'disetujui') {
+                    $targetUserId = $tukar->target_user_id;
+
+                    // Jika alur minta_pengganti, RT menentukan warga pengganti
+                    if ($tukar->jenis_pengajuan === 'minta_pengganti' && !empty($validated['pengganti_user_id'])) {
+                        $targetUserId = (int) $validated['pengganti_user_id'];
+                        $tukar->target_user_id = $targetUserId;
+                    }
+
+                    if ($targetUserId) {
+                        PetugasRonda::where('jadwal_ronda_id', $tukar->jadwal_ronda_asal_id)
+                            ->where('user_id', $tukar->user_id)
+                            ->update(['user_id' => $targetUserId]);
+
+                        if ($tukar->target_jadwal_ronda_id) {
+                            PetugasRonda::where('jadwal_ronda_id', $tukar->target_jadwal_ronda_id)
+                                ->where('user_id', $targetUserId)
+                                ->update(['user_id' => $tukar->user_id]);
+                        }
+                    }
+
+                    $tukar->update([
+                        'status' => 'disetujui',
+                        'target_user_id' => $targetUserId,
+                        'approved_by' => $user->id,
+                        'approved_at' => now(),
+                        'catatan_rt' => $validated['catatan_rt'] ?? null,
+                    ]);
+
+                    foreach (array_filter([$tukar->user_id, $targetUserId]) as $uid) {
+                        Notifikasi::create([
+                            'user_id' => $uid,
+                            'from_user_id' => $user->id,
+                            'tipe' => 'ronda',
+                            'judul' => 'Pertukaran Shift Disetujui RT',
+                            'pesan' => "Ketua RT telah menyetujui perubahan jadwal ronda Anda. Jadwal telah otomatis diperbarui.",
+                            'dibaca' => false,
+                        ]);
+                    }
+                } else {
+                    $tukar->update([
+                        'status' => 'ditolak',
+                        'approved_by' => $user->id,
+                        'approved_at' => now(),
+                        'catatan_rt' => $validated['catatan_rt'] ?? null,
+                    ]);
+
+                    Notifikasi::create([
+                        'user_id' => $tukar->user_id,
+                        'from_user_id' => $user->id,
+                        'tipe' => 'ronda',
+                        'judul' => 'Tukar Shift Ditolak RT',
+                        'pesan' => "Pengajuan tukar shift ronda Anda tidak disetujui RT: " . ($validated['catatan_rt'] ?? '-'),
+                        'dibaca' => false,
+                    ]);
+                }
             }
         });
 
-        return back()->with('success', 'Status pengajuan tukar jadwal berhasil diproses.');
+        return back()->with('success', 'Keputusan atas pengajuan tukar jadwal berhasil diproses.');
     }
 
     public function storePanicReport(Request $request)

@@ -172,9 +172,22 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-secondary px-3" type="button" data-bs-toggle="collapse" data-bs-target="#anggotaKK{{ $kk->id }}">
-                                    <i class="fas fa-users me-1 text-emerald"></i> {{ $kk->anggota->count() }} Jiwa
-                                </button>
+                                @php
+                                    $activeCount = $kk->anggota->where('status', 'aktif')->count();
+                                    $totalCount = $kk->anggota->count();
+                                @endphp
+                                @if($totalCount === 0)
+                                    <span class="badge bg-light text-warning border border-warning px-2 py-1 small">
+                                        <i class="fas fa-exclamation-triangle me-1"></i> KK Kosong
+                                    </span>
+                                @else
+                                    <button class="btn btn-sm btn-outline-secondary px-3" type="button" data-bs-toggle="collapse" data-bs-target="#anggotaKK{{ $kk->id }}">
+                                        <i class="fas fa-users me-1 text-emerald"></i> {{ $activeCount }} Jiwa
+                                        @if($totalCount > $activeCount)
+                                            <span class="text-muted small">({{ $totalCount }} total)</span>
+                                        @endif
+                                    </button>
+                                @endif
                             </td>
                             <td class="text-end">
                                 <div class="dropdown d-inline-block">
@@ -202,6 +215,18 @@
                                                 <i class="fas fa-print text-primary me-2"></i> Cetak Dokumen KK
                                             </a>
                                         </li>
+                                        @if($totalCount === 0 || $activeCount === 0)
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ route('kartu-keluarga.destroy', $kk) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus Kartu Keluarga kosong {{ $kk->no_kk }} ini? Tindakan ini tidak dapat dibatalkan.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="fas fa-trash-alt me-2"></i> Hapus KK Kosong
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endif
                                     </ul>
                                 </div>
                             </td>

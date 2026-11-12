@@ -20,7 +20,9 @@ use App\Http\Controllers\KartuKeluargaController;
 use App\Http\Controllers\AuditKeuanganController;
 use App\Http\Controllers\MonitoringWilayahController;
 use App\Http\Controllers\RtVerifikasiController;
+use App\Http\Controllers\WargaVerifikasiController;
 use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\MetodePembayaranController;
 
 Route::get('/', function () {
     try {
@@ -86,11 +88,21 @@ Route::middleware(['auth'])->group(function () {
     Route::put('kartu-keluarga/{kartuKeluarga}/anggota/{profile}', [KartuKeluargaController::class, 'updateAnggota'])->name('kartu-keluarga.anggota.update');
     Route::post('kartu-keluarga/{kartuKeluarga}/anggota/{profile}/pindah', [KartuKeluargaController::class, 'pindahKK'])->name('kartu-keluarga.anggota.pindah');
     Route::delete('kartu-keluarga/{kartuKeluarga}/anggota/{profile}', [KartuKeluargaController::class, 'destroyAnggota'])->name('kartu-keluarga.anggota.destroy');
+    Route::patch('kartu-keluarga/{kartuKeluarga}/anggota/{profile}/toggle-status', [KartuKeluargaController::class, 'toggleStatusAnggota'])->name('kartu-keluarga.anggota.toggle-status');
 
     Route::get('warga/mutasi', [WargaController::class, 'mutasi'])->name('warga.mutasi');
     Route::post('warga/mutasi', [WargaController::class, 'storeMutasi'])->name('warga.mutasi.store');
+    Route::post('warga/mutasi/masuk', [WargaController::class, 'storeMutasiMasuk'])->name('warga.mutasi.masuk.store');
+    Route::post('warga/mutasi/keluar', [WargaController::class, 'storeMutasiKeluar'])->name('warga.mutasi.keluar.store');
+    Route::post('warga/mutasi/antar-rt', [WargaController::class, 'storeMutasiAntarRt'])->name('warga.mutasi.antar-rt.store');
+    Route::post('warga/mutasi/{mutasi}/approve', [WargaController::class, 'approveMutasi'])->name('warga.mutasi.approve');
+    Route::post('warga/mutasi/{mutasi}/reject', [WargaController::class, 'rejectMutasi'])->name('warga.mutasi.reject');
     Route::resource('warga', WargaController::class);
     Route::post('warga/{id}/verify', [WargaController::class, 'verify'])->name('warga.verify');
+    Route::post('warga/{id}/reject', [WargaVerifikasiController::class, 'reject'])->name('warga.reject');
+    Route::get('warga-verifikasi', [WargaVerifikasiController::class, 'index'])->name('warga.verifikasi.index');
+    Route::post('warga-verifikasi/{id}/approve', [WargaVerifikasiController::class, 'approve'])->name('warga.verifikasi.approve');
+    Route::post('warga-verifikasi/{id}/reject', [WargaVerifikasiController::class, 'reject'])->name('warga.verifikasi.reject');
     Route::resource('rts', RtController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::post('rts/{rt}/ketua', [RtController::class, 'storeKetua'])->name('rts.ketua.store');
     Route::put('rts/{rt}/ketua/{user}', [RtController::class, 'updateKetua'])->name('rts.ketua.update');
@@ -136,6 +148,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('pembayaran', PembayaranController::class);
     Route::post('pembayaran/{id}/verifikasi', [PembayaranController::class, 'verifikasi'])->name('pembayaran.verifikasi');
     Route::get('get-total-bayar/{iuranId}', [PembayaranController::class, 'getTotalBayar'])->name('get-total-bayar');
+
+    // ==================== METODE PEMBAYARAN DIGITAL (RW / BENDAHARA) ====================
+    Route::get('rw/metode-pembayaran', [MetodePembayaranController::class, 'index'])->name('rw.metode-pembayaran.index');
+    Route::post('rw/metode-pembayaran', [MetodePembayaranController::class, 'store'])->name('rw.metode-pembayaran.store');
+    Route::put('rw/metode-pembayaran/{metodePembayaran}', [MetodePembayaranController::class, 'update'])->name('rw.metode-pembayaran.update');
+    Route::patch('rw/metode-pembayaran/{metodePembayaran}/toggle', [MetodePembayaranController::class, 'toggle'])->name('rw.metode-pembayaran.toggle');
+    Route::delete('rw/metode-pembayaran/{metodePembayaran}', [MetodePembayaranController::class, 'destroy'])->name('rw.metode-pembayaran.destroy');
     
     // ==================== LAPORAN ====================
     Route::prefix('laporan')->name('laporan.')->group(function () {
@@ -188,6 +207,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/posyandu/pemeriksaan', [LayananMasyarakatController::class, 'storePemeriksaanBalita'])->name('posyandu.pemeriksaan.store');
         Route::get('/ronda', [LayananMasyarakatController::class, 'ronda'])->name('ronda.index');
         Route::post('/ronda/jadwal', [LayananMasyarakatController::class, 'storeJadwalRonda'])->name('ronda.jadwal.store');
+        Route::post('/ronda/generate-preview', [LayananMasyarakatController::class, 'generatePreviewRonda'])->name('ronda.generate-preview');
+        Route::post('/ronda/simpan-otomatis', [LayananMasyarakatController::class, 'simpanJadwalOtomatis'])->name('ronda.simpan-otomatis');
         Route::post('/ronda/jadwal/{jadwal}/ingatkan', [LayananMasyarakatController::class, 'kirimPengingatRonda'])->name('ronda.jadwal.ingatkan');
         Route::put('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalRonda'])->name('ronda.jadwal.update');
         Route::delete('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalRonda'])->name('ronda.jadwal.destroy');
@@ -209,6 +230,8 @@ Route::middleware(['auth'])->group(function () {
     // ==================== ALIASES ROUTE OPERASIONAL RT ====================
     Route::get('/ronda', function () { return redirect()->route('layanan.ronda.index'); })->name('ronda.index');
     Route::post('/ronda/jadwal', [LayananMasyarakatController::class, 'storeJadwalRonda'])->name('ronda.jadwal.store');
+    Route::post('/ronda/generate-preview', [LayananMasyarakatController::class, 'generatePreviewRonda'])->name('ronda.generate-preview');
+    Route::post('/ronda/simpan-otomatis', [LayananMasyarakatController::class, 'simpanJadwalOtomatis'])->name('ronda.simpan-otomatis');
     Route::post('/ronda/jadwal/{jadwal}/ingatkan', [LayananMasyarakatController::class, 'kirimPengingatRonda'])->name('ronda.jadwal.ingatkan');
     Route::put('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'updateJadwalRonda'])->name('ronda.jadwal.update');
     Route::delete('/ronda/jadwal/{jadwal}', [LayananMasyarakatController::class, 'destroyJadwalRonda'])->name('ronda.jadwal.destroy');

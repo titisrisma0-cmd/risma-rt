@@ -42,9 +42,15 @@
                         <div class="mb-3">
                             <label class="form-label text-secondary small fw-medium">Pilih Warga <span class="text-danger">*</span></label>
                             <select name="user_id" class="form-select form-control-saas" required>
-                                <option value="">-- Pilih Warga --</option>
+                                <option value="">-- Pilih Warga Aktif --</option>
                                 @foreach($warga as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }} - {{ $item->profile->no_hp ?? '-' }}</option>
+                                    @php
+                                        $prof = $item->profile;
+                                        $rtCode = optional(optional($prof)->wilayahRt)->kode_rt ?? (optional($prof)->rt_id ? str_pad($prof->rt_id, 2, '0', STR_PAD_LEFT) : '-');
+                                    @endphp
+                                    <option value="{{ $item->id }}" {{ old('user_id') == $item->id ? 'selected' : '' }}>
+                                        {{ $item->name }} — NIK: {{ optional($prof)->nik ?? '-' }} — {{ optional($prof)->no_hp ?? '-' }} (RT {{ $rtCode }})
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -85,9 +91,15 @@
                             <select name="metode_bayar" id="metode_bayar" class="form-select form-control-saas" required>
                                 <option value="">-- Pilih Metode --</option>
                                 <option value="tunai" @if(old('metode_bayar')=='tunai') selected @endif>Tunai (Bayar Langsung)</option>
-                                <option value="transfer" @if(old('metode_bayar')=='transfer') selected @endif>Transfer Bank</option>
-                                <option value="ewallet" @if(old('metode_bayar')=='ewallet') selected @endif>E-Wallet</option>
-                                <option value="qris" @if(old('metode_bayar')=='qris') selected @endif>QRIS</option>
+                                @if(isset($bankMetodes) && $bankMetodes->count() > 0)
+                                    <option value="transfer" @if(old('metode_bayar')=='transfer') selected @endif>Transfer Bank</option>
+                                @endif
+                                @if(isset($ewalletMetodes) && $ewalletMetodes->count() > 0)
+                                    <option value="ewallet" @if(old('metode_bayar')=='ewallet') selected @endif>E-Wallet (DANA, GoPay, OVO, ShopeePay)</option>
+                                @endif
+                                @if(isset($qrisMetode) && $qrisMetode)
+                                    <option value="qris" @if(old('metode_bayar')=='qris') selected @endif>QRIS (Semua Pembayaran Digital)</option>
+                                @endif
                             </select>
                         </div>
                         
@@ -97,37 +109,58 @@
                         </div>
                     </div>
                     
+                    @if(isset($bankMetodes) && $bankMetodes->count() > 0)
                     <div class="mb-3" id="bankInfo" style="display: none;">
                         <div class="alert alert-info py-2 small mb-0">
-                            <h6 class="mb-1 fw-bold"><i class="fas fa-university me-1"></i>Nomor Rekening RW</h6>
-                            <p class="mb-1">BCA: <strong>123-456-7890</strong> a.n. Bendahara RW</p>
-                            <p class="mb-0">Mandiri: <strong>987-654-3210</strong> a.n. Bendahara RW</p>
+                            <h6 class="mb-2 fw-bold"><i class="fas fa-university me-1"></i>Nomor Rekening Resmi RW</h6>
+                            @foreach($bankMetodes as $bank)
+                                <div class="mb-2 p-2 bg-white rounded border">
+                                    <span class="badge bg-primary me-1">{{ $bank->nama }}</span>
+                                    <strong>{{ $bank->nomor_rekening }}</strong> a.n. {{ $bank->nama_penerima ?? 'Pengurus RW' }}
+                                    @if($bank->instruksi)
+                                        <div class="text-muted small mt-1"><i class="fas fa-info-circle me-1"></i>{{ $bank->instruksi }}</div>
+                                    @endif
+                                </div>
+                            @endforeach
                         </div>
                     </div>
+                    @endif
 
+                    @if(isset($ewalletMetodes) && $ewalletMetodes->count() > 0)
                     <div class="mb-3" id="ewalletInfo" style="display: none;">
                         <div class="alert alert-info py-2 small mb-2">
-                            <h6 class="mb-1 fw-bold"><i class="fas fa-mobile-alt me-1"></i>E-Wallet</h6>
-                            <p class="mb-0">Pilih salah satu E-Wallet dan transfer sesuai nomor/ID tujuan yang tersedia.</p>
+                            <h6 class="mb-1 fw-bold"><i class="fas fa-mobile-alt me-1"></i>E-Wallet Resmi RW</h6>
+                            <p class="mb-0">Pilih salah satu e-wallet dan transfer sesuai nomor akun tujuan di bawah ini.</p>
                         </div>
-                        <select name="ewallet_provider" id="ewallet_provider" class="form-select form-control-saas">
+                        <select name="ewallet_provider" id="ewallet_provider" class="form-select form-control-saas mb-2">
                             <option value="">-- Pilih E-Wallet --</option>
-                            <option value="Dana">Dana</option>
-                            <option value="OVO">OVO</option>
-                            <option value="GoPay">GoPay</option>
-                            <option value="ShopeePay">ShopeePay</option>
+                            @foreach($ewalletMetodes as $ew)
+                                <option value="{{ $ew->nama }}" data-account="{{ $ew->nomor_rekening }}" data-holder="{{ $ew->nama_penerima }}">
+                                    {{ $ew->nama }} ({{ $ew->nomor_rekening }} a.n. {{ $ew->nama_penerima }})
+                                </option>
+                            @endforeach
                         </select>
+                        <div id="ewalletDetails" class="p-2 bg-light rounded border small" style="display: none;"></div>
                     </div>
+                    @endif
 
+                    @if(isset($qrisMetode) && $qrisMetode)
                     <div class="mb-3" id="qrisInfo" style="display: none;">
                         <div class="alert alert-info py-2 small mb-3">
-                            <h6 class="mb-1 fw-bold"><i class="fas fa-qrcode me-1"></i>QRIS</h6>
-                            <p class="mb-0">Scan QRIS berikut dengan aplikasi mobile banking atau e-wallet Anda.</p>
+                            <h6 class="mb-1 fw-bold"><i class="fas fa-qrcode me-1"></i>{{ $qrisMetode->nama }}</h6>
+                            <p class="mb-0">{{ $qrisMetode->instruksi ?? 'Scan QRIS berikut dengan aplikasi mobile banking atau e-wallet Anda.' }}</p>
                         </div>
                         <div class="text-center p-3 bg-light rounded-3 border">
-                            <img id="qris_code" src="" alt="QRIS Code" class="img-fluid rounded" style="max-width: 220px;">
+                            @if($qrisMetode->qr_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($qrisMetode->qr_image))
+                                <img src="{{ asset('storage/' . $qrisMetode->qr_image) }}" alt="QRIS Code" class="img-fluid rounded shadow-sm" style="max-width: 240px;">
+                            @else
+                                <img id="qris_code" src="" alt="QRIS Code" class="img-fluid rounded" style="max-width: 220px;">
+                            @endif
+                            <div class="mt-2 fw-semibold text-dark">{{ $qrisMetode->nama_penerima ?? 'RW SMART' }}</div>
+                            <small class="text-secondary">{{ $qrisMetode->nomor_rekening ?? 'NMID: Terverifikasi' }}</small>
                         </div>
                     </div>
+                    @endif
 
                     <div class="mb-3" id="buktiPembayaranDiv" style="display: none;">
                         <label class="form-label text-secondary small fw-medium">Upload Bukti Pembayaran @if(Auth::user()->hasRole('warga')) <span class="text-danger">*</span> @else (Opsional) @endif</label>
@@ -279,6 +312,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 var bulanTahun = $('input[name="bulan_tahun"]').val();
                 var qrData = 'Pembayaran ' + iuranName + ' - ' + bulanTahun + ' - Rp ' + jumlah;
                 if (qrisCodeImage) qrisCodeImage.src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(qrData);
+            }
+        });
+    }
+
+    var ewalletProviderSelect = document.getElementById('ewallet_provider');
+    var ewalletDetails = document.getElementById('ewalletDetails');
+    if (ewalletProviderSelect && ewalletDetails) {
+        ewalletProviderSelect.addEventListener('change', function() {
+            var selectedOpt = this.options[this.selectedIndex];
+            var account = selectedOpt.getAttribute('data-account');
+            var holder = selectedOpt.getAttribute('data-holder');
+            if (account) {
+                ewalletDetails.innerHTML = '<i class="fas fa-arrow-right text-emerald me-1"></i> Transfer ke: <strong>' + account + '</strong> a.n. <strong>' + (holder || 'Pengurus') + '</strong>';
+                ewalletDetails.style.display = 'block';
+            } else {
+                ewalletDetails.style.display = 'none';
             }
         });
     }

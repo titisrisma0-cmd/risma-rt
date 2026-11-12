@@ -9,6 +9,7 @@ use App\Models\AuditLog;
 use App\Models\Iuran;
 use App\Models\Kas;
 use App\Models\Notifikasi;
+use App\Models\MetodePembayaran;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -110,7 +111,9 @@ class PembayaranController extends Controller
         $user = Auth::user();
         $wargaQuery = User::whereHas('role', function ($q) {
             $q->where('nama_role', 'warga');
-        });
+        })->whereHas('profile', function ($q) {
+            $q->where('status', 'aktif');
+        })->with('profile');
 
         // Pembatasan pemilihan warga jika user adalah Ketua RT
         if ($user->isAdminRt()) {
@@ -120,7 +123,12 @@ class PembayaranController extends Controller
             });
         }
 
-        $warga = $wargaQuery->get();
+        $warga = $wargaQuery->orderBy('name')->get();
+
+        $activeMetodes = MetodePembayaran::active()->get();
+        $bankMetodes = $activeMetodes->where('kategori', 'bank');
+        $ewalletMetodes = $activeMetodes->where('kategori', 'ewallet');
+        $qrisMetode = $activeMetodes->firstWhere('kategori', 'qris');
         
         $iuran = Iuran::where('status', 'aktif')
             ->orderBy('nama_iuran')
@@ -155,7 +163,10 @@ class PembayaranController extends Controller
             }
         }
 
-        return view('pembayaran.create', compact('warga', 'iuran', 'selectedIuranId', 'selectedBulanTahun', 'selectedIuran', 'dendaAmount', 'dueDate'));
+        return view('pembayaran.create', compact(
+            'warga', 'iuran', 'selectedIuranId', 'selectedBulanTahun', 'selectedIuran', 'dendaAmount', 'dueDate',
+            'activeMetodes', 'bankMetodes', 'ewalletMetodes', 'qrisMetode'
+        ));
     }
     
     public function store(Request $request)
@@ -200,22 +211,21 @@ class PembayaranController extends Controller
         try {
             $bulanTahun = $request->bulan_tahun ?: date('Y-m');
 
-            if ($isWarga) {
-                $existingPayment = Pembayaran::where('user_id', Auth::id())
-                    ->where('iuran_id', $request->iuran_id)
-                    ->where('bulan_tahun', $bulanTahun)
-                    ->whereIn('status', ['pending', 'lunas'])
-                    ->first();
+            // Cek duplikasi pembayaran (mencegah pembayaran ganda baik oleh Warga maupun input pengurus RT/RW)
+            $existingPayment = Pembayaran::where('user_id', $request->user_id)
+                ->where('iuran_id', $request->iuran_id)
+                ->where('bulan_tahun', $bulanTahun)
+                ->whereIn('status', ['pending', 'lunas'])
+                ->first();
 
-                if ($existingPayment) {
-                    DB::rollBack();
+            if ($existingPayment) {
+                DB::rollBack();
 
-                    $message = $existingPayment->status === 'pending'
-                        ? 'Pembayaran untuk iuran dan periode ini sudah dikirim dan masih menunggu verifikasi admin/bendahara.'
-                        : 'Iuran periode ini sudah lunas.';
+                $message = $existingPayment->status === 'pending'
+                    ? 'Pembayaran untuk warga, iuran, dan periode ini sudah tercatat dan masih menunggu verifikasi.'
+                    : 'Iuran warga untuk periode ini sudah berstatus lunas sebelumnya.';
 
-                    return redirect()->route('pembayaran.index')->with('error', $message);
-                }
+                return redirect()->back()->withInput()->with('error', $message);
             }
 
             $lastTransaksi = Pembayaran::orderBy('id', 'desc')->first();

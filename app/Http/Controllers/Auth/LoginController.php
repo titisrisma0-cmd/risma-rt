@@ -38,12 +38,22 @@ class LoginController extends Controller
             $user = $this->guard()->user()->loadMissing('profile', 'role');
 
             if ($user->hasRole('warga') && optional($user->profile)->status !== 'aktif') {
+                $status = optional($user->profile)->status;
+                $catatan = optional($user->profile)->catatan_verifikasi;
                 $this->guard()->logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
+                if ($status === 'ditolak') {
+                    $pesan = 'Pendaftaran akun Anda ditolak oleh Ketua RT' . ($catatan ? ': ' . $catatan : '. Silakan hubungi Ketua RT Anda.');
+                } elseif ($status === 'nonaktif') {
+                    $pesan = 'Akun Anda dinonaktifkan. Silakan hubungi Ketua RT Anda.';
+                } else {
+                    $pesan = 'Akun Anda masih menunggu verifikasi dari Ketua RT. Silakan tunggu konfirmasi.';
+                }
+
                 return back()->withInput($request->only($this->username(), 'remember'))
-                    ->with('error', 'Akun Anda masih menunggu verifikasi dari Admin RW. Silakan hubungi admin untuk informasi lebih lanjut.');
+                    ->with('error', $pesan);
             }
 
             if ($user->isAdminRt() && optional($user->profile)->status === 'nonaktif') {

@@ -77,12 +77,16 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        // Ronda Saya Terdekat
-        $rondaSayaTerdekat = \App\Models\JadwalRonda::whereHas('petugas', fn ($q) => $q->where('user_id', $user->id))
-            ->whereDate('tanggal', '>=', \Carbon\Carbon::today())
-            ->with(['petugas.user', 'absensi'])
-            ->orderBy('tanggal', 'asc')
-            ->first();
+        // Ronda Saya Terdekat (Berdasarkan akun user_id maupun profil kependudukan user_profile_id)
+        $userProfileId = optional($user->profile)->id;
+        $rondaSayaTerdekat = \App\Models\JadwalRonda::whereHas('petugas', function ($q) use ($user, $userProfileId) {
+            $q->where('user_id', $user->id)
+              ->when($userProfileId, fn ($sub) => $sub->orWhere('user_profile_id', $userProfileId));
+        })
+        ->whereDate('tanggal', '>=', \Carbon\Carbon::today())
+        ->with(['petugas.userProfile', 'petugas.user', 'absensi'])
+        ->orderBy('tanggal', 'asc')
+        ->first();
 
         return view('dashboard.warga', compact(
             'user',

@@ -47,11 +47,12 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <label class="form-label text-secondary small fw-medium">Email <span class="text-danger">*</span></label>
+                    <label class="form-label text-secondary small fw-medium">Email Akun (Opsional)</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-envelope"></i></span>
-                        <input type="email" name="email" class="form-control form-control-saas border-start-0 @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
+                        <input type="email" name="email" class="form-control form-control-saas border-start-0 @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="Kosongkan jika belum punya akun">
                     </div>
+                    <small class="text-muted d-block mt-1">Jika dikosongkan, warga terdaftar sebagai profil kependudukan (belum punya akun login).</small>
                     @error('email') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
             </div>
@@ -114,9 +115,24 @@
                 @error('alamat') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
             
-            <div class="mb-4">
-                <label class="form-label text-secondary small fw-medium">Pekerjaan</label>
-                <input type="text" name="pekerjaan" class="form-control form-control-saas" value="{{ old('pekerjaan') }}">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small fw-medium">Pekerjaan</label>
+                    <input type="text" name="pekerjaan" class="form-control form-control-saas" value="{{ old('pekerjaan') }}" placeholder="Pekerjaan / Profesi">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small fw-medium">Kesiapan Ronda Malam</label>
+                    <select name="siap_ronda" class="form-select form-control-saas" id="selectSiapRonda" onchange="toggleAlasanRonda(this.value)">
+                        <option value="1" @selected(old('siap_ronda', '1') == '1')>Siap Ditugaskan Ronda (Eligible)</option>
+                        <option value="0" @selected(old('siap_ronda') === '0')>Dikecualikan / Bebas Tugas Ronda</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4" id="boxAlasanRonda" style="display: {{ old('siap_ronda') === '0' ? 'block' : 'none' }};">
+                <label class="form-label text-secondary small fw-medium">Alasan Pengecualian Ronda</label>
+                <input type="text" name="alasan_pengecualian_ronda" class="form-control form-control-saas" value="{{ old('alasan_pengecualian_ronda') }}" placeholder="Contoh: Lansia (>= 60 thn), alasan medis, jam kerja shift malam pabrik">
+                <small class="text-muted">Data ini akan menjadi dasar algoritma otomatis untuk tidak menjadwalkan warga tersebut.</small>
             </div>
             
             <div class="d-flex justify-content-end gap-2 border-top pt-3">
@@ -130,4 +146,13 @@
         </form>
     </div>
 </div>
+
+<script>
+    function toggleAlasanRonda(val) {
+        const box = document.getElementById('boxAlasanRonda');
+        if (box) {
+            box.style.display = val === '0' ? 'block' : 'none';
+        }
+    }
+</script>
 @endsection

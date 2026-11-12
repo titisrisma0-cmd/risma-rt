@@ -481,11 +481,11 @@ class KartuKeluargaController extends Controller
                 'created_by' => $user->id,
             ]);
 
-            if ($profile->user_id) {
-                $profile->update(['kartu_keluarga_id' => null]);
-            } else {
-                $profile->delete();
-            }
+            // Preservasi data kependudukan: unbind KK dan ubah status menjadi nonaktif (tanpa hard-delete)
+            $profile->update([
+                'kartu_keluarga_id' => null,
+                'status' => 'nonaktif'
+            ]);
 
             AuditLog::record(
                 action: 'hapus_anggota_kk',
@@ -497,7 +497,76 @@ class KartuKeluargaController extends Controller
             );
         });
 
-        return back()->with('success', 'Anggota keluarga berhasil dikeluarkan dari Kartu Keluarga.');
+        return back()->with('success', 'Anggota keluarga berhasil dikeluarkan dari Kartu Keluarga tanpa menghilangkan data kependudukan.');
+    }
+
+    public function toggleStatusAnggota(Request $request, KartuKeluarga $kartuKeluarga, UserProfile $profile)
+    {
+        $user = Auth::user();
+        if ($user->isAdminRt()) {
+            abort_unless($kartuKeluarga->rt_id === $user->managedRtId(), 403);
+        } elseif (!$user->isAdminRw()) {
+            abort(403);
+        }
+
+        abort_unless($profile->kartu_keluarga_id === $kartuKeluarga->id, 404);
+
+        $newStatus = $request->input('status', $profile->status === 'aktif' ? 'nonaktif' : 'aktif');
+        if (!in_array($newStatus, ['aktif', 'nonaktif', 'pindah', 'meninggal'])) {
+            return back()->with('error', 'Status kependudukan tidak valid.');
+        }
+
+        $oldStatus = $profile->status;
+        $profile->update(['status' => $newStatus]);
+
+        AuditLog::record(
+            action: 'ubah_status_anggota',
+            entityType: 'user_profile',
+            entityId: $profile->id,
+            deskripsi: "Perubahan status anggota {$profile->nama_lengkap} dari {$oldStatus} ke {$newStatus} oleh {$user->name}",
+            rtId: $kartuKeluarga->rt_id,
+            userId: $user->id
+        );
+
+        return back()->with('success', "Status anggota {$profile->nama_lengkap} berhasil diubah menjadi {$newStatus}.");
+    }
+
+    public function destroy(KartuKeluarga $kartuKeluarga)
+    {
+        $user = Auth::user();
+        if ($user->isAdminRt()) {
+            abort_unless($kartuKeluarga->rt_id === $user->managedRtId(), 403, 'Akses ditolak.');
+        } elseif (!$user->isAdminRw()) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $activeCount = $kartuKeluarga->anggota()->where('status', 'aktif')->count();
+        if ($activeCount > 0) {
+            return back()->with('error', "Kartu Keluarga {$kartuKeluarga->no_kk} tidak dapat dihapus karena masih memiliki {$activeCount} anggota keluarga aktif. Pindahkan anggota atau ubah status terlebih dahulu.");
+        }
+
+        if ($kartuKeluarga->balitas()->count() > 0) {
+            return back()->with('error', "Kartu Keluarga {$kartuKeluarga->no_kk} memiliki catatan riwayat Posyandu balita. Tidak dapat dihapus.");
+        }
+
+        $noKk = $kartuKeluarga->no_kk;
+        $rtId = $kartuKeluarga->rt_id;
+
+        DB::transaction(function () use ($kartuKeluarga, $noKk, $rtId, $user) {
+            $kartuKeluarga->anggota()->update(['kartu_keluarga_id' => null]);
+            $kartuKeluarga->delete();
+
+            AuditLog::record(
+                action: 'hapus_kk',
+                entityType: 'kartu_keluarga',
+                entityId: $kartuKeluarga->id,
+                deskripsi: "Penghapusan Kartu Keluarga kosong {$noKk} oleh {$user->name}",
+                rtId: $rtId,
+                userId: $user->id
+            );
+        });
+
+        return redirect()->route('kartu-keluarga.index')->with('success', "Kartu Keluarga {$noKk} berhasil dihapus.");
     }
 
     public function cetak(KartuKeluarga $kartuKeluarga)

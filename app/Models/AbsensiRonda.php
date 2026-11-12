@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class AbsensiRonda extends Model
 {
     protected $fillable = [
-        'jadwal_ronda_id', 'user_id', 'status', 'waktu_absen',
+        'jadwal_ronda_id', 'user_id', 'user_profile_id', 'status', 'waktu_absen',
         'foto_bukti', 'lokasi_lat', 'lokasi_lng', 'catatan', 'recorded_by',
     ];
 
@@ -25,5 +25,10 @@ class AbsensiRonda extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function userProfile()
+    {
+        return $this->belongsTo(UserProfile::class, 'user_profile_id');
     }
 }
