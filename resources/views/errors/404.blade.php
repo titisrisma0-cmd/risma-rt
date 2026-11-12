@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- RW SMART Motion Graphics Engine -->
+    <link href="{{ asset('css/motion.css') }}" rel="stylesheet">
     
     <style>
         :root {
@@ -141,5 +143,7 @@
             <span>Kembali ke {{ Auth::check() ? 'Dashboard' : 'Beranda' }}</span>
         </a>
     </div>
+    <!-- RW SMART Motion Graphics Engine -->
+    <script src="{{ asset('js/motion.js') }}"></script>
 </body>
 </html>

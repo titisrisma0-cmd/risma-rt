@@ -15,6 +15,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- RW SMART Motion Graphics Engine -->
+    <link href="{{ asset('css/motion.css') }}" rel="stylesheet">
+    
     <style>
         :root {
             --bg: #f7faf8;
@@ -447,7 +450,7 @@
                             </p>
                             
                             <div class="feature-list">
-                                <div class="feature-item">
+                                <div class="feature-item" data-m="left">
                                     <div class="feature-icon-box">
                                         <i class="fas fa-coins" aria-hidden="true"></i>
                                     </div>
@@ -456,7 +459,7 @@
                                         <p class="feature-sub">Pencatatan iuran, mutasi kas, dan audit trail otomatis</p>
                                     </div>
                                 </div>
-                                <div class="feature-item">
+                                <div class="feature-item" data-m="left">
                                     <div class="feature-icon-box">
                                         <i class="fas fa-file-signature" aria-hidden="true"></i>
                                     </div>
@@ -465,7 +468,7 @@
                                         <p class="feature-sub">Pengajuan surat pengantar warga dengan verifikasi bertingkat</p>
                                     </div>
                                 </div>
-                                <div class="feature-item">
+                                <div class="feature-item" data-m="left">
                                     <div class="feature-icon-box">
                                         <i class="fas fa-shield-halved" aria-hidden="true"></i>
                                     </div>
@@ -477,7 +480,7 @@
                             </div>
                         </div>
 
-                        <div class="brand-footer">
+                        <div class="brand-footer" data-m="rise">
                             <span>RW 05 Kelurahan Pintar</span>
                             <span>v2.0 Modern SaaS</span>
                         </div>
@@ -560,19 +563,19 @@
                                     <i class="fas fa-laptop-code" aria-hidden="true"></i> Akun Pengujian Cepat (Klik untuk Isi Otomatis)
                                 </div>
                                 <div class="demo-pills">
-                                    <div class="demo-pill" role="button" tabindex="0" onclick="fillLogin('admin@rw-smart.test', 'password123')">
+                                    <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('admin@rw-smart.test', 'password123')">
                                         <strong>Admin / RW</strong>
                                     </div>
-                                    <div class="demo-pill" role="button" tabindex="0" onclick="fillLogin('rt01@rw-smart.test', 'password123')">
+                                    <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('rt01@rw-smart.test', 'password123')">
                                         <strong>Ketua RT 01</strong>
                                     </div>
-                                    <div class="demo-pill" role="button" tabindex="0" onclick="fillLogin('rt03@rw-smart.test', 'password123')">
+                                    <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('rt03@rw-smart.test', 'password123')">
                                         <strong>Ketua RT 03</strong>
                                     </div>
-                                    <div class="demo-pill" role="button" tabindex="0" onclick="fillLogin('bendahara@rw-smart.test', 'password123')">
+                                    <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('bendahara@rw-smart.test', 'password123')">
                                         <strong>Bendahara</strong>
                                     </div>
-                                    <div class="demo-pill" role="button" tabindex="0" onclick="fillLogin('warga@rw-smart.test', 'password123')">
+                                    <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('warga@rw-smart.test', 'password123')">
                                         <strong>Warga</strong>
                                     </div>
                                 </div>
@@ -774,5 +777,7 @@
             }
         }
     </script>
+    <!-- RW SMART Motion Graphics Engine -->
+    <script src="{{ asset('js/motion.js') }}"></script>
 </body>
 </html>

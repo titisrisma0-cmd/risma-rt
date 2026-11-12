@@ -30,10 +30,15 @@
 
     <!-- RW SMART Modern SaaS Theme (Donezo Style) -->
     <link href="{{ asset('css/theme-dashboard.css') }}" rel="stylesheet">
+    <!-- RW SMART Motion Graphics Engine -->
+    <link href="{{ asset('css/motion.css') }}" rel="stylesheet">
     @stack('styles')
 </head>
 
 <body>
+    <!-- Scroll Progress Bar -->
+    <div class="m-progress" aria-hidden="true"></div>
+
     <!-- Mobile Sidebar Backdrop -->
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
@@ -828,6 +833,8 @@
     </script>
 
     @stack('scripts')
+    <!-- RW SMART Motion Graphics Engine -->
+    <script src="{{ asset('js/motion.js') }}"></script>
     @include('partials.whatsapp-help')
 </body>
 </html>

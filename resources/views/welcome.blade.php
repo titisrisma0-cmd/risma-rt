@@ -21,8 +21,12 @@
 
     <!-- Stylesheets -->
     <link href="{{ asset('css/theme-welcome.css') }}" rel="stylesheet">
+    <!-- RW SMART Motion Graphics Engine -->
+    <link href="{{ asset('css/motion.css') }}" rel="stylesheet">
 </head>
 <body>
+    <!-- Scroll Progress Bar -->
+    <div class="m-progress" aria-hidden="true"></div>
 
     <!-- ==========================================================================
        1. TOP NAVBAR
@@ -119,7 +123,7 @@
             <div class="hero-visual-wrapper">
                 <div class="hero-svg-frame">
                     <!-- Top Floating Badge (bob jeda 0s) -->
-                    <div class="floating-badge top-badge">
+                    <div class="floating-badge top-badge m-float">
                         <div class="floating-badge-icon">
                             <i class="fas fa-file-circle-check" aria-hidden="true"></i>
                         </div>
@@ -147,13 +151,13 @@
                         </defs>
 
                         <!-- Matahari Kuning -->
-                        <g transform="translate(480, 55)">
+                        <g transform="translate(480, 55)" class="m-parallax">
                             <circle cx="28" cy="28" r="42" fill="#fdf0d8" opacity="0.6" />
                             <circle cx="28" cy="28" r="28" fill="url(#sunGrad)" filter="url(#softGlow)" />
                         </g>
 
                         <!-- Awan Bergeser Pelan -->
-                        <g class="cloud-drift" opacity="0.88">
+                        <g class="cloud-drift m-parallax" opacity="0.88">
                             <path d="M70 75 C70 65 78 57 88 57 C92 57 95 58 98 60 C101 50 110 43 121 43 C134 43 145 53 146 66 C149 65 152 64 156 64 C167 64 176 73 176 84 C176 95 167 104 156 104 L88 104 C78 104 70 96 70 86 Z" fill="#ffffff" />
                             <path d="M360 48 C360 40 366 34 374 34 C377 34 380 35 382 36 C385 28 392 23 400 23 C411 23 419 31 420 41 C422 40 425 40 428 40 C437 40 444 47 444 56 C444 65 437 72 428 72 L374 72 C366 72 360 66 360 58 Z" fill="#ffffff" opacity="0.75" />
                         </g>
@@ -285,7 +289,7 @@
                     </svg>
 
                     <!-- Bottom Floating Badge (bob jeda 1.5s berbeda) -->
-                    <div class="floating-badge bottom-badge">
+                    <div class="floating-badge bottom-badge m-float-delayed">
                         <div class="floating-badge-icon gold">
                             <i class="fas fa-shield-halved" aria-hidden="true"></i>
                         </div>
@@ -561,27 +565,32 @@
                 <p class="section-subtitle">Implementasi praktis dan cepat tanpa instalasi server rumit di lingkungan Anda.</p>
             </div>
 
+            <!-- Connecting line between steps -->
+            <svg class="steps-connector-svg m-draw d-none d-lg-block" viewBox="0 0 1000 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width: 100%; height: 24px; margin-bottom: 8px;">
+                <path d="M 120 12 L 880 12" stroke="var(--primary, #0e7a4b)" stroke-width="2" stroke-dasharray="8 6" pathLength="1" />
+            </svg>
+
             <div class="steps-grid">
                 <div class="step-card">
-                    <div class="step-number">01</div>
+                    <div class="step-number m-pop">01</div>
                     <h4 class="step-title">Pendaftaran & Data KK</h4>
                     <p class="step-desc">Warga mendaftar akun dan memasukkan nomor Kartu Keluarga. Data divalidasi langsung oleh Ketua RT wilayah terkait.</p>
                 </div>
 
                 <div class="step-card">
-                    <div class="step-number">02</div>
+                    <div class="step-number m-pop">02</div>
                     <h4 class="step-title">Aktivasi Iuran & Jadwal</h4>
                     <p class="step-desc">Pengurus RT mengatur jadwal ronda malam, tarif iuran bulanan, serta program bank sampah dan posyandu lingkungan.</p>
                 </div>
 
                 <div class="step-card">
-                    <div class="step-number">03</div>
+                    <div class="step-number m-pop">03</div>
                     <h4 class="step-title">Pelayanan Terintegrasi</h4>
                     <p class="step-desc">Warga menikmati pengurusan surat, pembayaran iuran berstruk, dan komunikasi aspirasi yang langsung terdisposisi.</p>
                 </div>
 
                 <div class="step-card">
-                    <div class="step-number">04</div>
+                    <div class="step-number m-pop">04</div>
                     <h4 class="step-title">Monitoring & Audit</h4>
                     <p class="step-desc">Pengurus RW dan warga dapat memantau keterbukaan kas dan laporan kegiatan yang terbit secara berkala dan otomatis.</p>
                 </div>
@@ -755,5 +764,8 @@
             });
         });
     </script>
+
+    <!-- RW SMART Motion Graphics Engine -->
+    <script src="{{ asset('js/motion.js') }}"></script>
 </body>
 </html>

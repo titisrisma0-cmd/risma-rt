@@ -1,0 +1,368 @@
+/**
+ * RW SMART — Motion Graphics & Scroll Reveal Engine
+ * Designed for Progressive Enhancement, Zero Layout Shift, and Full Accessibility.
+ */
+
+/* ==========================================================================
+   1. BASELINE HIDDEN & TRANSITION STATES (Only active when .js-motion present)
+   ========================================================================== */
+.js-motion [data-m] {
+    opacity: 0;
+    transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms),
+                transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms);
+    will-change: opacity, transform;
+}
+
+.js-motion [data-m="rise"] {
+    transform: translateY(24px);
+}
+
+.js-motion [data-m="left"] {
+    transform: translateX(-28px);
+}
+
+.js-motion [data-m="right"] {
+    transform: translateX(28px);
+}
+
+.js-motion [data-m="zoom"] {
+    transform: scale(0.94);
+}
+
+.js-motion [data-m="bar"] {
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 1;
+}
+
+.js-motion [data-m].m-in {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* ==========================================================================
+   2. NUMERICAL & TEXT STABILITY (Prevent Layout Shift during count-up)
+   ========================================================================== */
+[data-count],
+.stat-value,
+.stat-number {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
+/* ==========================================================================
+   3. REUSABLE ANIMATIONS (Float, Pop, Draw, Wiggle, Pulse)
+   ========================================================================== */
+/* Smooth floating effect */
+.m-float {
+    animation: mfloat 5s ease-in-out infinite;
+}
+
+.m-float-delayed {
+    animation: mfloat 5s ease-in-out 1.5s infinite;
+}
+
+@keyframes mfloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Pop entrance for chips, badges, icons */
+.m-pop {
+    animation: mpop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+    animation-delay: var(--d, 0ms);
+}
+
+@keyframes mpop {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* SVG Line Drawing */
+.m-draw path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+}
+
+.m-draw.m-in path,
+.m-draw.active path {
+    animation: mdraw 1.4s ease forwards;
+}
+
+@keyframes mdraw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Subtle Icon Wiggle on Alert Reveal */
+.alert.m-in .fa-triangle-exclamation,
+.alert.m-in .fa-circle-exclamation,
+.alert-saas.m-in .fa-triangle-exclamation,
+.alert-saas.m-in .fa-circle-exclamation {
+    animation: mIconShake 0.65s ease-in-out 0.2s 1;
+}
+
+@keyframes mIconShake {
+    0%, 100% { transform: rotate(0deg); }
+    20%, 60% { transform: rotate(-8deg); }
+    40%, 80% { transform: rotate(8deg); }
+}
+
+/* Soft Hover Nudge for module cards & services */
+.quick-service-card,
+.service-card,
+.feature-card {
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s ease;
+}
+
+.quick-service-card:hover .quick-service-icon,
+.service-card:hover .service-badge-tag {
+    transform: translateY(-3px) scale(1.05);
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Table Row Subtle Hover Glow */
+.table-saas tbody tr,
+.table tbody tr {
+    transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.table-saas tbody tr:hover,
+.table tbody tr:hover {
+    background-color: rgba(14, 122, 75, 0.035) !important;
+}
+
+/* Button Shimmer Glaze on Hover */
+.btn-submit-saas,
+.btn-saas-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-submit-saas::after,
+.btn-saas-primary::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -80%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+    transform: rotate(25deg);
+    transition: left 0.75s ease;
+    pointer-events: none;
+}
+
+.btn-submit-saas:hover::after,
+.btn-saas-primary:hover::after {
+    left: 135%;
+}
+
+/* Password Eye Icon Smooth Transition */
+.password-toggle i {
+    transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.2s ease;
+}
+
+.password-toggle:active i {
+    transform: scale(0.85);
+}
+
+/* ==========================================================================
+   4. NAVIGATION & HEADER CONTROLS (Shadow & Progress Bar)
+   ========================================================================== */
+.m-shadow-on-scroll {
+    transition: box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.m-scrolled {
+    box-shadow: 0 8px 24px rgba(15, 42, 29, 0.10) !important;
+}
+
+/* Thin Top Scroll Progress Bar */
+.m-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--primary, #0e7a4b);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    z-index: 99999;
+    pointer-events: none;
+    transition: transform 0.1s linear;
+}
+
+/* Page Entrance Transition: Main content soft fade-in (180ms) */
+.main-content,
+.hero-section,
+.auth-wrapper {
+    animation: mPageFadeIn 180ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes mPageFadeIn {
+    from {
+        opacity: 0.88;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   5. EMERGENCY (PANIC BUTTON) & SIDEBAR
+   ========================================================================== */
+/* Subtle & rare pulse ring every 7 seconds (not aggressive) */
+.topbar-panic-btn {
+    animation: panicPulseRing 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes panicPulseRing {
+    0%, 82%, 100% {
+        box-shadow: 0 4px 14px rgba(229, 72, 58, 0.35);
+    }
+    86% {
+        box-shadow: 0 0 0 5px rgba(229, 72, 58, 0.35), 0 4px 14px rgba(229, 72, 58, 0.35);
+    }
+    90% {
+        box-shadow: 0 0 0 10px rgba(229, 72, 58, 0), 0 4px 14px rgba(229, 72, 58, 0.35);
+    }
+}
+
+.topbar-panic-btn .fa-beat {
+    animation-duration: 7s !important;
+}
+
+/* Notification badge dot subtle pop */
+.topbar-badge-dot {
+    animation: mpop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+/* Sidebar active indicator transition */
+.sidebar-nav-item {
+    position: relative;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-nav-item::before {
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.25s ease;
+}
+
+/* ==========================================================================
+   6. AUTH TABS SLIDING PILL GLIDER
+   ========================================================================== */
+.auth-nav-tabs {
+    position: relative;
+    isolation: isolate;
+}
+
+.tab-pill-glider {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    background: var(--surface);
+    border-radius: 9px;
+    box-shadow: 0 2px 8px rgba(15, 42, 29, 0.08);
+    transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1),
+                width 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.tab-btn {
+    position: relative;
+    z-index: 2;
+    transition: color 0.2s ease;
+}
+
+/* ==========================================================================
+   6.1 MODAL & DROPDOWN SMOOTH FADE & SCALE
+   ========================================================================== */
+.modal.fade .modal-dialog {
+    transform: scale(0.95);
+    transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.22s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+.dropdown-menu {
+    animation: mDropdownEnter 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform-origin: top right;
+}
+
+@keyframes mDropdownEnter {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ==========================================================================
+   7. CSS SCROLL-DRIVEN TIMELINE (When Supported natively)
+   ========================================================================== */
+@supports (animation-timeline: view()) {
+    .m-parallax {
+        animation: mpar linear both;
+        animation-timeline: view();
+    }
+    @keyframes mpar {
+        from { transform: translateY(36px); }
+        to { transform: translateY(-36px); }
+    }
+}
+
+@supports (animation-timeline: scroll(root)) {
+    .m-progress {
+        animation: mprog linear both;
+        animation-timeline: scroll(root);
+        transition: none;
+    }
+    @keyframes mprog {
+        from { transform: scaleX(0); }
+        to { transform: scaleX(1); }
+    }
+}
+
+/* ==========================================================================
+   8. ACCESSIBILITY: PREFERS-REDUCED-MOTION & PRINT
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce), print {
+    [data-m] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+    .m-float,
+    .m-float-delayed,
+    .m-pop,
+    .m-parallax,
+    .m-progress,
+    .topbar-panic-btn,
+    .main-content,
+    .hero-section,
+    .auth-wrapper,
+    .btn-submit-saas::after,
+    .btn-saas-primary::after,
+    .tab-pill-glider,
+    .dropdown-menu,
+    .modal.fade .modal-dialog {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}
