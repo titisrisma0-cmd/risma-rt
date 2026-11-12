@@ -611,6 +611,33 @@
         if (closeBtn) closeBtn.addEventListener('click', toggleSidebar);
         if (backdrop) backdrop.addEventListener('click', toggleSidebar);
 
+        // Lightweight count-up animation for stats (0.8s - 1.2s, preserving exact server numbers)
+        document.addEventListener('DOMContentLoaded', function () {
+            const counters = document.querySelectorAll('.count-up');
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target') || counter.innerText.replace(/\D/g, ''), 10);
+                if (isNaN(target) || target <= 0) return;
+                
+                const duration = 900;
+                const startTime = performance.now();
+                
+                function update(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const val = Math.floor(easeOut * target);
+                    counter.innerText = val.toLocaleString('id-ID');
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    } else {
+                        counter.innerText = target.toLocaleString('id-ID');
+                    }
+                }
+                requestAnimationFrame(update);
+            });
+        });
+
         // Theme Toggle
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const themeToggleIcon = document.getElementById('themeToggleIcon');

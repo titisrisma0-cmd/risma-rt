@@ -8,65 +8,80 @@
     
     @include('partials.whatsapp-help')
     
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary-green: #147A45;
-            --dark-green: #0D5737;
-            --soft-green: #E8F5EC;
-            --page-bg: #F6F8F7;
-            --card-surface: #FFFFFF;
-            --main-text: #17221C;
-            --secondary-text: #758078;
-            --border-color: #E9EEEA;
-            --danger-color: #E65353;
-            --warning-color: #F2B84B;
-            --info-color: #3985E8;
-            --radius-card: 16px;
-            --radius-input: 10px;
+            --bg: #f7faf8;
+            --surface: #ffffff;
+            --border: #dbe9e0;
+            --ink: #0f2a1d;
+            --ink-soft: #4b6355;
+            --ink-mute: #5f7468;
+            --primary: #0e7a4b;
+            --primary-dark: #0a5c38;
+            --primary-soft: #e3f4ea;
+            --accent: #f4a62a;
+            --accent-soft: #fdf0d8;
+            --danger: #e5483a;
+            --danger-soft: #fdeeee;
+            --info: #2a6fdb;
+            --info-soft: #eaf1fc;
+            --radius-btn: 12px;
+            --radius-input: 12px;
+            --radius-card: 22px;
+            --shadow-soft: 0 16px 36px rgba(15, 42, 29, 0.10);
         }
 
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-            background-color: var(--page-bg);
-            color: var(--main-text);
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--ink);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px 16px;
+            padding: 32px 16px;
+            font-size: 15px;
+            line-height: 1.6;
         }
 
         .auth-wrapper {
             width: 100%;
-            max-width: 1060px;
+            max-width: 1080px;
             margin: auto;
+            animation: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(22px); }
+            to { opacity: 1; transform: none; }
         }
 
         .auth-card {
-            background: var(--card-surface);
+            background: var(--surface);
             border-radius: var(--radius-card);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 16px 40px -12px rgba(20, 122, 69, 0.08), 0 4px 16px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-soft);
             overflow: hidden;
         }
 
         /* Left Brand Showcase */
         .brand-panel {
-            background: linear-gradient(145deg, #0D5737 0%, #147A45 100%);
-            color: #FFFFFF;
-            padding: 48px;
+            background: linear-gradient(155deg, #0a5c38 0%, #0e7a4b 100%);
+            color: #ffffff;
+            padding: 48px 40px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -82,7 +97,7 @@
             right: -80px;
             width: 240px;
             height: 240px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 50%;
             pointer-events: none;
         }
@@ -105,36 +120,26 @@
             gap: 12px;
             font-size: 1.35rem;
             font-weight: 800;
-            letter-spacing: -0.5px;
-            color: #FFFFFF;
+            letter-spacing: -0.02em;
+            color: #ffffff;
             text-decoration: none;
             margin-bottom: 32px;
-        }
-
-        .brand-logo-icon {
-            width: 42px;
-            height: 42px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
-            font-size: 1.2rem;
-            color: #FFFFFF;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .brand-heading {
             font-size: 1.85rem;
             font-weight: 800;
             line-height: 1.25;
+            color: #ffffff;
+            letter-spacing: -0.025em;
             margin-bottom: 14px;
         }
 
         .brand-description {
             font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.85);
-            line-height: 1.6;
-            margin-bottom: 36px;
+            color: rgba(255, 255, 255, 0.88);
+            line-height: 1.65;
+            margin-bottom: 34px;
         }
 
         .feature-item {
@@ -145,34 +150,37 @@
         }
 
         .feature-icon-box {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
             display: grid;
             place-items: center;
-            font-size: 1rem;
-            color: #FFFFFF;
+            font-size: 1.1rem;
+            color: #ffffff;
             flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .feature-title {
             font-size: 0.92rem;
             font-weight: 700;
+            color: #ffffff;
             margin-bottom: 2px;
         }
 
         .feature-sub {
             font-size: 0.82rem;
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(255, 255, 255, 0.8);
             margin: 0;
+            line-height: 1.45;
         }
 
         .brand-footer {
             padding-top: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
             font-size: 0.82rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.78);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -180,18 +188,18 @@
 
         /* Right Form Panel */
         .form-panel {
-            padding: 44px 48px;
-            background: var(--card-surface);
+            padding: 44px 44px;
+            background: var(--surface);
         }
 
         .auth-nav-tabs {
             display: flex;
             gap: 8px;
-            background: var(--page-bg);
+            background: var(--bg);
             padding: 5px;
-            border-radius: 12px;
-            margin-bottom: 28px;
-            border: 1px solid var(--border-color);
+            border-radius: var(--radius-btn);
+            margin-bottom: 26px;
+            border: 1.5px solid var(--border);
         }
 
         .tab-btn {
@@ -199,29 +207,30 @@
             background: transparent;
             border: none;
             padding: 10px 14px;
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: 0.9rem;
             font-weight: 600;
-            color: var(--secondary-text);
+            color: var(--ink-soft);
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            min-height: 42px;
         }
 
         .tab-btn.active {
-            background: var(--card-surface);
-            color: var(--primary-green);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            font-weight: 700;
+            background: var(--surface);
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(15, 42, 29, 0.08);
+            font-weight: 800;
         }
 
         .form-label-custom {
-            font-size: 0.84rem;
-            font-weight: 600;
-            color: var(--main-text);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--ink);
             margin-bottom: 6px;
             display: block;
         }
@@ -229,21 +238,23 @@
         .input-group-saas {
             display: flex;
             align-items: center;
-            background: #FFFFFF;
-            border: 1px solid var(--border-color);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
             border-radius: var(--radius-input);
-            transition: all 0.2s ease-in-out;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
             overflow: hidden;
+            min-height: 44px;
+            height: 44px;
         }
 
         .input-group-saas:focus-within {
-            border-color: var(--primary-green);
-            box-shadow: 0 0 0 3px rgba(20, 122, 69, 0.12);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(14, 122, 75, 0.18);
         }
 
         .input-icon {
             padding: 0 14px;
-            color: var(--secondary-text);
+            color: var(--ink-mute);
             font-size: 0.95rem;
             display: flex;
             align-items: center;
@@ -253,72 +264,90 @@
         .input-group-saas select {
             width: 100%;
             border: none;
-            padding: 11px 14px 11px 0;
-            font-size: 0.9rem;
-            color: var(--main-text);
+            padding: 10px 14px 10px 0;
+            font-size: 0.92rem;
+            color: var(--ink);
             background: transparent;
             outline: none;
+            min-height: 42px;
+            font-family: inherit;
         }
 
         .input-group-saas input::placeholder {
-            color: #9ca3af;
+            color: #8c9d93;
         }
 
         .password-toggle {
             background: none;
             border: none;
             padding: 0 14px;
-            color: var(--secondary-text);
+            color: var(--ink-mute);
             cursor: pointer;
             font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            height: 100%;
         }
 
         .password-toggle:hover {
-            color: var(--main-text);
+            color: var(--ink);
         }
 
         .btn-submit-saas {
             width: 100%;
-            background-color: var(--primary-green);
-            border: 1px solid var(--primary-green);
-            color: #FFFFFF;
+            background-color: var(--primary);
+            border: 1.5px solid var(--primary);
+            color: #ffffff;
             padding: 12px;
-            border-radius: var(--radius-input);
+            min-height: 44px;
+            border-radius: var(--radius-btn);
             font-weight: 700;
             font-size: 0.95rem;
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 4px 14px rgba(14, 122, 75, 0.28);
+            cursor: pointer;
         }
 
         .btn-submit-saas:hover {
-            background-color: var(--dark-green);
-            border-color: var(--dark-green);
-            color: #FFFFFF;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(20, 122, 69, 0.2);
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 122, 75, 0.38);
+        }
+
+        .btn-submit-saas:active {
+            transform: translateY(0);
+        }
+
+        .form-check-input {
+            border: 1.5px solid var(--border);
+            width: 1.15em;
+            height: 1.15em;
         }
 
         .form-check-input:checked {
-            background-color: var(--primary-green);
-            border-color: var(--primary-green);
+            background-color: var(--primary);
+            border-color: var(--primary);
         }
 
         /* Demo Account Pills */
         .demo-section {
             margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px dashed var(--border-color);
+            padding-top: 18px;
+            border-top: 1px dashed var(--border);
         }
 
         .demo-title {
             font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--secondary-text);
+            font-weight: 800;
+            color: var(--ink-soft);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -328,61 +357,68 @@
         .demo-pills {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
         }
 
         .demo-pill {
-            background: var(--page-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 6px 10px;
-            font-size: 0.76rem;
-            color: var(--main-text);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            color: var(--ink);
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.18s ease;
             user-select: none;
         }
 
         .demo-pill:hover {
-            background: var(--soft-green);
-            border-color: var(--primary-green);
-            color: var(--primary-green);
+            background: var(--primary-soft);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
         }
 
         .demo-pill strong {
-            color: var(--primary-green);
+            color: var(--primary);
+            font-weight: 700;
         }
 
         /* Alerts */
         .alert-saas {
-            border-radius: 10px;
-            padding: 12px 14px;
-            font-size: 0.85rem;
+            border-radius: var(--radius-btn);
+            padding: 12px 16px;
+            font-size: 0.88rem;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            border: 1px solid transparent;
+            border-left-width: 4px;
         }
 
         .alert-saas-danger {
-            background: #FDF2F2;
-            border: 1px solid #F8D7DA;
-            color: var(--danger-color);
+            background: var(--danger-soft);
+            border-color: rgba(229, 72, 58, 0.25);
+            border-left-color: var(--danger);
+            color: #a42014;
         }
 
         .alert-saas-success {
-            background: var(--soft-green);
-            border: 1px solid #C3E6CB;
-            color: var(--primary-green);
+            background: var(--primary-soft);
+            border-color: rgba(14, 122, 75, 0.25);
+            border-left-color: var(--primary);
+            color: var(--primary-dark);
         }
 
         .alert-saas-info {
-            background: #EFF6FF;
-            border: 1px solid #BFDBFE;
-            color: var(--info-color);
+            background: var(--info-soft);
+            border-color: rgba(42, 111, 219, 0.25);
+            border-left-color: var(--info);
+            color: #174ea6;
         }
 
-        @media (max-width: 991px) {
+        @media (max-width: 991.98px) {
             .brand-panel {
                 padding: 32px 24px;
             }
@@ -413,7 +449,7 @@
                             <div class="feature-list">
                                 <div class="feature-item">
                                     <div class="feature-icon-box">
-                                        <i class="fas fa-coins"></i>
+                                        <i class="fas fa-coins" aria-hidden="true"></i>
                                     </div>
                                     <div>
                                         <h6 class="feature-title">Keuangan & Kas Real-Time</h6>
@@ -422,7 +458,7 @@
                                 </div>
                                 <div class="feature-item">
                                     <div class="feature-icon-box">
-                                        <i class="fas fa-file-signature"></i>
+                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
                                     </div>
                                     <div>
                                         <h6 class="feature-title">Layanan Surat & Permohonan</h6>
@@ -431,7 +467,7 @@
                                 </div>
                                 <div class="feature-item">
                                     <div class="feature-icon-box">
-                                        <i class="fas fa-shield-halved"></i>
+                                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
                                     </div>
                                     <div>
                                         <h6 class="feature-title">Keamanan Lingkungan & CCTV</h6>
@@ -454,10 +490,10 @@
                         <!-- Navigation Tabs -->
                         <div class="auth-nav-tabs">
                             <button class="tab-btn active" data-tab="login" type="button">
-                                <i class="fas fa-right-to-bracket"></i> Masuk Akun
+                                <i class="fas fa-right-to-bracket" aria-hidden="true"></i> Masuk Akun
                             </button>
                             <button class="tab-btn" data-tab="register" type="button">
-                                <i class="fas fa-user-plus"></i> Pendaftaran Warga
+                                <i class="fas fa-user-plus" aria-hidden="true"></i> Pendaftaran Warga
                             </button>
                         </div>
                         
@@ -465,21 +501,21 @@
                         <div id="loginForm" class="auth-form active">
                             @if($errors->any() && !session('register_success'))
                                 <div class="alert-saas alert-saas-danger">
-                                    <i class="fas fa-circle-exclamation fs-5"></i>
+                                    <i class="fas fa-circle-exclamation fs-5" aria-hidden="true"></i>
                                     <div>{{ $errors->first() }}</div>
                                 </div>
                             @endif
                             
                             @if(session('success'))
                                 <div class="alert-saas alert-saas-success">
-                                    <i class="fas fa-circle-check fs-5"></i>
+                                    <i class="fas fa-circle-check fs-5" aria-hidden="true"></i>
                                     <div>{{ session('success') }}</div>
                                 </div>
                             @endif
 
                             @if(session('error'))
                                 <div class="alert-saas alert-saas-danger">
-                                    <i class="fas fa-circle-exclamation fs-5"></i>
+                                    <i class="fas fa-circle-exclamation fs-5" aria-hidden="true"></i>
                                     <div>{{ session('error') }}</div>
                                 </div>
                             @endif
@@ -489,7 +525,7 @@
                                 <div class="mb-3">
                                     <label class="form-label-custom">Alamat Email</label>
                                     <div class="input-group-saas">
-                                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                                        <span class="input-icon"><i class="fas fa-envelope" aria-hidden="true"></i></span>
                                         <input type="email" name="email" placeholder="nama@email.com" required autofocus value="{{ old('email') }}">
                                     </div>
                                 </div>
@@ -497,10 +533,10 @@
                                 <div class="mb-3">
                                     <label class="form-label-custom">Kata Sandi</label>
                                     <div class="input-group-saas">
-                                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                                        <span class="input-icon"><i class="fas fa-lock" aria-hidden="true"></i></span>
                                         <input type="password" name="password" id="loginPassword" placeholder="••••••••" required>
                                         <button type="button" class="password-toggle" aria-label="Tampilkan password" data-target="loginPassword">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -508,20 +544,20 @@
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <div class="form-check">
                                         <input type="checkbox" name="remember" class="form-check-input" id="remember">
-                                        <label class="form-check-label small text-secondary" for="remember">Ingat Saya</label>
+                                        <label class="form-check-label small" for="remember" style="color: var(--ink-soft); font-weight: 500;">Ingat Saya</label>
                                     </div>
-                                    <a href="#" class="small text-decoration-none" style="color: var(--primary-green);">Lupa password?</a>
+                                    <a href="{{ route('password.request') }}" class="small text-decoration-none fw-bold" style="color: var(--primary);">Lupa password?</a>
                                 </div>
                                 
                                 <button type="submit" class="btn-submit-saas">
-                                    <i class="fas fa-right-to-bracket"></i> Masuk ke Dashboard
+                                    <i class="fas fa-right-to-bracket" aria-hidden="true"></i> Masuk ke Dashboard
                                 </button>
                             </form>
                             
                             <!-- Demo Accounts Toolbar -->
                             <div class="demo-section">
                                 <div class="demo-title">
-                                    <i class="fas fa-laptop-code"></i> Akun Pengujian Cepat (Klik untuk Isi Otomatis)
+                                    <i class="fas fa-laptop-code" aria-hidden="true"></i> Akun Pengujian Cepat (Klik untuk Isi Otomatis)
                                 </div>
                                 <div class="demo-pills">
                                     <div class="demo-pill" role="button" tabindex="0" onclick="fillLogin('admin@rw-smart.test', 'password123')">
@@ -547,7 +583,7 @@
                         <div id="registerForm" class="auth-form" style="display: none;">
                             @if($errors->any() && !session('register_success'))
                                 <div class="alert-saas alert-saas-danger">
-                                    <i class="fas fa-circle-exclamation fs-5"></i>
+                                    <i class="fas fa-circle-exclamation fs-5" aria-hidden="true"></i>
                                     <div>
                                         <ul class="mb-0 ps-3">
                                             @foreach($errors->all() as $error)
@@ -567,15 +603,15 @@
                                 <div class="row g-3 mb-3">
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Wilayah RW</label>
-                                        <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-building"></i></span>
-                                            <input type="text" class="form-control" value="RW 05 SMART" readonly style="background-color: #F8FAFC;">
+                                        <div class="input-group-saas" style="background-color: var(--bg);">
+                                            <span class="input-icon"><i class="fas fa-building" aria-hidden="true"></i></span>
+                                            <input type="text" class="form-control border-0" value="RW 05 SMART" readonly style="background-color: transparent;">
                                         </div>
                                     </div>
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Wilayah RT Domisili <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                            <span class="input-icon"><i class="fas fa-map-marker-alt" aria-hidden="true"></i></span>
                                             <select name="rt_id" required>
                                                 <option value="" disabled {{ old('rt_id') ? '' : 'selected' }}>-- Pilih RT Domisili --</option>
                                                 @foreach($regRts as $rtOpt)
@@ -592,7 +628,7 @@
                                     <div class="col-12">
                                         <label class="form-label-custom">Nama Lengkap Sesuai KTP <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-user"></i></span>
+                                            <span class="input-icon"><i class="fas fa-user" aria-hidden="true"></i></span>
                                             <input type="text" name="name" placeholder="Nama lengkap sesuai KTP" value="{{ old('name') }}" required>
                                         </div>
                                     </div>
@@ -602,7 +638,7 @@
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Nomor Induk Kependudukan (NIK) <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-address-card"></i></span>
+                                            <span class="input-icon"><i class="fas fa-address-card" aria-hidden="true"></i></span>
                                             <input type="text" name="nik" placeholder="16 digit NIK" value="{{ old('nik') }}" maxlength="16" required>
                                         </div>
                                     </div>
@@ -610,7 +646,7 @@
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Nomor Kartu Keluarga (KK) <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-id-card"></i></span>
+                                            <span class="input-icon"><i class="fas fa-id-card" aria-hidden="true"></i></span>
                                             <input type="text" name="no_kk" placeholder="16 digit No. KK" value="{{ old('no_kk') }}" maxlength="16" required>
                                         </div>
                                     </div>
@@ -620,7 +656,7 @@
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Nomor WhatsApp / HP <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-phone"></i></span>
+                                            <span class="input-icon"><i class="fas fa-phone" aria-hidden="true"></i></span>
                                             <input type="text" name="no_hp" placeholder="08xxxxxxxxxx" value="{{ old('no_hp') }}" required>
                                         </div>
                                     </div>
@@ -628,7 +664,7 @@
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Jenis Kelamin <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-venus-mars"></i></span>
+                                            <span class="input-icon"><i class="fas fa-venus-mars" aria-hidden="true"></i></span>
                                             <select name="jenis_kelamin" required>
                                                 <option value="" disabled {{ old('jenis_kelamin') ? '' : 'selected' }}>Pilih jenis kelamin</option>
                                                 <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
@@ -641,7 +677,7 @@
                                 <div class="mb-3">
                                     <label class="form-label-custom">Alamat Email <span class="text-danger">*</span></label>
                                     <div class="input-group-saas">
-                                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                                        <span class="input-icon"><i class="fas fa-envelope" aria-hidden="true"></i></span>
                                         <input type="email" name="email" placeholder="nama@email.com" value="{{ old('email') }}" required>
                                     </div>
                                 </div>
@@ -650,7 +686,7 @@
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Kata Sandi <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                                            <span class="input-icon"><i class="fas fa-lock" aria-hidden="true"></i></span>
                                             <input type="password" name="password" placeholder="Min. 8 karakter" required>
                                         </div>
                                     </div>
@@ -658,19 +694,19 @@
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label-custom">Konfirmasi Sandi <span class="text-danger">*</span></label>
                                         <div class="input-group-saas">
-                                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                                            <span class="input-icon"><i class="fas fa-lock" aria-hidden="true"></i></span>
                                             <input type="password" name="password_confirmation" placeholder="Ulangi sandi" required>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div class="alert-saas alert-saas-info mb-4">
-                                    <i class="fas fa-circle-info fs-5"></i>
+                                    <i class="fas fa-circle-info fs-5" aria-hidden="true"></i>
                                     <div>Setelah mendaftar, akun Anda akan diverifikasi oleh Ketua RT sesuai data kependudukan.</div>
                                 </div>
                                 
                                 <button type="submit" class="btn-submit-saas">
-                                    <i class="fas fa-user-plus"></i> Daftar Sebagai Warga
+                                    <i class="fas fa-user-plus" aria-hidden="true"></i> Daftar Sebagai Warga
                                 </button>
                             </form>
                         </div>
