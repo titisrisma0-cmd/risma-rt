@@ -307,38 +307,6 @@
     </div>
 </div>
 
-<!-- Modal Upload Foto Profil -->
-<div class="modal fade" id="uploadFotoModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-bottom py-3 px-4">
-                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-camera text-success me-2"></i>Upload Foto Profil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('profile.update.avatar') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PATCH')
-                <div class="modal-body text-center p-4">
-                    <img id="previewFoto" src="#" style="width: 140px; height: 140px; object-fit: cover; border-radius: 50%; margin-bottom: 15px; display: none;" class="border border-3 border-success-subtle shadow-sm">
-                    <div class="mb-3 text-start">
-                        <label class="form-label-saas">Pilih File Foto Profil</label>
-                        <input type="file" name="avatar" id="avatarInput" class="form-control-saas" accept=".jpg,.jpeg,.png,.gif" onchange="previewImage(event)" required>
-                        <small class="text-secondary mt-1 d-block">Format: JPG, JPEG, PNG, GIF. Maksimal 2MB.</small>
-                        <div id="avatarFilename" class="small text-success fw-semibold mt-2" style="display:none;"></div>
-                        @error('avatar')
-                            <div class="text-danger small mt-2">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-                <div class="modal-footer border-top py-3 px-4">
-                    <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-saas-primary">Simpan Foto</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <script>
 function previewImage(event) {
     const input = event.target;
@@ -388,3 +356,37 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+
+@push('modals')
+<!-- Modal Upload Foto Profil -->
+<div class="modal fade" id="uploadFotoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom py-3 px-4">
+                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-camera text-success me-2"></i>Upload Foto Profil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('profile.update.avatar') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PATCH')
+                <div class="modal-body text-center p-4">
+                    <img id="previewFoto" src="#" style="width: 140px; height: 140px; object-fit: cover; border-radius: 50%; margin-bottom: 15px; display: none;" class="border border-3 border-success-subtle shadow-sm">
+                    <div class="mb-3 text-start">
+                        <label class="form-label-saas">Pilih File Foto Profil</label>
+                        <input type="file" name="avatar" id="avatarInput" class="form-control-saas" accept=".jpg,.jpeg,.png,.gif" onchange="previewImage(event)" required>
+                        <small class="text-secondary mt-1 d-block">Format: JPG, JPEG, PNG, GIF. Maksimal 2MB.</small>
+                        <div id="avatarFilename" class="small text-success fw-semibold mt-2" style="display:none;"></div>
+                        @error('avatar')
+                            <div class="text-danger small mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-3 px-4">
+                    <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-saas-primary">Simpan Foto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endpush

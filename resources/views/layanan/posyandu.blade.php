@@ -429,8 +429,11 @@
             </div>
         </section>
     </div>
+</div>
+@endsection
 
-    @if($isPengurus)
+@if($isPengurus)
+@push('modals')
         {{-- Modal Tambah Anak Terintegrasi KK --}}
         <div class="modal fade" id="modalTambahAnak" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -829,9 +832,8 @@
                 </div>
             </div>
         @endforeach
-    @endif
-</div>
-@endsection
+@endpush
+@endif
 
 @push('scripts')
 <script>

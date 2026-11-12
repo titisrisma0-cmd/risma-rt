@@ -402,7 +402,31 @@
             </div>
         @endif
     </div>
+</div>
 
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.edit-product-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const form = document.getElementById('editProductForm');
+            if (form) {
+                form.action = button.dataset.action;
+                document.getElementById('editProductName').value = button.dataset.name || '';
+                document.getElementById('editProductCategory').value = button.dataset.category || '';
+                document.getElementById('editProductPrice').value = button.dataset.price || '';
+                document.getElementById('editProductStock').value = button.dataset.stock || '';
+                document.getElementById('editProductUnit').value = button.dataset.unit || '';
+                document.getElementById('editProductDescription').value = button.dataset.description || '';
+            }
+        });
+    });
+});
+</script>
+@endpush
+@endsection
+
+@push('modals')
     {{-- MODAL TOKO SAYA (WARGA) --}}
     <div class="modal fade" id="modalToko" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -602,26 +626,4 @@
             </div>
         </div>
     @endif
-</div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.edit-product-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const form = document.getElementById('editProductForm');
-            if (form) {
-                form.action = button.dataset.action;
-                document.getElementById('editProductName').value = button.dataset.name || '';
-                document.getElementById('editProductCategory').value = button.dataset.category || '';
-                document.getElementById('editProductPrice').value = button.dataset.price || '';
-                document.getElementById('editProductStock').value = button.dataset.stock || '';
-                document.getElementById('editProductUnit').value = button.dataset.unit || '';
-                document.getElementById('editProductDescription').value = button.dataset.description || '';
-            }
-        });
-    });
-});
-</script>
 @endpush
-@endsection

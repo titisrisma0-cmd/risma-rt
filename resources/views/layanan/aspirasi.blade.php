@@ -211,75 +211,6 @@
                                     </div>
                                 </td>
                             </tr>
-
-                            {{-- Modal Beri Tanggapan --}}
-                            <div class="modal fade" id="modalTanggapan{{ $a->id }}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content border-0 shadow-lg rounded-4">
-                                        <form method="POST" action="{{ route('aspirasi.tanggapan', $a) }}">
-                                            @csrf
-                                            <div class="modal-header border-bottom py-3 px-4">
-                                                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-reply text-success me-2"></i>Tanggapan Resmi Pengurus RT</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body text-start p-4">
-                                                <div class="p-3 mb-3 rounded-3 bg-light border small">
-                                                    <strong>Aspirasi:</strong> {{ $a->judul }}
-                                                    <p class="text-muted mb-0 mt-1">{{ $a->deskripsi }}</p>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label-saas">Ubah Status Aspirasi Sekaligus</label>
-                                                    <select name="status" class="form-select-saas form-select-sm">
-                                                        <option value="diproses" {{ $a->status === 'diproses' ? 'selected' : '' }}>Sedang Ditinjau / Diproses</option>
-                                                        <option value="ditindaklanjuti" selected>Ditindaklanjuti oleh RT</option>
-                                                        <option value="selesai">Selesai Ditangani</option>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <label class="form-label-saas">Isi Tanggapan / Tindak Lanjut Resmi <span class="text-danger">*</span></label>
-                                                    <textarea name="isi" rows="4" class="form-control-saas" placeholder="Tuliskan respon atau langkah yang telah / sedang diambil RT..." required></textarea>
-                                                </div>
-                                                <small class="text-muted"><i class="fas fa-bell me-1"></i>Warga pelapor akan menerima notifikasi otomatis atas tanggapan ini.</small>
-                                            </div>
-                                            <div class="modal-footer border-top py-3 px-4">
-                                                <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
-                                                <button type="submit" class="btn btn-saas-primary"><i class="fas fa-paper-plane me-1"></i>Kirim Tanggapan</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Modal Eskalasi ke RW --}}
-                            <div class="modal fade" id="modalEskalasi{{ $a->id }}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content border-0 shadow-lg rounded-4">
-                                        <form method="POST" action="{{ route('aspirasi.eskalasi', $a) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <div class="modal-header border-bottom py-3 px-4">
-                                                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-paper-plane text-info me-2"></i>Teruskan Aspirasi ke Tingkat RW</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body text-start p-4">
-                                                <p class="small text-muted mb-3">Aspirasi <strong>{{ $a->judul }}</strong> membutuhkan koordinasi atau penanganan di tingkat RW.</p>
-                                                <div class="mb-3">
-                                                    <label class="form-label-saas">Target Eskalasi</label>
-                                                    <input type="text" name="target" value="Pengurus RW" class="form-control-saas" required>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <label class="form-label-saas">Catatan / Alasan Diteruskan ke RW</label>
-                                                    <textarea name="catatan" rows="3" class="form-control-saas" placeholder="Jelaskan kebutuhan koordinasi RW atau instansi terkait..."></textarea>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer border-top py-3 px-4">
-                                                <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
-                                                <button type="submit" class="btn btn-saas-primary"><i class="fas fa-paper-plane me-1"></i>Kirim ke RW</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
                         @empty
                             <tr>
                                 <td colspan="6" class="text-center py-5">
@@ -405,3 +336,78 @@
     @endif
 </div>
 @endsection
+
+@push('modals')
+    @if(auth()->user()->role !== 'warga')
+        @foreach($aspirasis as $a)
+            {{-- Modal Beri Tanggapan --}}
+            <div class="modal fade" id="modalTanggapan{{ $a->id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4">
+                        <form method="POST" action="{{ route('aspirasi.tanggapan', $a) }}">
+                            @csrf
+                            <div class="modal-header border-bottom py-3 px-4">
+                                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-reply text-success me-2"></i>Tanggapan Resmi Pengurus RT</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start p-4">
+                                <div class="p-3 mb-3 rounded-3 bg-light border small">
+                                    <strong>Aspirasi:</strong> {{ $a->judul }}
+                                    <p class="text-muted mb-0 mt-1">{{ $a->deskripsi }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label-saas">Ubah Status Aspirasi Sekaligus</label>
+                                    <select name="status" class="form-select-saas form-select-sm">
+                                        <option value="diproses" {{ $a->status === 'diproses' ? 'selected' : '' }}>Sedang Ditinjau / Diproses</option>
+                                        <option value="ditindaklanjuti" selected>Ditindaklanjuti oleh RT</option>
+                                        <option value="selesai">Selesai Ditangani</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label-saas">Isi Tanggapan / Tindak Lanjut Resmi <span class="text-danger">*</span></label>
+                                    <textarea name="isi" rows="4" class="form-control-saas" placeholder="Tuliskan respon atau langkah yang telah / sedang diambil RT..." required></textarea>
+                                </div>
+                                <small class="text-muted"><i class="fas fa-bell me-1"></i>Warga pelapor akan menerima notifikasi otomatis atas tanggapan ini.</small>
+                            </div>
+                            <div class="modal-footer border-top py-3 px-4">
+                                <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-saas-primary"><i class="fas fa-paper-plane me-1"></i>Kirim Tanggapan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Modal Eskalasi ke RW --}}
+            <div class="modal fade" id="modalEskalasi{{ $a->id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4">
+                        <form method="POST" action="{{ route('aspirasi.eskalasi', $a) }}">
+                            @csrf
+                            @method('PATCH')
+                            <div class="modal-header border-bottom py-3 px-4">
+                                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-paper-plane text-info me-2"></i>Teruskan Aspirasi ke Tingkat RW</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-start p-4">
+                                <p class="small text-muted mb-3">Aspirasi <strong>{{ $a->judul }}</strong> membutuhkan koordinasi atau penanganan di tingkat RW.</p>
+                                <div class="mb-3">
+                                    <label class="form-label-saas">Target Eskalasi</label>
+                                    <input type="text" name="target" value="Pengurus RW" class="form-control-saas" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label-saas">Catatan / Alasan Diteruskan ke RW</label>
+                                    <textarea name="catatan" rows="3" class="form-control-saas" placeholder="Jelaskan kebutuhan koordinasi RW atau instansi terkait..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top py-3 px-4">
+                                <button type="button" class="btn btn-outline-saas" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-saas-primary"><i class="fas fa-paper-plane me-1"></i>Kirim ke RW</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    @endif
+@endpush

@@ -190,6 +190,7 @@
                                 </td>
                             </tr>
 
+                            @push('modals')
                             {{-- Modal Reject Mutasi --}}
                             <div class="modal fade" id="modalRejectMutasi{{ $m->id }}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
@@ -212,6 +213,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endpush
                         @empty
                             <tr>
                                 <td colspan="7" class="text-center py-5 text-secondary">
@@ -379,6 +381,7 @@
                                 </td>
                             </tr>
 
+                            @push('modals')
                             {{-- Modal Reject Antar-RT --}}
                             <div class="modal fade" id="modalRejectAntarRt{{ $m->id }}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
@@ -401,6 +404,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endpush
                         @empty
                             <tr>
                                 <td colspan="7" class="text-center py-5 text-secondary">
@@ -542,7 +546,9 @@
         </div>
     @endif
 </div>
+@endsection
 
+@push('modals')
 {{-- ==================== MODALS MUTASI ==================== --}}
 
 {{-- 1. MODAL MUTASI MASUK --}}
@@ -784,7 +790,9 @@
         </div>
     </div>
 </div>
+@endpush
 
+@push('scripts')
 <script>
 function toggleTipeKeluar() {
     const isIndividu = document.getElementById('tipeIndividu').checked;
@@ -806,4 +814,4 @@ function toggleTipeKeluar() {
     }
 }
 </script>
-@endsection
+@endpush

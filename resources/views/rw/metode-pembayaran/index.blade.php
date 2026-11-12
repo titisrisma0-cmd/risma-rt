@@ -197,72 +197,6 @@
                                 </form>
                             </td>
                         </tr>
-
-                        {{-- Modal Edit Metode --}}
-                        <div class="modal fade" id="modalEditMetode{{ $m->id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content border-0 shadow">
-                                    <form action="{{ route('rw.metode-pembayaran.update', $m) }}" method="POST" enctype="multipart/form-data">
-                                        @csrf
-                                        @method('PUT')
-                                        <div class="modal-header bg-light">
-                                            <h6 class="modal-title fw-bold text-dark"><i class="fas fa-edit text-emerald me-2"></i>Edit Metode Pembayaran</h6>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body p-4">
-                                            <div class="mb-3">
-                                                <label class="form-label text-secondary small fw-medium">Nama Provider / Bank <span class="text-danger">*</span></label>
-                                                <input type="text" name="nama" class="form-control form-control-saas" value="{{ $m->nama }}" required>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label text-secondary small fw-medium">Kategori Metode <span class="text-danger">*</span></label>
-                                                <select name="kategori" class="form-select form-control-saas" required>
-                                                    <option value="ewallet" {{ $m->kategori === 'ewallet' ? 'selected' : '' }}>E-Wallet (DANA, GoPay, OVO, ShopeePay)</option>
-                                                    <option value="qris" {{ $m->kategori === 'qris' ? 'selected' : '' }}>QRIS Terintegrasi</option>
-                                                    <option value="bank" {{ $m->kategori === 'bank' ? 'selected' : '' }}>Transfer Bank (BCA, Mandiri, BRI, dll)</option>
-                                                    <option value="tunai" {{ $m->kategori === 'tunai' ? 'selected' : '' }}>Tunai</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label text-secondary small fw-medium">Nomor Akun / Rekening / No. HP</label>
-                                                <input type="text" name="nomor_rekening" class="form-control form-control-saas" value="{{ $m->nomor_rekening }}">
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label text-secondary small fw-medium">Nama Pemilik Akun (Atas Nama)</label>
-                                                <input type="text" name="nama_penerima" class="form-control form-control-saas" value="{{ $m->nama_penerima }}">
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label text-secondary small fw-medium">Instruksi Pembayaran</label>
-                                                <textarea name="instruksi" rows="2" class="form-control form-control-saas">{{ $m->instruksi }}</textarea>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label text-secondary small fw-medium">Upload Gambar QRIS (Opsional)</label>
-                                                <input type="file" name="qr_image" class="form-control form-control-saas" accept="image/*">
-                                                @if($m->qr_image)
-                                                    <small class="text-emerald d-block mt-1"><i class="fas fa-check me-1"></i>QR Code saat ini sudah terunggah</small>
-                                                @endif
-                                            </div>
-
-                                            <div class="form-check form-switch mt-3">
-                                                <input class="form-check-input" type="checkbox" name="is_active" value="1" id="activeCheck{{ $m->id }}" {{ $m->is_active ? 'checked' : '' }}>
-                                                <label class="form-check-label fw-medium text-dark" for="activeCheck{{ $m->id }}">
-                                                    Aktifkan metode ini di formulir pembayaran warga
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer bg-light">
-                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-emerald text-white px-4">Simpan Perubahan</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
                     @empty
                         <tr>
                             <td colspan="7" class="text-center py-5 text-secondary">
@@ -279,7 +213,9 @@
         </div>
     </div>
 </div>
+@endsection
 
+@push('modals')
 {{-- Modal Tambah Metode Baru --}}
 <div class="modal fade" id="modalTambahMetode" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -341,4 +277,72 @@
         </div>
     </div>
 </div>
-@endsection
+
+@foreach($metodes as $m)
+    {{-- Modal Edit Metode --}}
+    <div class="modal fade" id="modalEditMetode{{ $m->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form action="{{ route('rw.metode-pembayaran.update', $m) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header bg-light">
+                        <h6 class="modal-title fw-bold text-dark"><i class="fas fa-edit text-emerald me-2"></i>Edit Metode Pembayaran</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Nama Provider / Bank <span class="text-danger">*</span></label>
+                            <input type="text" name="nama" class="form-control form-control-saas" value="{{ $m->nama }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Kategori Metode <span class="text-danger">*</span></label>
+                            <select name="kategori" class="form-select form-control-saas" required>
+                                <option value="ewallet" {{ $m->kategori === 'ewallet' ? 'selected' : '' }}>E-Wallet (DANA, GoPay, OVO, ShopeePay)</option>
+                                <option value="qris" {{ $m->kategori === 'qris' ? 'selected' : '' }}>QRIS Terintegrasi</option>
+                                <option value="bank" {{ $m->kategori === 'bank' ? 'selected' : '' }}>Transfer Bank (BCA, Mandiri, BRI, dll)</option>
+                                <option value="tunai" {{ $m->kategori === 'tunai' ? 'selected' : '' }}>Tunai</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Nomor Akun / Rekening / No. HP</label>
+                            <input type="text" name="nomor_rekening" class="form-control form-control-saas" value="{{ $m->nomor_rekening }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Nama Pemilik Akun (Atas Nama)</label>
+                            <input type="text" name="nama_penerima" class="form-control form-control-saas" value="{{ $m->nama_penerima }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Instruksi Pembayaran</label>
+                            <textarea name="instruksi" rows="2" class="form-control form-control-saas">{{ $m->instruksi }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Upload Gambar QRIS (Opsional)</label>
+                            <input type="file" name="qr_image" class="form-control form-control-saas" accept="image/*">
+                            @if($m->qr_image)
+                                <small class="text-emerald d-block mt-1"><i class="fas fa-check me-1"></i>QR Code saat ini sudah terunggah</small>
+                            @endif
+                        </div>
+
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="activeCheck{{ $m->id }}" {{ $m->is_active ? 'checked' : '' }}>
+                            <label class="form-check-label fw-medium text-dark" for="activeCheck{{ $m->id }}">
+                                Aktifkan metode ini di formulir pembayaran warga
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-emerald text-white px-4">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
+@endpush

@@ -348,7 +348,9 @@
         @endif
     </div>
 </div>
+@endsection
 
+@push('modals')
 {{-- ==================== MODALS UNTUK SETIAP KK DAN ANGGOTA ==================== --}}
 @foreach($kartuKeluargas as $kk)
     {{-- MODAL TAMBAH ANGGOTA KE KK --}}
@@ -578,5 +580,6 @@
         </div>
     @endforeach
 @endforeach
+@endpush
 
 @endsection

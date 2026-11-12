@@ -17,34 +17,55 @@ class PengumumanController extends Controller
     {
         $user = Auth::user();
         $query = Pengumuman::with(['rt', 'pembuat']);
+        $scope = $request->get('scope');
 
         if ($user->isAdminRt()) {
             $rtId = $user->managedRtId();
-            $query->where(function ($q) use ($rtId) {
-                $q->where('target_audience', 'semua_rt')
-                  ->orWhere('target_audience', 'seluruh_warga')
-                  ->orWhere(fn ($sub) => $sub->whereIn('target_audience', ['rt_tertentu', 'warga_rt'])->where('rt_id', $rtId));
-            })->where('status', 'published');
+            $query->where('status', 'published');
+            if ($scope === 'rw') {
+                $query->whereIn('target_audience', ['semua_rt', 'seluruh_warga']);
+            } elseif ($scope === 'rt') {
+                $query->whereIn('target_audience', ['rt_tertentu', 'warga_rt'])->where('rt_id', $rtId);
+            } else {
+                $query->where(function ($q) use ($rtId) {
+                    $q->where('target_audience', 'semua_rt')
+                      ->orWhere('target_audience', 'seluruh_warga')
+                      ->orWhere(fn ($sub) => $sub->whereIn('target_audience', ['rt_tertentu', 'warga_rt'])->where('rt_id', $rtId));
+                });
+            }
         } elseif ($user->isWarga()) {
             $rtId = optional($user->profile)->rt_id;
-            $query->where(function ($q) use ($rtId) {
-                $q->where('target_audience', 'seluruh_warga')
-                  ->orWhere(fn ($sub) => $sub->where('target_audience', 'warga_rt')->where('rt_id', $rtId));
-            })->where('status', 'published');
+            $query->where('status', 'published');
+            if ($scope === 'rt') {
+                $query->where('target_audience', 'warga_rt')->where('rt_id', $rtId);
+            } elseif ($scope === 'rw') {
+                $query->where('target_audience', 'seluruh_warga');
+            } else {
+                $query->where(function ($q) use ($rtId) {
+                    $q->where('target_audience', 'seluruh_warga')
+                      ->orWhere(fn ($sub) => $sub->where('target_audience', 'warga_rt')->where('rt_id', $rtId));
+                });
+            }
         } else {
             // RW / Admin can see all and filter
-            if ($request->filled('kategori')) {
-                $query->where('kategori', $request->kategori);
+            if ($scope === 'rt') {
+                $query->whereIn('target_audience', ['rt_tertentu', 'warga_rt']);
+            } elseif ($scope === 'rw') {
+                $query->whereIn('target_audience', ['semua_rt', 'seluruh_warga']);
             }
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
         }
 
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
         $pengumumans = $query->latest('tanggal_publikasi')->paginate(12)->withQueryString();
         $rts = Rt::activeRt()->orderBy('kode_rt')->get();
 
-        return view('pengumuman.index', compact('pengumumans', 'user', 'rts'));
+        return view('pengumuman.index', compact('pengumumans', 'user', 'rts', 'scope'));
     }
 
     public function create()

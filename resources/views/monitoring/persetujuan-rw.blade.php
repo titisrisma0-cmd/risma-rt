@@ -131,7 +131,9 @@
         @endif
     </div>
 </div>
+@endsection
 
+@push('modals')
 {{-- ==================== MODALS ==================== --}}
 @foreach($pengajuans as $p)
     @php
@@ -331,5 +333,4 @@
         </div>
     @endif
 @endforeach
-
-@endsection
+@endpush

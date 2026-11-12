@@ -234,93 +234,6 @@
             </div>
         </div>
 
-        {{-- Modal Setor Sampah --}}
-        <div class="modal fade" id="modalSetoran" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <form method="POST" action="{{ route('bank-sampah.setoran.store') }}" enctype="multipart/form-data">
-                        @csrf
-                        <div class="modal-header border-bottom bg-white">
-                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-recycle text-emerald me-2"></i>Form Setoran Sampah Warga</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Pilih Jenis Sampah <span class="text-danger">*</span></label>
-                                <select name="jenis_sampah_id" id="warga_jenis_sampah" class="form-select form-control-saas" required>
-                                    <option value="">-- Pilih Jenis Sampah --</option>
-                                    @foreach($jenisSampahs->where('status', true) as $jenis)
-                                        <option value="{{ $jenis->id }}" data-harga="{{ $jenis->harga_per_kg }}">{{ $jenis->nama }} (Rp {{ number_format($jenis->harga_per_kg, 0, ',', '.') }}/kg)</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Estimasi Berat (kg) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.1" min="0.1" name="berat_kg" id="warga_berat_kg" class="form-control form-control-saas" placeholder="Contoh: 2.5" required>
-                            </div>
-                            <div class="p-3 mb-3 rounded-3 bg-light border d-flex justify-content-between align-items-center">
-                                <span class="small text-secondary">Estimasi Nilai Saldo:</span>
-                                <span id="warga_estimasi_nilai" class="fw-bold text-emerald fs-6">Rp 0</span>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Tanggal Penyerahan <span class="text-danger">*</span></label>
-                                <input type="date" name="tanggal_setor" value="{{ now()->format('Y-m-d') }}" class="form-control form-control-saas" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Foto Sampah / Timbangan <small class="text-muted">(Opsional)</small></label>
-                                <input type="file" name="foto_bukti" accept="image/*" class="form-control form-control-saas">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label small fw-semibold text-secondary">Catatan Tambahan</label>
-                                <textarea name="catatan" rows="2" class="form-control form-control-saas" placeholder="Contoh: Sudah dipilah bersih dalam kardus"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-paper-plane me-1"></i>Kirim Setoran</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {{-- Modal Tarik Saldo Warga --}}
-        <div class="modal fade" id="modalTarikSaldo" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <form method="POST" action="{{ route('bank-sampah.penarikan.store') }}">
-                        @csrf
-                        <div class="modal-header border-bottom bg-white">
-                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-money-bill-transfer text-emerald me-2"></i>Pengajuan Pencairan Saldo</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="alert alert-info small py-2 mb-3">Saldo Anda saat ini: <strong>Rp {{ number_format($saldo->saldo, 0, ',', '.') }}</strong></div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Nominal Penarikan (Rp) <span class="text-danger">*</span></label>
-                                <input type="number" name="nominal" min="1000" max="{{ $saldo->saldo }}" class="form-control form-control-saas" placeholder="Minimal Rp 1.000" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Metode Pencairan <span class="text-danger">*</span></label>
-                                <select name="metode" class="form-select form-control-saas" required>
-                                    <option value="tunai">Tunai di Pengurus RT</option>
-                                    <option value="transfer">Transfer Bank / E-Wallet</option>
-                                </select>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label small fw-semibold text-secondary">Rekening / E-Wallet Tujuan <small class="text-muted">(Jika Transfer)</small></label>
-                                <input type="text" name="rekening_tujuan" class="form-control form-control-saas" placeholder="Contoh: BCA 12345678 a.n Budi / GoPay 0812...">
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-emerald text-white px-4" {{ $saldo->saldo < 1000 ? 'disabled' : '' }}><i class="fas fa-check me-1"></i>Ajukan Pencairan</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
     @else
         {{-- VIEW UNTUK PENGURUS RT / RW --}}
         <section class="row g-3 mb-4">
@@ -709,44 +622,6 @@
                                             <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEditHarga{{ $js->id }}"><i class="fas fa-edit me-1"></i>Edit</button>
                                         </td>
                                     </tr>
-
-                                    {{-- Modal Edit Harga --}}
-                                    <div class="modal fade" id="modalEditHarga{{ $js->id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                                                <form method="POST" action="{{ route('bank-sampah.harga.store') }}">
-                                                    @csrf
-                                                    <input type="hidden" name="jenis_sampah_id" value="{{ $js->id }}">
-                                                    <div class="modal-header border-bottom bg-white">
-                                                        <h5 class="modal-title fw-bold text-dark">Edit Jenis Sampah</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body p-4">
-                                                        <div class="mb-3">
-                                                            <label class="form-label small fw-semibold text-secondary">Nama Jenis Sampah</label>
-                                                            <input type="text" name="nama" class="form-control form-control-saas" value="{{ $js->nama }}" required>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="form-label small fw-semibold text-secondary">Kategori</label>
-                                                            <input type="text" name="kategori" class="form-control form-control-saas" value="{{ $js->kategori }}">
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="form-label small fw-semibold text-secondary">Harga per Kilogram (Rp)</label>
-                                                            <input type="number" name="harga_per_kg" class="form-control form-control-saas" value="{{ (int) $js->harga_per_kg }}" required>
-                                                        </div>
-                                                        <div class="form-check form-switch mt-3">
-                                                            <input class="form-check-input" type="checkbox" name="status" value="1" id="sw{{ $js->id }}" {{ $js->status ? 'checked' : '' }}>
-                                                            <label class="form-check-label small text-secondary" for="sw{{ $js->id }}">Status Aktif Menerima</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer border-top bg-light">
-                                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                                                        <button type="submit" class="btn btn-emerald text-white px-4">Simpan Perubahan</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
                                 @endforeach
                             </tbody>
                         </table>
@@ -757,96 +632,6 @@
             {{-- TAB 6: EDUKASI ADMIN --}}
             <div class="tab-pane fade" id="tab-admin-edukasi">
                 @include('bank-sampah.edukasi-content')
-            </div>
-        </div>
-
-        {{-- Modal Tambah Jadwal --}}
-        <div class="modal fade" id="modalJadwal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <form method="POST" action="{{ route('bank-sampah.jadwal.store') }}">
-                        @csrf
-                        <div class="modal-header border-bottom bg-white">
-                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-plus text-emerald me-2"></i>Tambah Jadwal Pengumpulan Sampah RT</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Judul Kegiatan / Penjemputan <span class="text-danger">*</span></label>
-                                <input type="text" name="judul" class="form-control form-control-saas" placeholder="Contoh: Pengangkutan Rutin Sampah Anorganik RT" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Hari, Tanggal & Jam Pengumpulan <span class="text-danger">*</span></label>
-                                <input type="datetime-local" name="waktu" class="form-control form-control-saas" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Titik Kumpul / Lokasi Penjemputan <span class="text-danger">*</span></label>
-                                <input type="text" name="lokasi" class="form-control form-control-saas" placeholder="Contoh: Pos Ronda RT 01 / Depan Lapangan" required>
-                            </div>
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label small fw-semibold text-secondary">Nama Petugas / Armada Truk</label>
-                                    <input type="text" name="petugas_nama" class="form-control form-control-saas" placeholder="Contoh: Pak Joko / Truk DLH">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small fw-semibold text-secondary">Kontak Petugas (WA/HP)</label>
-                                    <input type="text" name="petugas_kontak" class="form-control form-control-saas" placeholder="Contoh: 081234567890">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Status Awal</label>
-                                <select name="status" class="form-select form-control-saas">
-                                    <option value="terjadwal" selected>Terjadwal</option>
-                                    <option value="berlangsung">Berlangsung</option>
-                                    <option value="selesai">Selesai</option>
-                                    <option value="ditunda">Ditunda</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Keterangan / Instruksi ke Warga</label>
-                                <textarea name="keterangan" rows="2" class="form-control form-control-saas" placeholder="Contoh: Harap sampah anorganik sudah dikemas dalam karung/kardus kering"></textarea>
-                            </div>
-                            <p class="small text-muted mb-0"><i class="fas fa-bell text-warning me-1"></i>Notifikasi otomatis akan dikirim ke seluruh akun warga di RT ini.</p>
-                        </div>
-                        <div class="modal-footer border-top bg-light">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-save me-1"></i>Simpan & Siarkan Jadwal</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {{-- Modal Tambah Harga --}}
-        <div class="modal fade" id="modalHarga" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <form method="POST" action="{{ route('bank-sampah.harga.store') }}">
-                        @csrf
-                        <div class="modal-header border-bottom bg-white">
-                            <h5 class="modal-title fw-bold text-dark"><i class="fas fa-tag text-emerald me-2"></i>Tambah Jenis Sampah Baru</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Nama Jenis Sampah <span class="text-danger">*</span></label>
-                                <input type="text" name="nama" class="form-control form-control-saas" placeholder="Contoh: Minyak Jelantah / Botol Kaca" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Kategori</label>
-                                <input type="text" name="kategori" class="form-control form-control-saas" placeholder="Contoh: Anorganik / Limbah / B3">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">Harga per Kilogram (Rp) <span class="text-danger">*</span></label>
-                                <input type="number" name="harga_per_kg" min="0" class="form-control form-control-saas" placeholder="Contoh: 3000" required>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-top bg-light">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-save me-1"></i>Simpan Harga</button>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     @endif
@@ -873,4 +658,226 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+@endsection
+
+@push('modals')
+@if($isWarga)
+    {{-- Modal Setor Sampah --}}
+    <div class="modal fade" id="modalSetoran" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <form method="POST" action="{{ route('bank-sampah.setoran.store') }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header border-bottom bg-white">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-recycle text-emerald me-2"></i>Form Setoran Sampah Warga</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Pilih Jenis Sampah <span class="text-danger">*</span></label>
+                            <select name="jenis_sampah_id" id="warga_jenis_sampah" class="form-select form-control-saas" required>
+                                <option value="">-- Pilih Jenis Sampah --</option>
+                                @foreach($jenisSampahs->where('status', true) as $jenis)
+                                    <option value="{{ $jenis->id }}" data-harga="{{ $jenis->harga_per_kg }}">{{ $jenis->nama }} (Rp {{ number_format($jenis->harga_per_kg, 0, ',', '.') }}/kg)</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Estimasi Berat (kg) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.1" min="0.1" name="berat_kg" id="warga_berat_kg" class="form-control form-control-saas" placeholder="Contoh: 2.5" required>
+                        </div>
+                        <div class="p-3 mb-3 rounded-3 bg-light border d-flex justify-content-between align-items-center">
+                            <span class="small text-secondary">Estimasi Nilai Saldo:</span>
+                            <span id="warga_estimasi_nilai" class="fw-bold text-emerald fs-6">Rp 0</span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Tanggal Penyerahan <span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal_setor" value="{{ now()->format('Y-m-d') }}" class="form-control form-control-saas" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Foto Sampah / Timbangan <small class="text-muted">(Opsional)</small></label>
+                            <input type="file" name="foto_bukti" accept="image/*" class="form-control form-control-saas">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold text-secondary">Catatan Tambahan</label>
+                            <textarea name="catatan" rows="2" class="form-control form-control-saas" placeholder="Contoh: Sudah dipilah bersih dalam kardus"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-paper-plane me-1"></i>Kirim Setoran</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Tarik Saldo Warga --}}
+    <div class="modal fade" id="modalTarikSaldo" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <form method="POST" action="{{ route('bank-sampah.penarikan.store') }}">
+                    @csrf
+                    <div class="modal-header border-bottom bg-white">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-money-bill-transfer text-emerald me-2"></i>Pengajuan Pencairan Saldo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info small py-2 mb-3">Saldo Anda saat ini: <strong>Rp {{ number_format($saldo->saldo, 0, ',', '.') }}</strong></div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Nominal Penarikan (Rp) <span class="text-danger">*</span></label>
+                            <input type="number" name="nominal" min="1000" max="{{ $saldo->saldo }}" class="form-control form-control-saas" placeholder="Minimal Rp 1.000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Metode Pencairan <span class="text-danger">*</span></label>
+                            <select name="metode" class="form-select form-control-saas" required>
+                                <option value="tunai">Tunai di Pengurus RT</option>
+                                <option value="transfer">Transfer Bank / E-Wallet</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold text-secondary">Rekening / E-Wallet Tujuan <small class="text-muted">(Jika Transfer)</small></label>
+                            <input type="text" name="rekening_tujuan" class="form-control form-control-saas" placeholder="Contoh: BCA 12345678 a.n Budi / GoPay 0812...">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-emerald text-white px-4" {{ $saldo->saldo < 1000 ? 'disabled' : '' }}><i class="fas fa-check me-1"></i>Ajukan Pencairan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@else
+    {{-- Modal Tambah Jadwal --}}
+    <div class="modal fade" id="modalJadwal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <form method="POST" action="{{ route('bank-sampah.jadwal.store') }}">
+                    @csrf
+                    <div class="modal-header border-bottom bg-white">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-calendar-plus text-emerald me-2"></i>Tambah Jadwal Pengumpulan Sampah RT</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Judul Kegiatan / Penjemputan <span class="text-danger">*</span></label>
+                            <input type="text" name="judul" class="form-control form-control-saas" placeholder="Contoh: Pengangkutan Rutin Sampah Anorganik RT" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Hari, Tanggal & Jam Pengumpulan <span class="text-danger">*</span></label>
+                            <input type="datetime-local" name="waktu" class="form-control form-control-saas" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Titik Kumpul / Lokasi Penjemputan <span class="text-danger">*</span></label>
+                            <input type="text" name="lokasi" class="form-control form-control-saas" placeholder="Contoh: Pos Ronda RT 01 / Depan Lapangan" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-secondary">Nama Petugas / Armada Truk</label>
+                                <input type="text" name="petugas_nama" class="form-control form-control-saas" placeholder="Contoh: Pak Joko / Truk DLH">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold text-secondary">Kontak Petugas (WA/HP)</label>
+                                <input type="text" name="petugas_kontak" class="form-control form-control-saas" placeholder="Contoh: 081234567890">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Status Awal</label>
+                            <select name="status" class="form-select form-control-saas">
+                                <option value="terjadwal" selected>Terjadwal</option>
+                                <option value="berlangsung">Berlangsung</option>
+                                <option value="selesai">Selesai</option>
+                                <option value="ditunda">Ditunda</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Keterangan / Instruksi ke Warga</label>
+                            <textarea name="keterangan" rows="2" class="form-control form-control-saas" placeholder="Contoh: Harap sampah anorganik sudah dikemas dalam karung/kardus kering"></textarea>
+                        </div>
+                        <p class="small text-muted mb-0"><i class="fas fa-bell text-warning me-1"></i>Notifikasi otomatis akan dikirim ke seluruh akun warga di RT ini.</p>
+                    </div>
+                    <div class="modal-footer border-top bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-save me-1"></i>Simpan & Siarkan Jadwal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Tambah Harga --}}
+    <div class="modal fade" id="modalHarga" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <form method="POST" action="{{ route('bank-sampah.harga.store') }}">
+                    @csrf
+                    <div class="modal-header border-bottom bg-white">
+                        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-tag text-emerald me-2"></i>Tambah Jenis Sampah Baru</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Nama Jenis Sampah <span class="text-danger">*</span></label>
+                            <input type="text" name="nama" class="form-control form-control-saas" placeholder="Contoh: Minyak Jelantah / Botol Kaca" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Kategori</label>
+                            <input type="text" name="kategori" class="form-control form-control-saas" placeholder="Contoh: Anorganik / Limbah / B3">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">Harga per Kilogram (Rp) <span class="text-danger">*</span></label>
+                            <input type="number" name="harga_per_kg" min="0" class="form-control form-control-saas" placeholder="Contoh: 3000" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-emerald text-white px-4"><i class="fas fa-save me-1"></i>Simpan Harga</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @foreach($jenisSampahs as $js)
+        {{-- Modal Edit Harga --}}
+        <div class="modal fade" id="modalEditHarga{{ $js->id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <form method="POST" action="{{ route('bank-sampah.harga.store') }}">
+                        @csrf
+                        <input type="hidden" name="jenis_sampah_id" value="{{ $js->id }}">
+                        <div class="modal-header border-bottom bg-white">
+                            <h5 class="modal-title fw-bold text-dark">Edit Jenis Sampah</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Nama Jenis Sampah</label>
+                                <input type="text" name="nama" class="form-control form-control-saas" value="{{ $js->nama }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Kategori</label>
+                                <input type="text" name="kategori" class="form-control form-control-saas" value="{{ $js->kategori }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Harga per Kilogram (Rp)</label>
+                                <input type="number" name="harga_per_kg" class="form-control form-control-saas" value="{{ (int) $js->harga_per_kg }}" required>
+                            </div>
+                            <div class="form-check form-switch mt-3">
+                                <input class="form-check-input" type="checkbox" name="status" value="1" id="sw{{ $js->id }}" {{ $js->status ? 'checked' : '' }}>
+                                <label class="form-check-label small text-secondary" for="sw{{ $js->id }}">Status Aktif Menerima</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top bg-light">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-emerald text-white px-4">Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endif
+@endpush
 @endsection

@@ -225,7 +225,9 @@
         </div>
     </div>
 </div>
+@endsection
 
+@push('modals')
 {{-- ==================== MODAL TAMBAH KEGIATAN ==================== --}}
 @if($canManage)
 <div class="modal fade" id="modalTambahKegiatan" tabindex="-1" aria-hidden="true">
@@ -452,5 +454,4 @@
         </div>
     </div>
 @endforeach
-
-@endsection
+@endpush

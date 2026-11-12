@@ -244,7 +244,9 @@
         </div>
     </div>
 </div>
+@endsection
 
+@push('modals')
 {{-- ==================== MODALS ==================== --}}
 
 {{-- Modal Tambah RT --}}
@@ -425,5 +427,4 @@
         </div>
     @endif
 @endforeach
-
-@endsection
+@endpush

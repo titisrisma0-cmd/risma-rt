@@ -467,7 +467,26 @@
         </div>
     </div>
 </div>
+@endsection
 
+@push('scripts')
+<script>
+    function toggleCatatanRequired(rtId) {
+        const select = document.getElementById('statusSelect' + rtId);
+        const textarea = document.getElementById('catatanTextarea' + rtId);
+        const label = document.getElementById('catatanLabel' + rtId);
+        if (select.value === 'perlu_perbaikan' || select.value === 'ditolak') {
+            textarea.required = true;
+            label.innerHTML = 'Catatan Audit RW untuk Ketua RT <span class="text-danger">* (Wajib diisi)</span>';
+        } else {
+            textarea.required = false;
+            label.innerHTML = 'Catatan Audit RW untuk Ketua RT';
+        }
+    }
+</script>
+@endpush
+
+@push('modals')
 {{-- ==================== MODALS VERIFIKASI ==================== --}}
 @foreach($rekapPerRt as $item)
     @php
@@ -524,19 +543,4 @@
         </div>
     </div>
 @endforeach
-
-<script>
-    function toggleCatatanRequired(rtId) {
-        const select = document.getElementById('statusSelect' + rtId);
-        const textarea = document.getElementById('catatanTextarea' + rtId);
-        const label = document.getElementById('catatanLabel' + rtId);
-        if (select.value === 'perlu_perbaikan' || select.value === 'ditolak') {
-            textarea.required = true;
-            label.innerHTML = 'Catatan Audit RW untuk Ketua RT <span class="text-danger">* (Wajib diisi)</span>';
-        } else {
-            textarea.required = false;
-            label.innerHTML = 'Catatan Audit RW untuk Ketua RT';
-        }
-    }
-</script>
-@endsection
+@endpush

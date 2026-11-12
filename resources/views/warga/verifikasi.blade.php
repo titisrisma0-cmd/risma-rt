@@ -261,7 +261,9 @@
         </div>
     @endif
 </div>
+@endsection
 
+@push('modals')
 {{-- Modal Penolakan Verifikasi --}}
 <div class="modal fade" id="modalReject" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -293,7 +295,9 @@
         </div>
     </div>
 </div>
+@endpush
 
+@push('scripts')
 <script>
     function openRejectModal(profileId, nama) {
         document.getElementById('rejectNamaWarga').innerText = nama;
@@ -302,4 +306,4 @@
         modal.show();
     }
 </script>
-@endsection
+@endpush

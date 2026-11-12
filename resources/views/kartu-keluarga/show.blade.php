@@ -211,8 +211,10 @@
         </div>
     </div>
 </div>
+@endsection
 
 @if($user->isAdminRt() || $user->isAdminRw())
+@push('modals')
     {{-- Modal Tambah Anggota --}}
     <div class="modal fade" id="tambahAnggotaModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -435,6 +437,5 @@
             </div>
         </div>
     @endforeach
+@endpush
 @endif
-
-@endsection

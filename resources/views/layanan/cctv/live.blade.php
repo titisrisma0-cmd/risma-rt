@@ -109,21 +109,6 @@
     @endforelse
 </div>
 
-{{-- MODAL STREAM --}}
-<div class="modal fade" id="cameraModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content bg-dark border-0 rounded-4 overflow-hidden">
-            <div class="modal-header border-bottom border-secondary py-3 px-4">
-                <h5 class="modal-title text-white fw-bold" id="cameraModalTitle"></h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <video id="cameraModalVideo" class="w-100" controls autoplay muted playsinline></video>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
 .cctv-grid {
     display: grid;
@@ -217,3 +202,20 @@ modalEl.addEventListener('hidden.bs.modal', () => {
 </script>
 @endpush
 @endsection
+
+@push('modals')
+{{-- MODAL STREAM --}}
+<div class="modal fade" id="cameraModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark border-0 rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-secondary py-3 px-4">
+                <h5 class="modal-title text-white fw-bold" id="cameraModalTitle"></h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <video id="cameraModalVideo" class="w-100" controls autoplay muted playsinline></video>
+            </div>
+        </div>
+    </div>
+</div>
+@endpush

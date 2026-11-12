@@ -97,6 +97,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('warga/mutasi/antar-rt', [WargaController::class, 'storeMutasiAntarRt'])->name('warga.mutasi.antar-rt.store');
     Route::post('warga/mutasi/{mutasi}/approve', [WargaController::class, 'approveMutasi'])->name('warga.mutasi.approve');
     Route::post('warga/mutasi/{mutasi}/reject', [WargaController::class, 'rejectMutasi'])->name('warga.mutasi.reject');
+
+    // ==================== PENGUMUMAN RESMI RT & RW ====================
+    Route::get('warga/pengumuman', [PengumumanController::class, 'index'])->name('warga.pengumuman');
+    Route::get('rt/informasi/pengumuman', [PengumumanController::class, 'index'])->name('rt.informasi.pengumuman');
+    Route::resource('pengumuman', PengumumanController::class);
+
     Route::resource('warga', WargaController::class);
     Route::post('warga/{id}/verify', [WargaController::class, 'verify'])->name('warga.verify');
     Route::post('warga/{id}/reject', [WargaVerifikasiController::class, 'reject'])->name('warga.reject');
@@ -135,10 +141,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('rt/verifikasi/{pengajuanSurat}/teruskan', [RtVerifikasiController::class, 'teruskanKeRw'])->name('rt.verifikasi.teruskan');
     Route::post('rt/verifikasi/{pengajuanSurat}/teruskan-rw', [RtVerifikasiController::class, 'teruskanKeRw'])->name('rt.verifikasi.teruskan-rw');
     Route::get('manajemen-permohonan', function () { return redirect()->route('rt.verifikasi.permohonan'); })->name('rt.permohonan.index');
-    // ==================== PENGUMUMAN RESMI RW ====================
-    Route::resource('pengumuman', PengumumanController::class);
-    Route::get('rt/informasi/pengumuman', function () { return redirect()->route('pengumuman.index'); })->name('rt.informasi.pengumuman');
-    Route::get('warga/pengumuman', function () { return redirect()->route('pengumuman.index'); })->name('warga.pengumuman');
     
     // ==================== IURAN ====================
     Route::resource('iuran', IuranController::class);

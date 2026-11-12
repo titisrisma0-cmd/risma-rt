@@ -830,7 +830,28 @@
                 }
             });
         }
+        // Modal Teleport & Stacking Context Safeguard (prevents black backdrop trapping)
+        document.addEventListener('show.bs.modal', function (event) {
+            const modal = event.target;
+            if (modal && modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+        });
+
+        document.addEventListener('shown.bs.modal', function (event) {
+            const modal = event.target;
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(bd => {
+                bd.style.zIndex = '1050';
+            });
+            if (modal) {
+                modal.style.zIndex = '1060';
+            }
+        });
     </script>
+
+    {{-- Stack for Modals outside main content to prevent z-index stacking context trapping --}}
+    @stack('modals')
 
     @stack('scripts')
     <!-- RW SMART Motion Graphics Engine -->

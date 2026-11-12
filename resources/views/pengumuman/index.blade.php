@@ -5,16 +5,33 @@
 @section('content')
 <div class="content-container">
     {{-- PAGE HEADER --}}
+    @php
+        $pageTitle = 'Pengumuman Resmi RW';
+        $rtLabel = '';
+        if (($scope ?? '') === 'rt') {
+            $rtKode = $user->isAdminRt() ? ($user->getRtKode() ?? '01') : (optional(optional($user->profile)->wilayahRt)->kode_rt ?? optional($user->profile)->rt ?? '01');
+            $pageTitle = 'Pengumuman RT ' . $rtKode;
+            $rtLabel = 'RT ' . $rtKode;
+        } elseif (($scope ?? '') === 'rw') {
+            $pageTitle = 'Pengumuman Resmi RW';
+            $rtLabel = 'RW 01';
+        } else {
+            $pageTitle = $user->isAdminRt() ? 'Pengumuman RT & RW' : ($user->isWarga() ? 'Pengumuman Lingkungan' : 'Pengumuman Resmi RW');
+            $rtLabel = $user->isAdminRt() ? 'RT ' . ($user->getRtKode() ?? '01') : ($user->isWarga() ? 'Warga' : 'Pengurus RW');
+        }
+    @endphp
     <header class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-saas mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Pengumuman RW</li>
-                </ol>
-            </nav>
-            <h1 class="page-title mb-1"><i class="fas fa-bullhorn text-success me-2"></i>Pengumuman Resmi RW</h1>
-            <p class="page-subtitle">Pusat warta informasi publik, surat edaran resmi, dan instruksi koordinasi pengurus wilayah.</p>
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-head-icon">
+                <i class="fas fa-bullhorn"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="page-title mb-0">{{ $pageTitle }}</h1>
+                    <span class="badge-rt-pill">{{ $rtLabel }}</span>
+                </div>
+                <p class="page-subtitle mb-0">Pusat warta informasi publik, surat edaran resmi, dan instruksi koordinasi pengurus wilayah.</p>
+            </div>
         </div>
 
         <div class="page-header-actions">
@@ -35,22 +52,25 @@
         </div>
     @endif
 
-    @if($user->isAdminRw() || $user->hasRole('bendahara'))
-        {{-- Filter Card untuk Pengurus RW --}}
-        <div class="saas-card p-4 mb-4">
-            <form method="GET" action="{{ route('pengumuman.index') }}" class="row g-3 align-items-center">
-                <div class="col-12 col-md-4">
-                    <label class="form-label-saas mb-1">Kategori Pengumuman</label>
-                    <select name="kategori" class="form-select-saas" onchange="this.form.submit()">
-                        <option value="">Semua Kategori</option>
-                        <option value="Umum" {{ request('kategori') == 'Umum' ? 'selected' : '' }}>Umum</option>
-                        <option value="Keamanan" {{ request('kategori') == 'Keamanan' ? 'selected' : '' }}>Keamanan</option>
-                        <option value="Kerja Bakti" {{ request('kategori') == 'Kerja Bakti' ? 'selected' : '' }}>Kerja Bakti</option>
-                        <option value="Iuran" {{ request('kategori') == 'Iuran' ? 'selected' : '' }}>Iuran & Keuangan</option>
-                        <option value="Darurat" {{ request('kategori') == 'Darurat' ? 'selected' : '' }}>Darurat / Penting</option>
-                    </select>
-                </div>
+    {{-- Filter Card --}}
+    <div class="form-card saas-card p-4 mb-4">
+        <form method="GET" action="{{ $user->isWarga() ? route('warga.pengumuman') : ($user->isAdminRt() ? route('rt.informasi.pengumuman') : route('pengumuman.index')) }}" class="row g-3 align-items-center">
+            @if(!empty($scope))
+                <input type="hidden" name="scope" value="{{ $scope }}">
+            @endif
+            <div class="col-12 col-md-{{ ($user->isAdminRw() || $user->hasRole('bendahara')) ? '4' : '6' }}">
+                <label class="form-label-saas mb-1">Kategori Pengumuman</label>
+                <select name="kategori" class="form-select-saas" onchange="this.form.submit()">
+                    <option value="">Semua Kategori</option>
+                    <option value="Umum" {{ request('kategori') == 'Umum' ? 'selected' : '' }}>Umum</option>
+                    <option value="Keamanan" {{ request('kategori') == 'Keamanan' ? 'selected' : '' }}>Keamanan</option>
+                    <option value="Kerja Bakti" {{ request('kategori') == 'Kerja Bakti' ? 'selected' : '' }}>Kerja Bakti</option>
+                    <option value="Iuran" {{ request('kategori') == 'Iuran' ? 'selected' : '' }}>Iuran & Keuangan</option>
+                    <option value="Darurat" {{ request('kategori') == 'Darurat' ? 'selected' : '' }}>Darurat / Penting</option>
+                </select>
+            </div>
 
+            @if($user->isAdminRw() || $user->hasRole('bendahara'))
                 <div class="col-12 col-md-4">
                     <label class="form-label-saas mb-1">Status Publikasi</label>
                     <select name="status" class="form-select-saas" onchange="this.form.submit()">
@@ -60,17 +80,18 @@
                         <option value="arsip" {{ request('status') == 'arsip' ? 'selected' : '' }}>Diarsipkan</option>
                     </select>
                 </div>
+            @endif
 
-                <div class="col-12 col-md-4 d-flex align-items-end">
-                    @if(request()->hasAny(['kategori', 'status']))
-                        <a href="{{ route('pengumuman.index') }}" class="btn btn-outline-saas w-100">
-                            <i class="fas fa-redo me-1"></i> Reset Filter
-                        </a>
-                    @endif
-                </div>
-            </form>
-        </div>
-    @endif
+            <div class="col-12 col-md-{{ ($user->isAdminRw() || $user->hasRole('bendahara')) ? '4' : '6' }} d-flex align-items-end">
+                @php
+                    $resetRoute = $user->isWarga() ? route('warga.pengumuman', !empty($scope) ? ['scope' => $scope] : []) : ($user->isAdminRt() ? route('rt.informasi.pengumuman') : route('pengumuman.index'));
+                @endphp
+                <a href="{{ $resetRoute }}" class="btn btn-outline-saas w-100">
+                    <i class="fas fa-redo me-1"></i> Reset Filter
+                </a>
+            </div>
+        </form>
+    </div>
 
     {{-- Grid Pengumuman --}}
     <div class="row g-4">

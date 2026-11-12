@@ -39,49 +39,37 @@
             width: 100%;
             border-bottom: 3px double #111;
             margin-bottom: 22px;
-            padding-bottom: 10px;
-        }
-
-        .letterhead td {
-            padding: 0;
-            vertical-align: middle;
-        }
-
-        .logo-cell {
-            width: 92px;
-            text-align: left;
-        }
-
-        .logo {
-            width: 76px;
-            height: 76px;
-            object-fit: contain;
+            padding-bottom: 12px;
+            text-align: center;
         }
 
         .institution {
-            padding-right: 92px !important;
             text-align: center;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .institution .government {
             font-size: 13pt;
             font-weight: bold;
-            letter-spacing: .4px;
+            letter-spacing: .5px;
             text-transform: uppercase;
         }
 
         .institution .name {
-            margin: 2px 0;
+            margin: 3px 0;
             font-size: 17pt;
             font-weight: bold;
-            line-height: 1.15;
+            line-height: 1.2;
             text-transform: uppercase;
+            letter-spacing: .6px;
         }
 
         .institution .address {
             font-family: Arial, sans-serif;
-            font-size: 9pt;
-            line-height: 1.35;
+            font-size: 9.5pt;
+            line-height: 1.4;
+            color: #333;
         }
 
         .title {
@@ -172,23 +160,16 @@
         Dokumen resmi RW Smart &mdash; Halaman <span class="page-number"></span>
     </div>
 
-    <table class="letterhead">
-        <tr>
-            <td class="logo-cell">
-                @if($logoData)
-                    <img class="logo" src="{{ $logoData }}" alt="Logo RW">
-                @endif
-            </td>
-            <td class="institution">
-                <div class="government">Pemerintah Lingkungan Rukun Warga</div>
-                <div class="name">Sekretariat RW</div>
-                <div class="address">
-                    Sistem Informasi RW Smart<br>
-                    Sekretariat Rukun Warga setempat
-                </div>
-            </td>
-        </tr>
-    </table>
+    <div class="letterhead">
+        <div class="institution">
+            <div class="government">Pemerintah Lingkungan Rukun Warga</div>
+            <div class="name">Sekretariat RW</div>
+            <div class="address">
+                Sistem Informasi RW Smart<br>
+                Sekretariat Rukun Warga setempat
+            </div>
+        </div>
+    </div>
 
     <div class="title">
         <h1>{{ $surat->jenisSurat->nama ?? 'Surat Pengantar' }}</h1>

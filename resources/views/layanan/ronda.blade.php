@@ -637,6 +637,7 @@
     </div>
 
     {{-- MODALS SECTION --}}
+    @push('modals')
     {{-- MODAL CHECK-IN PRESENSI SAYA (WARGA) --}}
     @if($upcomingJadwalSaya)
         <div class="modal fade" id="modalCheckinSaya" tabindex="-1">
@@ -1354,6 +1355,7 @@
             </div>
         </div>
     </div>
+    @endpush
 </div>
 
 <style>

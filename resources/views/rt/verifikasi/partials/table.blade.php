@@ -71,6 +71,7 @@
                         </td>
                     </tr>
 
+                    @push('modals')
                     {{-- Modal Teruskan ke RW --}}
                     <div class="modal fade" id="modalTeruskan{{ $p->id }}" tabindex="-1">
                         <div class="modal-dialog modal-dialog-centered">
@@ -124,6 +125,7 @@
                             </div>
                         </div>
                     </div>
+                    @endpush
                 @empty
                     <tr><td colspan="6" class="text-center py-5 text-secondary">Tidak ada permohonan dalam kategori ini.</td></tr>
                 @endforelse
