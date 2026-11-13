@@ -121,9 +121,13 @@
 
                 <div class="sidebar-group">
                     <div class="sidebar-group-title">Administrasi Warga</div>
-                    <a class="sidebar-nav-item {{ request()->routeIs('kartu-keluarga.*', 'warga.index', 'warga.show', 'warga.create', 'warga.edit') ? 'active' : '' }}" href="{{ route('kartu-keluarga.index') }}">
+                    <a class="sidebar-nav-item {{ request()->routeIs('warga.index', 'warga.show', 'warga.create', 'warga.edit') ? 'active' : '' }}" href="{{ route('warga.index') }}">
+                        <i class="fas fa-users"></i>
+                        <span>Data Warga</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('kartu-keluarga.*') ? 'active' : '' }}" href="{{ route('kartu-keluarga.index') }}">
                         <i class="fas fa-id-card"></i>
-                        <span>Data Keluarga & Warga</span>
+                        <span>Data Keluarga & KK</span>
                     </a>
                     <a class="sidebar-nav-item {{ request()->routeIs('warga.verifikasi.*') ? 'active' : '' }}" href="{{ route('warga.verifikasi.index') }}">
                         <i class="fas fa-user-check"></i>

@@ -10,7 +10,7 @@ class UserProfile extends Model
     
     protected $fillable = [
         'user_id', 'role_id', 'rw_id', 'rt_id', 'kartu_keluarga_id',
-        'no_kk', 'nik', 'nama_lengkap',
+        'no_kk', 'nik', 'rfid_uid', 'nama_lengkap',
         'tempat_lahir', 'tanggal_lahir', 
         'jenis_kelamin', 'agama',
         'alamat', 'nomor_rumah', 'rt', 'rw', 'kelurahan', 'kecamatan', 'kota',

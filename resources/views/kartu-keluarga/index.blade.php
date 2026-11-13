@@ -272,7 +272,20 @@
                                                     <tr class="small">
                                                         <td class="text-center">{{ $idxAnggota + 1 }}</td>
                                                         <td class="fw-bold text-dark">{{ $anggota->nama_lengkap }}</td>
-                                                        <td class="font-monospace text-emerald fw-semibold">{{ $anggota->nik }}</td>
+                                                        <td class="font-monospace text-emerald fw-semibold">
+                                                            {{ $anggota->nik }}
+                                                            <div class="mt-1">
+                                                                @if($anggota->rfid_uid)
+                                                                    <span class="badge bg-light text-primary border" title="E-KTP: {{ $anggota->rfid_uid }}">
+                                                                        <i class="fas fa-id-card text-primary me-1"></i><span class="font-monospace">{{ $anggota->rfid_uid }}</span>
+                                                                    </span>
+                                                                @else
+                                                                    <span class="badge bg-light text-muted border" title="E-KTP belum direkam">
+                                                                        <i class="fas fa-id-card text-muted me-1"></i><span class="text-secondary">Belum Ada</span>
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                        </td>
                                                         <td>
                                                             <span class="badge {{ $anggota->status_hubungan_keluarga === 'Kepala Keluarga' ? 'bg-primary' : ($anggota->status_hubungan_keluarga === 'Istri' ? 'bg-success' : 'bg-secondary') }}">
                                                                 {{ $anggota->status_hubungan_keluarga }}
@@ -302,6 +315,16 @@
                                                         </td>
                                                         <td class="text-end">
                                                             <div class="btn-group btn-group-sm">
+                                                                <button type="button" 
+                                                                        class="btn btn-outline-primary btn-sm btn-rekam-ktp" 
+                                                                        title="Rekam E-KTP (RFID RC522)"
+                                                                        data-id="{{ $anggota->id }}"
+                                                                        data-nama="{{ $anggota->nama_lengkap }}"
+                                                                        data-nik="{{ $anggota->nik }}"
+                                                                        data-rt="{{ $kk->wilayahRt->kode_rt ?? str_pad($anggota->rt_id, 2, '0', STR_PAD_LEFT) }}"
+                                                                        data-rfid="{{ $anggota->rfid_uid ?? '' }}">
+                                                                    <i class="fas fa-id-card"></i>
+                                                                </button>
                                                                 <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditAnggota{{ $anggota->id }}" title="Edit Anggota">
                                                                     <i class="fas fa-edit"></i>
                                                                 </button>
@@ -580,4 +603,7 @@
         </div>
     @endforeach
 @endforeach
+
+{{-- Modal Rekam E-KTP RFID RC522 --}}
+@include('partials.modal-rekam-ktp')
 @endpush

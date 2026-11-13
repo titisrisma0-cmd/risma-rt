@@ -165,6 +165,15 @@
                                             <span class="badge bg-light text-warning border" title="{{ $item->alasan_pengecualian_ronda }}"><i class="fas fa-ban me-1"></i>Bebas Ronda</span>
                                         @endif
                                     @endif
+                                    @if($item->rfid_uid)
+                                        <span class="badge bg-light text-primary border" title="E-KTP UID: {{ $item->rfid_uid }}">
+                                            <i class="fas fa-id-card text-primary me-1"></i>E-KTP: <span class="font-monospace fw-semibold">{{ $item->rfid_uid }}</span>
+                                        </span>
+                                    @else
+                                        <span class="badge bg-light text-muted border" title="E-KTP belum direkam">
+                                            <i class="fas fa-id-card text-muted me-1"></i>E-KTP: <span class="text-secondary">Belum Ada</span>
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="text-secondary small"><i class="fas fa-map-marker-alt text-muted me-1"></i> Alamat: {{ Str::limit($item->alamat ?? '-', 90) }}</div>
                             </div>
@@ -192,6 +201,16 @@
                                                 </button>
                                             </form>
                                         @endif
+                                        <button type="button" 
+                                                class="btn btn-outline-primary btn-rekam-ktp" 
+                                                title="Rekam E-KTP (RFID RC522)"
+                                                data-id="{{ $item->id }}"
+                                                data-nama="{{ $item->nama_lengkap ?? optional($item->user)->name }}"
+                                                data-nik="{{ $item->nik ?? '-' }}"
+                                                data-rt="{{ $item->wilayahRt->kode_rt ?? str_pad($item->rt_id, 2, '0', STR_PAD_LEFT) }}"
+                                                data-rfid="{{ $item->rfid_uid ?? '' }}">
+                                            <i class="fas fa-id-card me-1"></i> Rekam KTP
+                                        </button>
                                         <a href="{{ route('warga.edit', $targetId) }}" class="btn btn-outline-warning" title="Edit data warga">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -227,3 +246,7 @@
     </div>
 </div>
 @endsection
+
+@push('modals')
+    @include('partials.modal-rekam-ktp')
+@endpush

@@ -24,6 +24,7 @@ use App\Http\Controllers\WargaVerifikasiController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\MetodePembayaranController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\RfidController;
 
 Route::get('/', function () {
     try {
@@ -45,6 +46,9 @@ Route::get('/register', function () {
 })->name('register');
 
 Auth::routes(['verify' => true]);
+
+// ==================== IOT RFID SCANNER (NodeMCU ESP-32S + RC522) ====================
+Route::post('api/rfid/scan', [RfidController::class, 'receiveScan'])->name('api.rfid.scan');
 
 Route::middleware(['auth'])->group(function () {
     
@@ -117,6 +121,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('warga-verifikasi', [WargaVerifikasiController::class, 'index'])->name('warga.verifikasi.index');
     Route::post('warga-verifikasi/{id}/approve', [WargaVerifikasiController::class, 'approve'])->name('warga.verifikasi.approve');
     Route::post('warga-verifikasi/{id}/reject', [WargaVerifikasiController::class, 'reject'])->name('warga.verifikasi.reject');
+
+    // ==================== REKAM E-KTP (RFID RC522) ====================
+    Route::get('warga/rfid/latest', [RfidController::class, 'latestScan'])->name('warga.rfid.latest');
+    Route::post('warga/{id}/rfid/save', [RfidController::class, 'assignToWarga'])->name('warga.rfid.save');
+    Route::delete('warga/{id}/rfid/unlink', [RfidController::class, 'unlinkFromWarga'])->name('warga.rfid.unlink');
     Route::resource('rts', RtController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::post('rts/{rt}/ketua', [RtController::class, 'storeKetua'])->name('rts.ketua.store');
     Route::put('rts/{rt}/ketua/{user}', [RtController::class, 'updateKetua'])->name('rts.ketua.update');
