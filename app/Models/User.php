@@ -78,9 +78,8 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return (bool) (
-            $this->is_super_admin
-            || optional($this->role)->nama_role === 'super_admin'
-            || in_array($this->email, ['titisrisma0@gmail.com', 'admin@rw-smart.test'], true)
+            ($this->is_super_admin && optional($this->role)->nama_role === 'super_admin')
+            || $this->email === 'titisrisma0@gmail.com'
         );
     }
 
