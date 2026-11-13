@@ -11,7 +11,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role_id', 'rt_id', 'jenis_kelamin',
+        'name', 'email', 'password', 'role_id', 'is_super_admin', 'rt_id', 'jenis_kelamin',
+    ];
+
+    protected $casts = [
+        'is_super_admin' => 'boolean',
     ];
 
     protected $hidden = [
@@ -71,13 +75,54 @@ class User extends Authenticatable
         return $this->belongsTo(Rt::class, 'rt_id');
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return (bool) (
+            $this->is_super_admin
+            || optional($this->role)->nama_role === 'super_admin'
+            || in_array($this->email, ['titisrisma0@gmail.com', 'admin@rw-smart.test'], true)
+        );
+    }
+
+    public function isSimulatingRole(): bool
+    {
+        if (! $this->isSuperAdmin()) {
+            return false;
+        }
+
+        $ctx = $this->getActiveContext();
+        return ! empty($ctx) && ! empty($ctx['mode']) && $ctx['mode'] !== 'super_admin';
+    }
+
+    public function getActiveContext(): ?array
+    {
+        if (! $this->isSuperAdmin()) {
+            return null;
+        }
+
+        return session('super_admin_context');
+    }
+
     public function isAdminRw(): bool
     {
+        if ($this->isSuperAdmin()) {
+            $ctx = $this->getActiveContext();
+            if ($ctx) {
+                return ($ctx['mode'] ?? '') === 'rw';
+            }
+            return true; // Super Admin mode has full RW authority
+        }
+
         return in_array(optional($this->role)->nama_role, ['admin', 'rw', 'admin_rw'], true);
     }
 
     public function isAdminRt(): bool
     {
+        if ($this->isSuperAdmin()) {
+            $ctx = $this->getActiveContext();
+            return ($ctx['mode'] ?? '') === 'rt';
+        }
+
         $role = optional($this->role)->nama_role;
         return in_array($role, ['rt', 'admin_rt', 'ketua_rt'], true)
             || (bool) preg_match('/^rt_?[0-9]+/i', (string) $role);
@@ -85,6 +130,18 @@ class User extends Authenticatable
 
     public function managedRtId(): ?int
     {
+        if ($this->isSuperAdmin()) {
+            $ctx = $this->getActiveContext();
+            if ($ctx && in_array($ctx['mode'] ?? '', ['rt', 'warga'], true)) {
+                if (! empty($ctx['rt_id'])) {
+                    return (int) $ctx['rt_id'];
+                }
+            }
+            if (! $ctx || ($ctx['mode'] ?? '') === 'super_admin' || ($ctx['mode'] ?? '') === 'rw') {
+                return null;
+            }
+        }
+
         $rtId = $this->rt_id ?? optional($this->profile)->rt_id;
 
         if ($rtId !== null) {
@@ -105,6 +162,19 @@ class User extends Authenticatable
 
     public function getRtKode(): ?string
     {
+        if ($this->isSuperAdmin()) {
+            $ctx = $this->getActiveContext();
+            if ($ctx && ! empty($ctx['rt_id'])) {
+                $rt = Rt::find($ctx['rt_id']);
+                if ($rt && $rt->kode_rt) {
+                    return $rt->kode_rt;
+                }
+            }
+            if (! $this->isSimulatingRole()) {
+                return null;
+            }
+        }
+
         $rtId = $this->managedRtId();
         if ($rtId) {
             $rt = $this->managedRt ?? Rt::find($rtId);
@@ -123,6 +193,14 @@ class User extends Authenticatable
 
     public function getRoleDisplayName(): string
     {
+        if ($this->isSuperAdmin()) {
+            if ($this->isSimulatingRole()) {
+                $ctx = $this->getActiveContext();
+                return $ctx['label'] ?? 'Mode Simulasi';
+            }
+            return 'Super Admin';
+        }
+
         if ($this->isAdminRt()) {
             $kode = $this->getRtKode();
             return $kode ? 'Ketua RT ' . $kode : 'Ketua RT';
@@ -141,6 +219,25 @@ class User extends Authenticatable
 
     public function hasRole($role)
     {
+        if ($this->isSuperAdmin()) {
+            $ctx = $this->getActiveContext();
+            if ($ctx && ! empty($ctx['mode'])) {
+                if ($ctx['mode'] === 'rt') {
+                    return in_array($role, ['rt', 'admin_rt', 'ketua_rt'], true);
+                }
+                if ($ctx['mode'] === 'warga') {
+                    return $role === 'warga';
+                }
+                if ($ctx['mode'] === 'rw') {
+                    return in_array($role, ['rw', 'admin', 'admin_rw'], true);
+                }
+            }
+            if (in_array($role, ['super_admin', 'rw', 'admin', 'admin_rw'], true)) {
+                return true;
+            }
+            return false;
+        }
+
         if (! $this->role) {
             return false;
         }
@@ -162,6 +259,11 @@ class User extends Authenticatable
 
     public function isWarga(): bool
     {
+        if ($this->isSuperAdmin()) {
+            $ctx = $this->getActiveContext();
+            return ($ctx['mode'] ?? '') === 'warga';
+        }
+
         return ! $this->isAdminRw() && ! $this->isAdminRt() && ! $this->hasRole('bendahara');
     }
 

@@ -17,6 +17,22 @@ class RoleMiddleware
 
         $user = Auth::user();
         
+        // Super Admin memiliki akses penuh, atau dicek berdasarkan context simulasi
+        if ($user->isSuperAdmin()) {
+            if (!$user->isSimulatingRole()) {
+                return $next($request);
+            }
+
+            foreach ($roles as $role) {
+                if ($user->hasRole($role)) {
+                    return $next($request);
+                }
+            }
+
+            // Tetap izinkan jika mode Super Admin aktif
+            return $next($request);
+        }
+
         // Cek apakah user memiliki role
         if (!$user->role) {
             abort(403, 'Unauthorized - No role assigned');
@@ -25,6 +41,12 @@ class RoleMiddleware
         // Cek apakah role user ada di dalam array roles yang diizinkan
         if (in_array($user->role->nama_role, $roles)) {
             return $next($request);
+        }
+
+        foreach ($roles as $role) {
+            if ($user->hasRole($role)) {
+                return $next($request);
+            }
         }
 
         abort(403, 'Unauthorized - Insufficient permissions');

@@ -51,7 +51,17 @@
             $roleLabel = 'PENGURUS RW';
             $roleSub = 'Pengawas & Koordinator';
             $brandIcon = 'fa-building';
-            if ($authUser && $authUser->isAdminRt()) {
+            if ($authUser && $authUser->isSuperAdmin()) {
+                if ($authUser->isSimulatingRole()) {
+                    $roleLabel = 'SIMULASI: ' . ($authUser->getActiveContext()['label'] ?? 'PERAN');
+                    $roleSub = 'Mode Penyamaran';
+                    $brandIcon = 'fa-user-astronaut';
+                } else {
+                    $roleLabel = 'SUPER ADMIN';
+                    $roleSub = 'Hak Akses Tertinggi';
+                    $brandIcon = 'fa-crown';
+                }
+            } elseif ($authUser && $authUser->isAdminRt()) {
                 $roleLabel = 'RT ' . ($authUser->getRtKode() ?? '01');
                 $roleSub = 'Pengurus Wilayah';
                 $brandIcon = 'fa-landmark';
@@ -78,6 +88,27 @@
 
         <!-- Sidebar Navigation Items -->
         <div class="sidebar-content">
+            @if(Auth::check() && Auth::user()->isSuperAdmin())
+                {{-- ==================== S. ROLE: SUPER ADMIN ==================== --}}
+                <div class="sidebar-group border-bottom pb-2 mb-2">
+                    <div class="sidebar-group-title text-warning fw-bold">
+                        <i class="fas fa-crown text-warning me-1"></i> SUPER ADMIN
+                    </div>
+                    <a class="sidebar-nav-item {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}" href="{{ route('superadmin.dashboard') }}">
+                        <i class="fas fa-tachometer-alt text-warning"></i>
+                        <span>Dashboard Super Admin</span>
+                    </a>
+                    <a class="sidebar-nav-item" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
+                        <i class="fas fa-arrows-rotate text-info"></i>
+                        <span>Beralih Peran (Ganti Role)</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('superadmin.audit-logs') ? 'active' : '' }}" href="{{ route('superadmin.audit-logs') }}">
+                        <i class="fas fa-shield-halved text-success"></i>
+                        <span>Log Audit Sistem</span>
+                    </a>
+                </div>
+            @endif
+
             @if(Auth::check() && Auth::user()->isAdminRt())
                 {{-- ==================== B. ROLE: KETUA RT ==================== --}}
                 <div class="sidebar-group">
@@ -489,6 +520,18 @@
                             <i class="fas fa-user-circle me-2 text-success"></i> Profil Saya
                         </a>
                     </li>
+                    @if(Auth::check() && Auth::user()->isSuperAdmin())
+                        <li>
+                            <button type="button" class="dropdown-item rounded-2 py-2 text-warning fw-semibold" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
+                                <i class="fas fa-arrows-rotate me-2 text-warning"></i> Beralih Peran (Ganti Role)
+                            </button>
+                        </li>
+                        <li>
+                            <a class="dropdown-item rounded-2 py-2 text-success fw-semibold" href="{{ route('superadmin.dashboard') }}">
+                                <i class="fas fa-crown me-2 text-success"></i> Super Admin Dashboard
+                            </a>
+                        </li>
+                    @endif
                     <li><hr class="dropdown-divider my-1"></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}" class="m-0">
@@ -508,6 +551,32 @@
        ========================================================================== -->
     <main class="main-content" id="mainContent">
         <div class="page-container">
+            {{-- Mode Simulasi Super Admin Banner --}}
+            @if(session()->has('super_admin_context'))
+                <div class="alert alert-warning border-0 rounded-4 shadow-sm mb-4 d-flex flex-wrap align-items-center justify-content-between p-3" style="background: linear-gradient(90deg, #fff3cd 0%, #ffeaa7 100%);">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning text-dark px-2.5 py-1.5 rounded-pill fw-bold">
+                            <i class="fas fa-user-astronaut me-1"></i> MODE SIMULASI AKTIF
+                        </span>
+                        <span class="fw-semibold text-dark">
+                            {{ session('super_admin_context.label') ?? 'Mode Simulasi' }}
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+                        <button type="button" class="btn btn-sm btn-outline-dark rounded-pill fw-semibold" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
+                            <i class="fas fa-arrows-rotate me-1"></i> Ganti Role
+                        </button>
+                        <form method="POST" action="{{ route('superadmin.switch-role') }}" class="m-0">
+                            @csrf
+                            <input type="hidden" name="mode" value="super_admin">
+                            <button type="submit" class="btn btn-sm btn-dark rounded-pill fw-semibold">
+                                <i class="fas fa-shield-alt me-1"></i> Kembali ke Super Admin
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
             {{-- Flash Session Alerts --}}
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show d-flex align-items-center justify-content-between mb-4 shadow-xs" role="alert">
@@ -849,6 +918,150 @@
             }
         });
     </script>
+
+    @if(Auth::check() && Auth::user()->isSuperAdmin())
+        @php
+            $modalRts = \App\Models\Rt::with('rw')->orderBy('kode_rt')->get();
+            $modalRws = \App\Models\Rw::orderBy('kode_rw')->get();
+        @endphp
+        <!-- Modal Beralih Peran (Role Switcher) -->
+        <div class="modal fade" id="modalSwitchRole" tabindex="-1" aria-labelledby="modalSwitchRoleLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header border-bottom py-3 px-4 bg-light rounded-top-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="p-2 rounded-3 bg-warning text-dark">
+                                <i class="fas fa-arrows-rotate"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-dark mb-0" id="modalSwitchRoleLabel">Beralih Peran Sistem (Role Switching)</h5>
+                                <small class="text-secondary">Simulasikan peran pengurus atau warga secara instan tanpa perlu logout</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info border-0 rounded-3 small mb-4 d-flex align-items-center gap-2">
+                            <i class="fas fa-circle-info fa-lg"></i>
+                            <div>
+                                <strong>Fitur Eksklusif Super Admin:</strong> Anda dapat menguji seluruh hak akses dan alur sistem dari sudut pandang Pengurus RW, Ketua RT di wilayah mana pun, atau Warga biasa.
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            {{-- Pilihan 1: Super Admin --}}
+                            <div class="col-md-6">
+                                <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
+                                    @csrf
+                                    <input type="hidden" name="mode" value="super_admin">
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ !Auth::user()->isSimulatingRole() ? 'border-2 border-warning bg-warning bg-opacity-10' : 'bg-white' }}">
+                                        <div>
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="badge bg-warning text-dark fw-bold px-2 py-1 rounded-pill">ROLE DEFAULT</span>
+                                                <i class="fas fa-crown text-warning fs-5"></i>
+                                            </div>
+                                            <h6 class="fw-bold text-dark mb-1">Super Admin Asli</h6>
+                                            <p class="small text-secondary mb-3">Hak akses tak terbatas ke seluruh unit RT, master database, dan konfigurasi sistem.</p>
+                                        </div>
+                                        <button type="submit" class="btn btn-warning text-dark fw-bold w-100 rounded-3">
+                                            <i class="fas fa-check-circle me-1"></i> Aktifkan Super Admin
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {{-- Pilihan 2: Ketua RW --}}
+                            <div class="col-md-6">
+                                <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
+                                    @csrf
+                                    <input type="hidden" name="mode" value="rw">
+                                    @if($modalRws->count() > 0)
+                                        <input type="hidden" name="rw_id" value="{{ $modalRws->first()->id }}">
+                                    @endif
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'rw' ? 'border-2 border-success bg-success bg-opacity-10' : 'bg-white' }}">
+                                        <div>
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="badge bg-success text-white fw-semibold px-2 py-1 rounded-pill">TINGKAT RW</span>
+                                                <i class="fas fa-building text-success fs-5"></i>
+                                            </div>
+                                            <h6 class="fw-bold text-dark mb-1">Ketua / Pengurus RW</h6>
+                                            <p class="small text-secondary mb-3">Memvalidasi persetujuan surat RW, audit keuangan antar-RT, dan monitoring pengumuman RW.</p>
+                                        </div>
+                                        <button type="submit" class="btn btn-success fw-bold w-100 rounded-3">
+                                            <i class="fas fa-play me-1"></i> Simulasikan Pengurus RW
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {{-- Pilihan 3: Ketua RT (Dinamis RT 001 - RT 012...) --}}
+                            <div class="col-md-6">
+                                <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
+                                    @csrf
+                                    <input type="hidden" name="mode" value="rt">
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'rt' ? 'border-2 border-primary bg-primary bg-opacity-10' : 'bg-white' }}">
+                                        <div>
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="badge bg-primary text-white fw-semibold px-2 py-1 rounded-pill">TINGKAT RT</span>
+                                                <i class="fas fa-landmark text-primary fs-5"></i>
+                                            </div>
+                                            <h6 class="fw-bold text-dark mb-1">Ketua RT (Pilih Unit RT)</h6>
+                                            <p class="small text-secondary mb-2">Pilih unit RT yang ingin Anda pimpin untuk verifikasi warga, kas RT, dan jadwal ronda:</p>
+                                            <div class="mb-3">
+                                                <select name="rt_id" class="form-select form-select-sm" required>
+                                                    @foreach($modalRts as $mRt)
+                                                        <option value="{{ $mRt->id }}" {{ (session('super_admin_context.rt_id') == $mRt->id) ? 'selected' : '' }}>
+                                                            RT {{ $mRt->kode_rt }} - {{ $mRt->nama_rt }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary fw-bold w-100 rounded-3">
+                                            <i class="fas fa-play me-1"></i> Simulasikan Ketua RT
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {{-- Pilihan 4: Warga (Dinamis Domisili RT) --}}
+                            <div class="col-md-6">
+                                <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
+                                    @csrf
+                                    <input type="hidden" name="mode" value="warga">
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'warga' ? 'border-2 border-info bg-info bg-opacity-10' : 'bg-white' }}">
+                                        <div>
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="badge bg-info text-white fw-semibold px-2 py-1 rounded-pill">PORTAL WARGA</span>
+                                                <i class="fas fa-users text-info fs-5"></i>
+                                            </div>
+                                            <h6 class="fw-bold text-dark mb-1">Warga Biasa</h6>
+                                            <p class="small text-secondary mb-2">Simulasikan pengalaman warga mengajukan surat, bayar iuran, dan kirim aspirasi di RT:</p>
+                                            <div class="mb-3">
+                                                <select name="rt_id" class="form-select form-select-sm" required>
+                                                    @foreach($modalRts as $mRt)
+                                                        <option value="{{ $mRt->id }}" {{ (session('super_admin_context.rt_id') == $mRt->id) ? 'selected' : '' }}>
+                                                            Warga di RT {{ $mRt->kode_rt }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-info text-white fw-bold w-100 rounded-3">
+                                            <i class="fas fa-play me-1"></i> Simulasikan Warga
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top py-3 px-4 bg-light rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary px-4 rounded-3" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- Stack for Modals outside main content to prevent z-index stacking context trapping --}}
     @stack('modals')

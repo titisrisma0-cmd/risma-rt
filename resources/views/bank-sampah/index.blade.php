@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function () {
 @endsection
 
 @push('modals')
-@if($isWarga)
+@if($isWarga ?? !$isPengurus)
     {{-- Modal Setor Sampah --}}
     <div class="modal fade" id="modalSetoran" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -880,4 +880,3 @@ document.addEventListener('DOMContentLoaded', function () {
     @endforeach
 @endif
 @endpush
-@endsection

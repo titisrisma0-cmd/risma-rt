@@ -1361,77 +1361,156 @@
 <style>
 .calendar-wrapper {
     background: #FFFFFF;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border: 1px solid var(--border-color, #E2E8F0);
+    border-radius: 16px;
     padding: 16px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
 }
 .calendar-header-row {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     text-align: center;
     font-weight: 700;
     font-size: 0.82rem;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color, #E2E8F0);
+}
+.cal-day-header {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748B;
 }
 .calendar-days-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 .cal-day-cell {
-    min-height: 85px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 6px;
+    min-height: 96px;
+    height: 100%;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 8px 6px;
     background: #FAFCFA;
     transition: all 0.15s ease;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    min-width: 0;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
 }
 .cal-day-cell:hover {
-    background: var(--soft-green);
-    border-color: var(--primary-green);
+    background: #ECFDF5;
+    border-color: #10B981;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
 }
 .cal-day-cell.other-month {
     opacity: 0.35;
-    background: #F3F4F6;
+    background: #F8FAFC;
+    pointer-events: none;
 }
 .cal-day-cell.today {
-    border-color: var(--primary-green);
+    border-color: #0E7A4B;
     background: #FFFFFF;
-    box-shadow: 0 0 0 2px rgba(20, 122, 69, 0.2);
+    box-shadow: 0 0 0 2px rgba(14, 122, 75, 0.25);
 }
 .cal-day-num {
     font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--main-text);
+    font-size: 0.82rem;
+    color: #1E293B;
 }
 .cal-day-events {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    margin-top: 4px;
+    gap: 4px;
+    margin-top: 6px;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 .cal-event-pill {
-    font-size: 0.68rem;
-    padding: 2px 4px;
-    border-radius: 4px;
-    white-space: nowrap;
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    line-height: 1.2;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+.cal-event-pill .event-title {
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block;
-    line-height: 1.2;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+}
+.cal-shift-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-right: 4px;
 }
 @media (max-width: 768px) {
+    .calendar-wrapper {
+        padding: 10px;
+    }
+    .calendar-days-grid {
+        gap: 4px;
+    }
     .cal-day-cell {
-        min-height: 60px;
-        padding: 3px;
+        min-height: 72px;
+        padding: 5px 3px;
+        border-radius: 6px;
+    }
+    .cal-day-num {
+        font-size: 0.72rem;
     }
     .cal-event-pill {
-        font-size: 0.6rem;
+        font-size: 0.62rem;
+        padding: 2px 3px;
+    }
+    .cal-shift-badge {
+        font-size: 0.55rem;
+        padding: 0 3px;
+        margin-right: 2px;
+    }
+}
+@media (max-width: 480px) {
+    .calendar-header-row {
+        font-size: 0.7rem;
+    }
+    .cal-day-cell {
+        min-height: 56px;
+        padding: 3px 2px;
+    }
+    .cal-day-events {
+        gap: 2px;
+    }
+    .cal-event-pill .event-title {
+        display: none;
+    }
+    .cal-event-pill {
+        justify-content: center;
+        padding: 2px;
+    }
+    .cal-shift-badge {
+        margin-right: 0;
     }
 }
 </style>
@@ -1585,20 +1664,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
             let eventsHtml = '';
             dayJadwals.forEach(j => {
-                const pillClass = j.is_mine ? 'badge badge-soft-primary border border-primary' : 'badge badge-soft-success';
-                const officerNames = j.petugas && j.petugas.length ? j.petugas.slice(0, 2).join(', ') : 'Belum ada';
-                const swapBadge = j.has_swap_pending ? '<span class="badge badge-soft-warning ms-1" style="font-size:0.55rem;"><i class="fas fa-arrows-rotate"></i></span>' : '';
-                const absensiBadge = j.my_absensi === 'hadir' ? '<span class="badge badge-soft-success ms-1" style="font-size:0.55rem;"><i class="fas fa-check"></i></span>' : '';
+                const isMine = j.is_mine;
+                const pillClass = isMine ? 'bg-primary-subtle text-primary border border-primary' : 'bg-success-subtle text-success-emphasis border border-success-subtle';
+                const shiftClass = j.shift && j.shift.toLowerCase().includes('1') ? 'bg-success text-white' : 'bg-primary text-white';
+                const officerNames = j.petugas && j.petugas.length ? j.petugas.join(', ') : 'Belum ada';
+                const swapBadge = j.has_swap_pending ? '<i class="fas fa-arrows-rotate text-warning ms-1" style="font-size:0.6rem;" title="Ada permohonan tukar"></i>' : '';
+                const absensiBadge = j.my_absensi === 'hadir' ? '<i class="fas fa-check text-success ms-1" style="font-size:0.6rem;" title="Sudah hadir presensi"></i>' : '';
                 
-                eventsHtml += `<span class="cal-event-pill ${pillClass} d-inline-flex align-items-center" title="Pos: ${j.lokasi} | Petugas: ${(j.petugas || []).join(', ')}">
-                    <i class="fas fa-shield-alt me-1"></i>${j.shift}: ${officerNames} ${swapBadge} ${absensiBadge}
-                </span>`;
+                eventsHtml += `<div class="cal-event-pill ${pillClass}" title="Pos: ${j.lokasi} | Shift: ${j.shift} | Petugas: ${officerNames}">
+                    <span class="cal-shift-badge ${shiftClass}">${j.shift}</span>
+                    <span class="event-title">${officerNames}</span>
+                    ${swapBadge}
+                    ${absensiBadge}
+                </div>`;
             });
 
             cell.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="cal-day-num ${isToday ? 'text-success fw-bold' : ''}">${i}</span>
-                    ${isToday ? '<span class="badge badge-soft-secondary" style="font-size:0.6rem;">Hari Ini</span>' : ''}
+                    ${isToday ? '<span class="badge bg-secondary-subtle text-secondary py-0 px-1" style="font-size:0.6rem;">Hari Ini</span>' : ''}
                 </div>
                 <div class="cal-day-events">${eventsHtml}</div>
             `;

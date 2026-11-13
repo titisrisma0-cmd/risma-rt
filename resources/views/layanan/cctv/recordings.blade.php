@@ -137,6 +137,7 @@
     border-left: 3px solid #147A45;
 }
 </style>
+@endsection
 
 @push('scripts')
 <script>
@@ -154,4 +155,3 @@ document.querySelectorAll('.recording-item').forEach(button => {
 });
 </script>
 @endpush
-@endsection

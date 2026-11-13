@@ -21,12 +21,14 @@ class BankSampahController extends Controller
     {
         $schemaReady = $this->schemaReady();
         $isPengurus = $this->isPengurus();
+        $isWarga = ! $isPengurus;
         $user = Auth::user();
 
         if (! $schemaReady) {
             return view('bank-sampah.index', [
                 'schemaReady' => false,
                 'isPengurus' => $isPengurus,
+                'isWarga' => $isWarga,
             ]);
         }
 
@@ -94,6 +96,7 @@ class BankSampahController extends Controller
             return view('bank-sampah.index', [
                 'schemaReady' => true,
                 'isPengurus' => true,
+                'isWarga' => false,
                 'isRt' => $isRt,
                 'rtId' => $rtId,
                 'jenisSampahs' => $jenisSampahs,
@@ -127,6 +130,7 @@ class BankSampahController extends Controller
         return view('bank-sampah.index', [
             'schemaReady' => true,
             'isPengurus' => false,
+            'isWarga' => true,
             'jenisSampahs' => $jenisSampahs,
             'saldo' => $saldo,
             'riwayatSetoran' => SetoranSampah::with('jenisSampah')

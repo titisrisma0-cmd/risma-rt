@@ -23,6 +23,11 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
+        // 0. Super Admin (ketika tidak sedang dalam mode simulasi peran)
+        if ($user && $user->isSuperAdmin() && ! $user->isSimulatingRole()) {
+            return redirect()->route('superadmin.dashboard');
+        }
+
         // 1. Dashboard Khusus Ketua RT
         if ($user && $user->isAdminRt()) {
             return $this->rtDashboard($user);

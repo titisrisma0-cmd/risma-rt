@@ -155,6 +155,7 @@
     font-size: 2rem;
 }
 </style>
+@endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
@@ -201,7 +202,6 @@ modalEl.addEventListener('hidden.bs.modal', () => {
 });
 </script>
 @endpush
-@endsection
 
 @push('modals')
 {{-- MODAL STREAM --}}

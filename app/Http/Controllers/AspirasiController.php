@@ -13,7 +13,10 @@ class AspirasiController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user()->loadMissing('profile.kartuKeluarga');
+        $user = ($request->user() ?? \Illuminate\Support\Facades\Auth::user())?->loadMissing('profile.kartuKeluarga');
+        if (! $user) {
+            abort(401);
+        }
         $isRw = $this->isRw($user);
         $isRt = $this->isRt($user);
         $canManage = $isRw || $isRt;
@@ -62,7 +65,8 @@ class AspirasiController extends Controller
             'lokasi' => 'nullable|string|max:255',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'foto.*' => 'nullable|image|max:4096',
+            'foto' => 'nullable|array|max:5',
+            'foto.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $rtId = $this->getRtId($user);

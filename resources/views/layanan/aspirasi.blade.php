@@ -152,11 +152,27 @@
                                         <small class="text-muted">RT {{ $a->pelapor?->getRtKode() ?? ($a->rt?->kode_rt ?? '-') }}</small>
                                     @endif
                                 </td>
-                                <td style="max-width: 280px;">
+                                <td style="max-width: 320px;">
                                     <div class="fw-bold text-dark mb-1">{{ $a->judul }}</div>
-                                    <p class="small text-muted mb-1">{{ str($a->deskripsi)->limit(90) }}</p>
+                                    <p class="small text-muted mb-2">{{ str($a->deskripsi)->limit(90) }}</p>
                                     @if($a->lampirans->count() > 0)
-                                        <span class="badge badge-soft-info"><i class="fas fa-image me-1"></i>{{ $a->lampirans->count() }} Foto Bukti</span>
+                                        <div class="mt-2">
+                                            <div class="small fw-semibold text-secondary mb-1">
+                                                <i class="fas fa-camera text-emerald me-1"></i>Bukti Foto ({{ $a->lampirans->count() }}):
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach($a->lampirans as $lamp)
+                                                    <div class="aspirasi-thumb-box position-relative"
+                                                         onclick="openAspirasiLightbox('{{ asset('storage/' . $lamp->file_path) }}', '{{ addslashes($a->judul) }}')"
+                                                         title="Klik untuk memperbesar foto bukti">
+                                                        <img src="{{ asset('storage/' . $lamp->file_path) }}" alt="Foto Bukti" class="aspirasi-thumb-img">
+                                                        <div class="aspirasi-thumb-overlay"><i class="fas fa-search-plus text-white"></i></div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="small text-muted mt-1"><i class="fas fa-image-slash me-1 opacity-50"></i>Tidak ada foto bukti</div>
                                     @endif
                                 </td>
                                 <td>
@@ -305,6 +321,27 @@
                                 <h6 class="fw-bold text-dark mb-1">{{ $a->judul }}</h6>
                                 <p class="small text-secondary mb-2">{{ $a->deskripsi }}</p>
 
+                                {{-- Bukti Foto Warga --}}
+                                @if($a->lampirans->count() > 0)
+                                    <div class="mt-2 mb-3">
+                                        <div class="small fw-semibold text-secondary mb-1">
+                                            <i class="fas fa-camera text-emerald me-1"></i>Foto Bukti ({{ $a->lampirans->count() }}):
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @foreach($a->lampirans as $lamp)
+                                                <div class="aspirasi-thumb-box position-relative"
+                                                     onclick="openAspirasiLightbox('{{ asset('storage/' . $lamp->file_path) }}', '{{ addslashes($a->judul) }}')"
+                                                     title="Klik untuk memperbesar foto bukti">
+                                                    <img src="{{ asset('storage/' . $lamp->file_path) }}" alt="Foto Bukti" class="aspirasi-thumb-img">
+                                                    <div class="aspirasi-thumb-overlay"><i class="fas fa-search-plus text-white"></i></div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="small text-muted mb-2"><i class="fas fa-image-slash me-1 opacity-50"></i>Tidak ada foto bukti</div>
+                                @endif
+
                                 {{-- Tanggapan Resmi RT/RW --}}
                                 @if($a->tanggapans->count() > 0)
                                     <div class="mt-2 p-3 rounded-3 bg-white border border-success-subtle small">
@@ -410,4 +447,89 @@
             </div>
         @endforeach
     @endif
+
+    {{-- ==================== LIGHTBOX MODAL FOTO BUKTI ASPIRASI ==================== --}}
+    <div class="modal fade" id="modalLightboxAspirasi" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-image text-emerald"></i>
+                        <h6 class="modal-title fw-bold text-white mb-0" id="lightboxTitle">Foto Bukti Aspirasi</h6>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="#" id="lightboxFullBtn" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3" title="Buka gambar di tab baru dengan resolusi asli">
+                            <i class="fas fa-external-link-alt me-1"></i>Ukuran Penuh
+                        </a>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0 text-center bg-black d-flex justify-content-center align-items-center" style="min-height: 380px; max-height: 75vh; overflow: auto;">
+                    <img id="lightboxImg" src="" alt="Bukti" class="img-fluid" style="max-height: 75vh; width: auto; object-fit: contain;">
+                </div>
+                <div class="modal-footer bg-dark border-0 py-2 px-4 justify-content-between">
+                    <small class="text-white-50"><i class="fas fa-info-circle me-1"></i>Gunakan tombol <strong>Ukuran Penuh</strong> untuk mengunduh atau memperbesar dokumen asli.</small>
+                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endpush
+
+@push('scripts')
+<script>
+function openAspirasiLightbox(url, title) {
+    const img = document.getElementById('lightboxImg');
+    const titleEl = document.getElementById('lightboxTitle');
+    const fullBtn = document.getElementById('lightboxFullBtn');
+    const modalEl = document.getElementById('modalLightboxAspirasi');
+
+    if (img) img.src = url;
+    if (titleEl) titleEl.textContent = title ? ('Foto Bukti: ' + title) : 'Foto Bukti Aspirasi';
+    if (fullBtn) fullBtn.href = url;
+
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+}
+</script>
+@endpush
+
+<style>
+.aspirasi-thumb-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid #cbd5e1;
+    cursor: pointer;
+    background: #f1f5f9;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.aspirasi-thumb-box:hover {
+    transform: translateY(-2px);
+    border-color: #0e7a4b;
+    box-shadow: 0 4px 12px rgba(14, 122, 75, 0.2);
+}
+.aspirasi-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.aspirasi-thumb-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 122, 75, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 0.85rem;
+}
+.aspirasi-thumb-box:hover .aspirasi-thumb-overlay {
+    opacity: 1;
+}
+</style>

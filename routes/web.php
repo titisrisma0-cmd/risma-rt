@@ -23,6 +23,7 @@ use App\Http\Controllers\RtVerifikasiController;
 use App\Http\Controllers\WargaVerifikasiController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\MetodePembayaranController;
+use App\Http\Controllers\SuperAdminController;
 
 Route::get('/', function () {
     try {
@@ -47,6 +48,13 @@ Auth::routes(['verify' => true]);
 
 Route::middleware(['auth'])->group(function () {
     
+    // ==================== SUPER ADMIN & MULTI-ROLE SWITCHING ====================
+    Route::post('/superadmin/switch-role', [SuperAdminController::class, 'switchRole'])->name('superadmin.switch-role');
+    Route::middleware(['superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+        Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/audit-logs', [SuperAdminController::class, 'auditLogs'])->name('audit-logs');
+    });
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/peta-wilayah', [PetaWilayahController::class, 'index'])->name('peta-wilayah.index');

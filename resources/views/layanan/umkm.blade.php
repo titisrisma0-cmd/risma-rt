@@ -403,6 +403,7 @@
         @endif
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
@@ -424,7 +425,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
-@endsection
 
 @push('modals')
     {{-- MODAL TOKO SAYA (WARGA) --}}
