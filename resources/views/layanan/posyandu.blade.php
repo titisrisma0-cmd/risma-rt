@@ -79,7 +79,7 @@
                         <h3 class="stat-value text-dark mb-0">{{ $balitas->count() }}</h3>
                         <small class="text-secondary">Balita Terdaftar</small>
                     </div>
-                    <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--info-soft); color: var(--info);">
                         <i class="fas fa-children"></i>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
                         <h3 class="stat-value text-warning mb-0">{{ $queueCount }}</h3>
                         <small class="text-secondary">Belum Melakukan Kunjungan</small>
                     </div>
-                    <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #D97706;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--accent-soft); color: var(--accent);">
                         <i class="fas fa-list-ol"></i>
                     </div>
                 </div>
@@ -401,7 +401,7 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="saas-card p-4 text-center h-100">
-                        <div class="stat-icon-wrapper mx-auto mb-3" style="background-color: #E0F2FE; color: #0284C7;">
+                        <div class="stat-icon-wrapper mx-auto mb-3" style="background-color: var(--info-soft); color: var(--info);">
                             <i class="fas fa-weight-scale"></i>
                         </div>
                         <h6 class="fw-bold text-dark mb-1">Penimbangan Rutin</h6>
@@ -419,7 +419,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="saas-card p-4 text-center h-100">
-                        <div class="stat-icon-wrapper mx-auto mb-3" style="background-color: #FEF3C7; color: #D97706;">
+                        <div class="stat-icon-wrapper mx-auto mb-3" style="background-color: var(--accent-soft); color: var(--accent);">
                             <i class="fas fa-bowl-food"></i>
                         </div>
                         <h6 class="fw-bold text-dark mb-1">Edukasi Gizi & MPASI</h6>
@@ -456,7 +456,7 @@
 
                         <div class="modal-body p-4">
                             {{-- Step 1: Pilih Kartu Keluarga & Anggota Anak --}}
-                            <div class="p-3 mb-3 rounded-3" style="background-color: #F7FAF8; border: 1px solid #E9EEEA;">
+                            <div class="p-3 mb-3 rounded-3" style="background-color: var(--surface-2); border: 1px solid var(--border);">
                                 <div class="row g-2 align-items-center">
                                     <div class="col-md-7">
                                         <label class="form-label small fw-semibold text-secondary mb-1">

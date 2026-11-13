@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- Box Scanner Radar & Deteksi -->
-                <div class="text-center p-4 rounded-4 mb-3 position-relative" id="scannerBox" style="background: linear-gradient(180deg, #f8fbf9 0%, #edf7f0 100%); border: 2px dashed #10b981;">
+                <div class="text-center p-4 rounded-4 mb-3 position-relative" id="scannerBox" style="background: var(--surface-2); border: 2px dashed var(--primary);">
                     <div class="mb-3 position-relative d-inline-block">
                         <div id="scannerIconPulse" class="rounded-circle d-flex align-items-center justify-content-center text-emerald mx-auto pulse-ring" style="width: 76px; height: 76px; background: rgba(16, 185, 129, 0.15);">
                             <i class="fas fa-satellite-dish fa-2x" id="scannerIcon"></i>

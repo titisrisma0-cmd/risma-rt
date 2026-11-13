@@ -1,5 +1,5 @@
 <div class="col-12 col-lg-6">
-    <div class="saas-card h-100 d-flex flex-column justify-content-between p-4 border" style="border-radius: 16px; border-color: #E9EEEA !important; transition: transform 0.2s, box-shadow 0.2s;">
+    <div class="saas-card h-100 d-flex flex-column justify-content-between p-4 border" style="border-radius: 16px; border-color: var(--border) !important; transition: transform 0.2s, box-shadow 0.2s;">
         <div>
             {{-- Badges & Status --}}
             <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
@@ -35,7 +35,7 @@
             </p>
 
             {{-- Detail Info Strip --}}
-            <div class="p-3 rounded-3 mb-3 bg-light border small" style="border-color: #E9EEEA !important; border-radius: 12px;">
+            <div class="p-3 rounded-3 mb-3 border small" style="border-color: var(--border) !important; border-radius: 12px; background-color: var(--surface-2);">
                 <div class="d-flex align-items-center mb-2 text-dark">
                     <i class="fas fa-calendar-days text-emerald me-2" style="width: 16px;"></i>
                     <span class="fw-semibold">

@@ -51,7 +51,7 @@
     @endif
 
     {{-- FILTER BAR: Modern Clean Green & White SaaS Style --}}
-    <div class="saas-card p-4 mb-4" style="background: #ffffff; border: 1px solid #E9EEEA; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+    <div class="saas-card p-4 mb-4" style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-xs);">
         <form method="GET" action="{{ route('kegiatan.index') }}">
             @if(request('tingkat'))
                 <input type="hidden" name="tingkat" value="{{ request('tingkat') }}">
@@ -65,20 +65,20 @@
                 <div class="col-12 col-lg-5">
                     <label class="form-label small fw-semibold text-secondary mb-1">Pencarian Kegiatan</label>
                     <div class="position-relative">
-                        <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="font-size: 0.95rem; color: #758078 !important; pointer-events: none;"></i>
+                        <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary" style="font-size: 0.95rem; pointer-events: none;"></i>
                         <input type="text" 
                                name="q" 
                                value="{{ $search }}" 
                                placeholder="Cari judul agenda, deskripsi, atau lokasi..." 
                                class="form-control form-control-saas ps-5" 
-                               style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s;">
+                               style="height: 44px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.9rem; transition: border-color 0.2s, box-shadow 0.2s;">
                     </div>
                 </div>
 
                 {{-- B. Filter Dropdown Bulan --}}
                 <div class="col-6 col-sm-3 col-lg-2">
                     <label class="form-label small fw-semibold text-secondary mb-1">Bulan</label>
-                    <select name="bulan" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.88rem;">
+                    <select name="bulan" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.88rem;">
                         @for($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}
@@ -90,7 +90,7 @@
                 {{-- B. Filter Dropdown Tahun --}}
                 <div class="col-6 col-sm-3 col-lg-1">
                     <label class="form-label small fw-semibold text-secondary mb-1">Tahun</label>
-                    <select name="tahun" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.88rem;">
+                    <select name="tahun" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.88rem;">
                         @for($y = date('Y') - 2; $y <= date('Y') + 2; $y++)
                             <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endfor
@@ -100,7 +100,7 @@
                 {{-- B. Filter Dropdown Status --}}
                 <div class="col-12 col-sm-6 col-lg-2">
                     <label class="form-label small fw-semibold text-secondary mb-1">Status</label>
-                    <select name="status" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 0.88rem;">
+                    <select name="status" class="form-select form-control-saas" style="height: 44px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.88rem;">
                         <option value="">Semua Status</option>
                         <option value="dibuka" {{ $status === 'dibuka' ? 'selected' : '' }}>Akan Datang / Dibuka</option>
                         <option value="berlangsung" {{ $status === 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
@@ -409,7 +409,7 @@
                         {{ $kegiatan->deskripsi ?? 'Tidak ada deskripsi rinci untuk kegiatan ini.' }}
                     </p>
 
-                    <div class="p-3 rounded-3 bg-light border small mb-3" style="border-color: #E9EEEA !important; border-radius: 12px;">
+                    <div class="p-3 rounded-3 border small mb-3" style="border-color: var(--border) !important; border-radius: 12px; background-color: var(--surface-2) !important;">
                         <div class="mb-2">
                             <span class="text-secondary d-block">Waktu Pelaksanaan:</span>
                             <strong class="text-dark">

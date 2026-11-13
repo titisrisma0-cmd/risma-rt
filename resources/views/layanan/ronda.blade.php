@@ -1360,8 +1360,8 @@
 
 <style>
 .calendar-wrapper {
-    background: #FFFFFF;
-    border: 1px solid var(--border-color, #E2E8F0);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 16px;
     width: 100%;
@@ -1377,12 +1377,12 @@
     font-weight: 700;
     font-size: 0.82rem;
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color, #E2E8F0);
+    border-bottom: 1px solid var(--border);
 }
 .cal-day-header {
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #64748B;
+    color: var(--ink-soft);
 }
 .calendar-days-grid {
     display: grid;
@@ -1395,10 +1395,10 @@
 .cal-day-cell {
     min-height: 96px;
     height: 100%;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 8px 6px;
-    background: #FAFCFA;
+    background: var(--surface-2);
     transition: all 0.15s ease;
     display: flex;
     flex-direction: column;
@@ -1409,25 +1409,25 @@
     box-sizing: border-box;
 }
 .cal-day-cell:hover {
-    background: #ECFDF5;
-    border-color: #10B981;
+    background: var(--primary-soft);
+    border-color: var(--primary);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
 }
 .cal-day-cell.other-month {
     opacity: 0.35;
-    background: #F8FAFC;
+    background: var(--surface-2);
     pointer-events: none;
 }
 .cal-day-cell.today {
-    border-color: #0E7A4B;
-    background: #FFFFFF;
+    border-color: var(--primary);
+    background: var(--surface);
     box-shadow: 0 0 0 2px rgba(14, 122, 75, 0.25);
 }
 .cal-day-num {
     font-weight: 700;
     font-size: 0.82rem;
-    color: #1E293B;
+    color: var(--ink);
 }
 .cal-day-events {
     display: flex;
@@ -1583,9 +1583,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     officerBadges = j.petugas.map(pName => {
                         const isMine = j.is_mine && pName === "{{ $user->name }}";
                         if (isMine) {
-                            return `<span class="badge" style="background-color: #147A45; color: #FFFFFF; border: 1px solid #0D5737; font-size: 0.8rem; padding: 6px 10px; border-radius: 6px;"><i class="fas fa-user-shield me-1"></i>${pName} (Saya)</span>`;
+                            return `<span class="badge" style="background-color: var(--primary); color: #FFFFFF; border: 1px solid var(--primary); font-size: 0.8rem; padding: 6px 10px; border-radius: 6px;"><i class="fas fa-user-shield me-1"></i>${pName} (Saya)</span>`;
                         } else {
-                            return `<span class="badge" style="background-color: #E8F5EC; color: #0D5737; border: 1px solid #A3D9B8; font-size: 0.8rem; padding: 6px 10px; border-radius: 6px;"><i class="fas fa-user me-1"></i>${pName}</span>`;
+                            return `<span class="badge" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border); font-size: 0.8rem; padding: 6px 10px; border-radius: 6px;"><i class="fas fa-user me-1"></i>${pName}</span>`;
                         }
                     }).join(' ');
                 } else {

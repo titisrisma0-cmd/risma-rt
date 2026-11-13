@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-bs-theme="light" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Masuk & Pendaftaran | RW SMART</title>
+    
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('risma-theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.style.colorScheme = theme;
+        })();
+    </script>
     
     @include('partials.whatsapp-help')
     
@@ -19,26 +30,54 @@
     <link href="{{ asset('css/motion.css') }}" rel="stylesheet">
     
     <style>
-        :root {
+        :root,
+        [data-bs-theme="light"],
+        [data-theme="light"] {
+            color-scheme: light;
             --bg: #f7faf8;
             --surface: #ffffff;
+            --surface-2: #f0f5f2;
             --border: #dbe9e0;
             --ink: #0f2a1d;
             --ink-soft: #4b6355;
-            --ink-mute: #5f7468;
+            --ink-mute: #6f8578;
             --primary: #0e7a4b;
             --primary-dark: #0a5c38;
             --primary-soft: #e3f4ea;
-            --accent: #f4a62a;
+            --accent: #b87106;
             --accent-soft: #fdf0d8;
             --danger: #e5483a;
             --danger-soft: #fdeeee;
             --info: #2a6fdb;
             --info-soft: #eaf1fc;
+            --on-primary: #ffffff;
             --radius-btn: 12px;
             --radius-input: 12px;
             --radius-card: 22px;
             --shadow-soft: 0 16px 36px rgba(15, 42, 29, 0.10);
+        }
+
+        [data-bs-theme="dark"],
+        [data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #0b1511;
+            --surface: #12201a;
+            --surface-2: #172a21;
+            --border: #223a2e;
+            --ink: #eaf5ee;
+            --ink-soft: #b7cbbf;
+            --ink-mute: #8aa395;
+            --primary: #2fbf7f;
+            --primary-dark: #1db36f;
+            --primary-soft: #143325;
+            --accent: #f4b13f;
+            --accent-soft: #3a2d12;
+            --danger: #e5483a;
+            --danger-soft: #3a1916;
+            --info: #3d86f5;
+            --info-soft: #14283d;
+            --on-primary: #0b1511;
+            --shadow-soft: 0 16px 36px rgba(0, 0, 0, 0.45);
         }
 
         *, *::before, *::after {
@@ -776,7 +815,32 @@
                 passInput.value = password;
             }
         }
+        // Theme Toggle
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.style.colorScheme = theme;
+            localStorage.setItem('risma-theme', theme);
+            if (themeToggleIcon) {
+                themeToggleIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+        }
+        setTheme(localStorage.getItem('risma-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const cur = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                setTheme(cur === 'dark' ? 'light' : 'dark');
+            });
+        }
     </script>
+    
+    <!-- Floating Theme Toggle for Login Page -->
+    <button type="button" id="themeToggleBtn" class="btn btn-sm rounded-circle position-fixed top-0 end-0 m-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: var(--surface); border: 1.5px solid var(--border); color: var(--ink); z-index: 1050;" title="Ganti mode terang/gelap" aria-label="Toggle Theme">
+        <i class="fas fa-sun" id="themeToggleIcon"></i>
+    </button>
+
     <!-- RW SMART Motion Graphics Engine -->
     <script src="{{ asset('js/motion.js') }}"></script>
 </body>

@@ -78,7 +78,7 @@
                         <h3 class="stat-value text-dark mb-0 fs-5">{{ $tokoSaya ? 'Aktif Terdaftar' : 'Belum Terdaftar' }}</h3>
                         <small class="text-secondary">{{ $tokoSaya ? $tokoSaya->nama_usaha : 'Buka Usaha Sekarang' }}</small>
                     </div>
-                    <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #D97706;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--accent-soft); color: var(--accent);">
                         <i class="fas fa-shop"></i>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                         <h3 class="stat-value text-info mb-0">{{ $kategoriProduk->count() }}</h3>
                         <small class="text-secondary">Variasi Produk & Jasa</small>
                     </div>
-                    <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--info-soft); color: var(--info);">
                         <i class="fas fa-layer-group"></i>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
                             <h3 class="stat-value text-danger mb-0">{{ $produkPending->count() }}</h3>
                             <small class="text-secondary">Menunggu Verifikasi</small>
                         </div>
-                        <div class="stat-icon-wrapper" style="background-color: #FEE2E2; color: #DC2626;">
+                        <div class="stat-icon-wrapper" style="background-color: var(--danger-soft); color: var(--danger);">
                             <i class="fas fa-hourglass-half"></i>
                         </div>
                     </div>

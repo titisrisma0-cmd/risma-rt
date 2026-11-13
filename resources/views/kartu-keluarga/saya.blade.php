@@ -30,7 +30,7 @@
 
     @if(!$kk)
         <div class="saas-card p-5 text-center">
-            <div class="stat-icon-wrapper mx-auto mb-3" style="width: 64px; height: 64px; background-color: #FEF3C7; color: #D97706; font-size: 1.75rem;">
+            <div class="stat-icon-wrapper mx-auto mb-3" style="width: 64px; height: 64px; background-color: var(--accent-soft); color: var(--accent); font-size: 1.75rem;">
                 <i class="fas fa-address-card"></i>
             </div>
             <h4 class="text-dark fw-bold mb-2">Data Kartu Keluarga Belum Terhubung</h4>

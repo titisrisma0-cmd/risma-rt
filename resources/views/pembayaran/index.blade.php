@@ -59,7 +59,7 @@
                 <div class="row g-3 mb-4" role="tablist" aria-label="Pilih periode tagihan">
                     @foreach($tagihanGroups as $group)
                         <div class="col-md-6 col-lg-4">
-                            <button type="button" class="period-btn w-100 text-start saas-card p-3 border {{ $loop->first ? 'active border-primary' : '' }}" data-period-target="tagihan-period-{{ $loop->index }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}" style="{{ $loop->first ? 'background-color: #F0FDF4; border: 1.5px solid var(--primary-green) !important;' : 'background-color: #FAFCFA;' }}">
+                            <button type="button" class="period-btn w-100 text-start saas-card p-3 border {{ $loop->first ? 'active border-primary' : '' }}" data-period-target="tagihan-period-{{ $loop->index }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}" style="{{ $loop->first ? 'background-color: var(--primary-soft); border: 1.5px solid var(--primary) !important;' : 'background-color: var(--surface-2);' }}">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="fw-bold text-dark fs-6">{{ $group->period->label }}</span>
                                     <span class="badge-soft-warning">{{ $group->unpaid_count }} belum bayar</span>
@@ -262,8 +262,8 @@
 
                 periodButtons.forEach(function (item) {
                     item.classList.remove('active', 'border-primary');
-                    item.style.backgroundColor = '#FAFCFA';
-                    item.style.border = '1px solid var(--border-color)';
+                    item.style.backgroundColor = 'var(--surface-2)';
+                    item.style.border = '1px solid var(--border)';
                     item.setAttribute('aria-selected', 'false');
                 });
 
@@ -272,8 +272,8 @@
                 });
 
                 button.classList.add('active', 'border-primary');
-                button.style.backgroundColor = '#F0FDF4';
-                button.style.border = '1.5px solid var(--primary-green)';
+                button.style.backgroundColor = 'var(--primary-soft)';
+                button.style.border = '1.5px solid var(--primary)';
                 button.setAttribute('aria-selected', 'true');
 
                 if (targetPanel) {

@@ -54,7 +54,7 @@
             </div>
             <div class="col-md-4">
                 <div class="saas-card p-3 h-100 d-flex align-items-center gap-3">
-                    <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #D97706;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--accent-soft); color: var(--accent);">
                         <i class="fas fa-clock-rotate-left"></i>
                     </div>
                     <div>
@@ -65,7 +65,7 @@
             </div>
             <div class="col-md-4">
                 <div class="saas-card p-3 h-100 d-flex align-items-center gap-3">
-                    <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--info-soft); color: var(--info);">
                         <i class="fas fa-print"></i>
                     </div>
                     <div>
@@ -175,7 +175,7 @@
             </div>
             <div class="col-md-4">
                 <div class="saas-card p-3 h-100 d-flex align-items-center gap-3">
-                    <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #D97706;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--accent-soft); color: var(--accent);">
                         <i class="fas fa-clipboard-check"></i>
                     </div>
                     <div>
@@ -186,7 +186,7 @@
             </div>
             <div class="col-md-4">
                 <div class="saas-card p-3 h-100 d-flex align-items-center gap-3">
-                    <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--info-soft); color: var(--info);">
                         <i class="fas fa-file-pdf"></i>
                     </div>
                     <div>

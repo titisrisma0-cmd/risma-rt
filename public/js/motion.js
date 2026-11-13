@@ -12,6 +12,33 @@
     const root = document.documentElement;
     root.classList.add('js-motion');
 
+    // Helper to safely count-up counters inside element
+    function countUpInside(el) {
+        if (!el) return;
+        if (el.matches('[data-count], .stat-value, .stat-number')) {
+            countUp(el);
+        }
+        if (el.querySelectorAll) {
+            el.querySelectorAll('[data-count], .stat-value, .stat-number').forEach(countUp);
+        }
+    }
+
+    // Helper to clean up motion attributes once revealed
+    function scheduleCleanup(el) {
+        if (!el) return;
+        let cleaned = false;
+        const cleanup = () => {
+            if (cleaned) return;
+            cleaned = true;
+            el.removeAttribute('data-m');
+            el.classList.remove('m-in');
+            el.style.removeProperty('--d');
+        };
+        el.addEventListener('transitionend', cleanup, { once: true });
+        // Safety fallback in case transitionend does not fire (display:none, background tab, no opacity transition)
+        setTimeout(cleanup, 1200);
+    }
+
     // 2. Intersection Observer Configuration
     const io = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -20,21 +47,8 @@
             io.unobserve(el);
             el.classList.add('m-in');
 
-            // Trigger numerical count-up if element or children have counters
-            if (el.matches('[data-count], .stat-value, .stat-number')) {
-                countUp(el);
-            }
-            el.querySelectorAll('[data-count], .stat-value, .stat-number').forEach(countUp);
-
-            // Clean up motion attributes on transitionend to protect native CSS hover/focus
-            const cleanup = () => {
-                el.removeAttribute('data-m');
-                el.classList.remove('m-in');
-                el.style.removeProperty('--d');
-            };
-            el.addEventListener('transitionend', cleanup, { once: true });
-            // Safety fallback in case transitionend does not fire
-            setTimeout(cleanup, 1200);
+            countUpInside(el);
+            scheduleCleanup(el);
         });
     }, {
         threshold: 0.08,
@@ -80,8 +94,18 @@
 
         AUTO.forEach(([selector, motionType]) => {
             scope.querySelectorAll(selector).forEach((el) => {
-                // Ignore already tagged, explicitly excluded, or modal elements
-                if (el.dataset.m || el.closest('[data-no-motion], .modal, [role=dialog], canvas, svg, aside, .navbar-saas, .landing-nav, .topbar')) {
+                // Ignore already tagged, explicitly excluded, hero banner elements, or modal elements
+                if (
+                    el.dataset.m ||
+                    el.hasAttribute('data-seen') ||
+                    el.closest('[data-no-motion], .hero-surface, .hero-superadmin, [data-hero], .modal, [role=dialog], canvas, svg, aside, .navbar-saas, .landing-nav, .topbar, .hero-shield-decor, .pointer-events-none') ||
+                    el.matches('.hero-surface, .hero-superadmin, [data-hero], .hero-profile-card, .hero-shield-decor')
+                ) {
+                    return;
+                }
+
+                // Avoid double animation: If parent is already animated
+                if (el.parentElement && el.parentElement.closest('[data-m]')) {
                     return;
                 }
 
@@ -110,13 +134,27 @@
             }
             const delayMs = Math.min(Math.max(index, 0), 10) * 70;
             el.style.setProperty('--d', `${delayMs}ms`);
-            io.observe(el);
+
+            // If element is already in or above viewport (above the fold), reveal immediately
+            const rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                el.classList.add('m-in');
+                countUpInside(el);
+                scheduleCleanup(el);
+            } else {
+                io.observe(el);
+            }
         });
 
         // Also observe standalone count elements
         scope.querySelectorAll('[data-count]:not([data-seen])').forEach((el) => {
             el.dataset.seen = '1';
-            io.observe(el);
+            const rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                countUp(el);
+            } else {
+                io.observe(el);
+            }
         });
     }
 
@@ -265,6 +303,27 @@
         initAuthTabGlider();
         initSidebarEntrance();
         initScrollEffects();
+
+        // Safety Net: After 1500ms from DOMContentLoaded, force reveal all elements in or above viewport
+        setTimeout(() => {
+            document.querySelectorAll('[data-m]').forEach((el) => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= window.innerHeight) {
+                    io.unobserve(el);
+                    el.classList.add('m-in');
+                    countUpInside(el);
+                    scheduleCleanup(el);
+                }
+            });
+        }, 1500);
+
+        // Listen for themechange: theme toggle must never re-hide or re-animate elements
+        window.addEventListener('themechange', () => {
+            document.querySelectorAll('[data-m]').forEach((el) => {
+                el.classList.add('m-in');
+                scheduleCleanup(el);
+            });
+        });
 
         // Observe dynamically inserted elements (DataTables, AJAX modals, etc.)
         if ('MutationObserver' in window && document.body) {

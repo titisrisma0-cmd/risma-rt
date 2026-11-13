@@ -134,7 +134,7 @@
                     $hasAccount = (bool) $item->user_id;
                 @endphp
                 <div class="col-12">
-                    <div class="saas-card p-3 border" style="background-color: #FAFCFA;">
+                    <div class="saas-card p-3 border" style="background-color: var(--surface-2);">
                         <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
                             <div>
                                 <div class="d-flex align-items-center gap-2 mb-1">

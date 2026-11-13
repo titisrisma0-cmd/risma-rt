@@ -41,7 +41,7 @@
 
     {{-- ==================== SUPER ADMIN EXCLUSIVE BADGE BANNER ==================== --}}
     @if($user->isSuperAdmin())
-        <div class="card border-0 rounded-4 shadow-sm mb-4 text-white overflow-hidden" 
+        <div class="card hero-surface border-0 rounded-4 shadow-sm mb-4 text-white overflow-hidden" data-hero
              style="background: linear-gradient(135deg, #0e7a4b 0%, #177245 60%, #0a4f30 100%);">
             <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
                 <div class="d-flex align-items-center gap-3">

@@ -12,10 +12,10 @@
             </div>
             <div>
                 <div class="d-flex align-items-center gap-2 mb-1">
-                    <h1 class="page-title mb-0">Log Audit Sistem</h1>
+                    <h1 class="page-title mb-0" style="color: var(--ink);">Log Audit Sistem</h1>
                     <span class="badge-rt-pill">Super Admin</span>
                 </div>
-                <p class="page-subtitle mb-0">Rekam jejak seluruh mutasi data, aksi beralih peran, dan aktivitas keamanan sistem</p>
+                <p class="page-subtitle mb-0" style="color: var(--ink-soft);">Rekam jejak seluruh mutasi data, aksi beralih peran, dan aktivitas keamanan sistem</p>
             </div>
         </div>
         <div class="page-header-actions d-flex gap-2">
@@ -29,11 +29,11 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="card border-0 rounded-4 shadow-sm mb-4 bg-white p-3">
+    <div class="card border-0 rounded-4 shadow-sm mb-4 p-3">
         <form method="GET" action="{{ route('superadmin.audit-logs') }}" class="row g-2 align-items-center">
             <div class="col-md-7">
                 <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <span class="input-group-text border-end-0" style="background: var(--surface); color: var(--ink-soft);"><i class="fas fa-search"></i></span>
                     <input type="text" name="q" value="{{ request('q') }}" class="form-control border-start-0" placeholder="Cari aksi, deskripsi, entitas, atau IP address...">
                 </div>
             </div>
@@ -51,7 +51,7 @@
                     <i class="fas fa-filter me-1"></i> Filter
                 </button>
                 @if(request()->hasAny(['q', 'action']))
-                    <a href="{{ route('superadmin.audit-logs') }}" class="btn btn-light" title="Reset Filter">
+                    <a href="{{ route('superadmin.audit-logs') }}" class="btn btn-light" title="Reset Filter" style="background: var(--surface-2); color: var(--ink); border: 1px solid var(--border);">
                         <i class="fas fa-undo"></i>
                     </a>
                 @endif
@@ -60,11 +60,11 @@
     </div>
 
     {{-- Table Card --}}
-    <div class="card border-0 rounded-4 shadow-sm bg-white overflow-hidden">
+    <div class="card border-0 rounded-4 shadow-sm overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr class="text-secondary small">
+                <thead>
+                    <tr class="small" style="background: var(--surface-2); color: var(--ink-soft);">
                         <th class="ps-4">ID</th>
                         <th>Waktu Kejadian</th>
                         <th>Pengguna</th>
@@ -78,20 +78,20 @@
                 <tbody>
                     @forelse($logs as $log)
                         <tr>
-                            <td class="ps-4 small text-muted font-monospace">#{{ $log->id }}</td>
+                            <td class="ps-4 small font-monospace" style="color: var(--ink-mute);">#{{ $log->id }}</td>
                             <td class="small text-nowrap">
-                                <div class="fw-semibold text-dark">{{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : '-' }}</div>
-                                <small class="text-muted">{{ $log->created_at ? $log->created_at->diffForHumans() : '' }}</small>
+                                <div class="fw-semibold" style="color: var(--ink);">{{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : '-' }}</div>
+                                <small style="color: var(--ink-mute);">{{ $log->created_at ? $log->created_at->diffForHumans() : '' }}</small>
                             </td>
                             <td class="small">
-                                <div class="fw-semibold text-dark">{{ optional($log->user)->name ?? 'System' }}</div>
-                                <small class="text-muted">{{ optional($log->user)->email ?? '-' }}</small>
+                                <div class="fw-semibold" style="color: var(--ink);">{{ optional($log->user)->name ?? 'System' }}</div>
+                                <small style="color: var(--ink-mute);">{{ optional($log->user)->email ?? '-' }}</small>
                             </td>
                             <td class="small">
                                 @if($log->rt)
-                                    <span class="badge bg-light text-dark border">RT {{ $log->rt->kode_rt }}</span>
+                                    <span class="badge border" style="background: var(--surface-2); color: var(--ink);">RT {{ $log->rt->kode_rt }}</span>
                                 @else
-                                    <span class="badge bg-light text-muted border">RW / Global</span>
+                                    <span class="badge border" style="background: var(--surface-2); color: var(--ink-soft);">RW / Global</span>
                                 @endif
                             </td>
                             <td>
@@ -109,19 +109,19 @@
                                     {{ $log->action }}
                                 </span>
                             </td>
-                            <td class="small font-monospace text-muted">
+                            <td class="small font-monospace" style="color: var(--ink-mute);">
                                 {{ $log->entity_type ? $log->entity_type . ($log->entity_id ? ' #' . $log->entity_id : '') : '-' }}
                             </td>
-                            <td class="small text-secondary" style="max-width: 300px;">
+                            <td class="small" style="max-width: 300px; color: var(--ink-soft);">
                                 {{ $log->deskripsi ?? '-' }}
                             </td>
-                            <td class="pe-4 text-end small font-monospace text-muted">
+                            <td class="pe-4 text-end small font-monospace" style="color: var(--ink-mute);">
                                 {{ $log->ip_address ?? '127.0.0.1' }}
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5" style="color: var(--ink-mute);">
                                 <i class="fas fa-inbox fa-3x mb-3 d-block opacity-40"></i>
                                 Tidak ada log aktivitas yang sesuai dengan filter pencarian.
                             </td>
@@ -131,7 +131,7 @@
             </table>
         </div>
         @if($logs->hasPages())
-            <div class="p-3 border-top d-flex justify-content-end">
+            <div class="p-3 border-top d-flex justify-content-end" style="border-color: var(--border) !important;">
                 {{ $logs->links() }}
             </div>
         @endif

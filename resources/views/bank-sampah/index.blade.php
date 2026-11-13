@@ -58,7 +58,7 @@
                             <span class="stat-label">Total Sampah Terkumpul</span>
                             <h3 class="stat-value text-dark mb-0">{{ number_format((float) $saldo->total_berat_kg, 1, ',', '.') }} kg</h3>
                         </div>
-                        <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                        <div class="stat-icon-wrapper" style="background-color: var(--info-soft); color: var(--info);">
                             <i class="fas fa-weight-scale"></i>
                         </div>
                     </div>
@@ -71,7 +71,7 @@
                             <span class="stat-label">Riwayat Setoran Saya</span>
                             <h3 class="stat-value text-warning mb-0">{{ $riwayatSetoran->count() }} Transaksi</h3>
                         </div>
-                        <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #D97706;">
+                        <div class="stat-icon-wrapper" style="background-color: var(--accent-soft); color: var(--accent);">
                             <i class="fas fa-receipt"></i>
                         </div>
                     </div>
@@ -245,7 +245,7 @@
                             <h3 class="stat-value text-warning mb-0">{{ $setoranPending->count() }}</h3>
                             <small class="text-secondary">Verifikasi Setoran Warga</small>
                         </div>
-                        <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #D97706;">
+                        <div class="stat-icon-wrapper" style="background-color: var(--accent-soft); color: var(--accent);">
                             <i class="fas fa-hourglass-half"></i>
                         </div>
                     </div>
@@ -259,7 +259,7 @@
                             <h3 class="stat-value text-info mb-0">{{ $penarikanPending->count() }}</h3>
                             <small class="text-secondary">Pencairan Dana Warga</small>
                         </div>
-                        <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                        <div class="stat-icon-wrapper" style="background-color: var(--info-soft); color: var(--info);">
                             <i class="fas fa-hand-holding-dollar"></i>
                         </div>
                     </div>
@@ -287,7 +287,7 @@
                             <h3 class="stat-value text-dark mb-0">{{ $rekap['warga_count'] ?? 0 }}</h3>
                             <small class="text-secondary">Warga Berpartisipasi</small>
                         </div>
-                        <div class="stat-icon-wrapper" style="background-color: #F1F5F9; color: #475569;">
+                        <div class="stat-icon-wrapper" style="background-color: var(--surface-2); color: var(--ink);">
                             <i class="fas fa-users"></i>
                         </div>
                     </div>

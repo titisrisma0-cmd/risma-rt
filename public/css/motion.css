@@ -40,6 +40,15 @@
     transform: none !important;
 }
 
+/* Guard: hero surfaces, decorations, and profile cards are always fully visible */
+.hero-surface,
+.hero-superadmin,
+[data-hero],
+.hero-shield-decor,
+.hero-profile-card {
+    opacity: 1 !important;
+}
+
 /* ==========================================================================
    2. NUMERICAL & TEXT STABILITY (Prevent Layout Shift during count-up)
    ========================================================================== */

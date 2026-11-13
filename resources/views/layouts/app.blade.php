@@ -8,9 +8,12 @@
     
     <script>
         (function () {
-            const savedTheme = localStorage.getItem('risma-theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            const savedTheme = localStorage.getItem('risma-theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.style.colorScheme = theme;
         })();
     </script>
     
@@ -557,23 +560,23 @@
         <div class="page-container">
             {{-- Mode Simulasi Super Admin Banner --}}
             @if(session()->has('super_admin_context'))
-                <div class="alert alert-warning border-0 rounded-4 shadow-sm mb-4 d-flex flex-wrap align-items-center justify-content-between p-3" style="background: linear-gradient(90deg, #fff3cd 0%, #ffeaa7 100%);">
+                <div class="alert border border-warning border-opacity-25 rounded-4 shadow-sm mb-4 d-flex flex-wrap align-items-center justify-content-between p-3" style="background: var(--accent-soft);">
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-warning text-dark px-2.5 py-1.5 rounded-pill fw-bold">
                             <i class="fas fa-user-astronaut me-1"></i> MODE SIMULASI AKTIF
                         </span>
-                        <span class="fw-semibold text-dark">
+                        <span class="fw-semibold" style="color: var(--ink);">
                             {{ session('super_admin_context.label') ?? 'Mode Simulasi' }}
                         </span>
                     </div>
                     <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
-                        <button type="button" class="btn btn-sm btn-outline-dark rounded-pill fw-semibold" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
+                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill fw-semibold" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
                             <i class="fas fa-arrows-rotate me-1"></i> Ganti Role
                         </button>
                         <form method="POST" action="{{ route('superadmin.switch-role') }}" class="m-0">
                             @csrf
                             <input type="hidden" name="mode" value="super_admin">
-                            <button type="submit" class="btn btn-sm btn-dark rounded-pill fw-semibold">
+                            <button type="submit" class="btn btn-sm btn-warning text-dark rounded-pill fw-semibold">
                                 <i class="fas fa-shield-alt me-1"></i> Kembali ke Super Admin
                             </button>
                         </form>
@@ -723,12 +726,17 @@
         function setTheme(theme) {
             document.documentElement.setAttribute('data-bs-theme', theme);
             document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.style.colorScheme = theme;
             localStorage.setItem('risma-theme', theme);
             if (themeToggleIcon) {
                 themeToggleIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
             }
             window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
         }
+
+        window.addEventListener('load', function () {
+            document.documentElement.classList.add('theme-ready');
+        });
 
         setTheme(localStorage.getItem('risma-theme') || 'light');
 

@@ -33,11 +33,11 @@
                             <div class="d-flex flex-wrap gap-1">
                                 @foreach($j->petugas as $p)
                                     @if($p->user_id === $user->id)
-                                        <span class="badge px-2 py-1" style="background-color: #147A45; color: #FFFFFF; font-weight: 700; border: 1px solid #0D5737;">
+                                        <span class="badge px-2 py-1" style="background-color: var(--primary); color: #FFFFFF; font-weight: 700; border: 1px solid var(--primary);">
                                             <i class="fas fa-user-check me-1"></i>{{ $p->user->name ?? 'Saya' }}
                                         </span>
                                     @else
-                                        <span class="badge px-2 py-1" style="background-color: #E8F5EC; color: #0D5737; font-weight: 600; border: 1px solid #A3D9B8;">
+                                        <span class="badge px-2 py-1" style="background-color: var(--primary-soft); color: var(--primary); font-weight: 600; border: 1px solid var(--border);">
                                             {{ $p->user->name ?? 'Warga' }}
                                         </span>
                                     @endif

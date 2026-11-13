@@ -53,7 +53,7 @@
                         <span class="stat-label">Total Pengeluaran</span>
                         <h3 class="stat-value text-danger mb-0">Rp {{ number_format($saldoKeluar, 0, ',', '.') }}</h3>
                     </div>
-                    <div class="stat-icon-wrapper" style="background-color: #FEE2E2; color: #DC2626;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--danger-soft); color: var(--danger);">
                         <i class="fas fa-arrow-up"></i>
                     </div>
                 </div>
@@ -66,7 +66,7 @@
                         <span class="stat-label">Saldo Akhir</span>
                         <h3 class="stat-value text-dark mb-0">Rp {{ number_format($saldoAkhir, 0, ',', '.') }}</h3>
                     </div>
-                    <div class="stat-icon-wrapper" style="background-color: #E0F2FE; color: #0284C7;">
+                    <div class="stat-icon-wrapper" style="background-color: var(--info-soft); color: var(--info);">
                         <i class="fas fa-wallet"></i>
                     </div>
                 </div>

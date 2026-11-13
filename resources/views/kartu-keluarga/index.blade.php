@@ -67,7 +67,7 @@
             @foreach($rtSummary as $item)
                 <div class="col-6 col-md-3 col-xl-3">
                     <a href="{{ route('kartu-keluarga.index', ['rt_id' => $item->id]) }}" class="text-decoration-none">
-                        <div class="saas-card p-3 text-center {{ request('rt_id') == $item->id ? 'border-primary' : '' }}" style="{{ request('rt_id') == $item->id ? 'background-color: #F0FDF4; border: 1.5px solid var(--primary-green) !important;' : '' }}">
+                        <div class="saas-card p-3 text-center {{ request('rt_id') == $item->id ? 'border-primary' : '' }}" style="{{ request('rt_id') == $item->id ? 'background-color: var(--primary-soft); border: 1.5px solid var(--primary) !important;' : '' }}">
                             <div class="text-secondary small mb-1 fw-semibold">RT {{ $item->kode_rt }}</div>
                             <div class="h4 text-dark fw-bold mb-0">{{ $item->kartu_keluargas_count }} <span class="small fs-6 text-muted fw-normal">KK</span></div>
                         </div>
@@ -240,7 +240,7 @@
                         </tr>
 
                         {{-- Expanded Collapsible Row: Anggota Keluarga --}}
-                        <tr class="collapse" id="anggotaKK{{ $kk->id }}" style="background-color: #F8FAFC;">
+                        <tr class="collapse" id="anggotaKK{{ $kk->id }}" style="background-color: var(--surface-2);">
                             <td colspan="7" class="p-3">
                                 <div class="saas-card p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
