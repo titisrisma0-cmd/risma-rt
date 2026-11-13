@@ -563,6 +563,9 @@
                                     <i class="fas fa-laptop-code" aria-hidden="true"></i> Akun Pengujian Cepat (Klik untuk Isi Otomatis)
                                 </div>
                                 <div class="demo-pills">
+                                    <div class="demo-pill m-pop" style="border: 1.5px solid #f59e0b; background: rgba(245, 158, 11, 0.08);" role="button" tabindex="0" onclick="fillLogin('titisrisma0@gmail.com', 'password123')" title="Super Admin & Developer">
+                                        <strong class="text-warning"><i class="fas fa-crown text-warning me-1"></i>Super Admin</strong>
+                                    </div>
                                     <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('admin@rw-smart.test', 'password123')">
                                         <strong>Admin / RW</strong>
                                     </div>
@@ -571,9 +574,6 @@
                                     </div>
                                     <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('rt03@rw-smart.test', 'password123')">
                                         <strong>Ketua RT 03</strong>
-                                    </div>
-                                    <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('bendahara@rw-smart.test', 'password123')">
-                                        <strong>Bendahara</strong>
                                     </div>
                                     <div class="demo-pill m-pop" role="button" tabindex="0" onclick="fillLogin('warga@rw-smart.test', 'password123')">
                                         <strong>Warga</strong>

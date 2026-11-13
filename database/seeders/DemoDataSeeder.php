@@ -17,36 +17,38 @@ class DemoDataSeeder extends Seeder
     public function run()
     {
         // Buat Role jika belum ada
-        $adminRole = Role::firstOrCreate(['nama_role' => 'admin']);
-        $bendaharaRole = Role::firstOrCreate(['nama_role' => 'bendahara']);
+        $superAdminRole = Role::firstOrCreate(['nama_role' => 'super_admin']);
+        $rwRole = Role::firstOrCreate(['nama_role' => 'rw']);
         $wargaRole = Role::firstOrCreate(['nama_role' => 'warga']);
         
-        // Buat Admin
+        // Buat Super Admin (Titis Rismawati)
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'titisrisma0@gmail.com'],
+            [
+                'name' => 'Titis Rismawati',
+                'password' => Hash::make('password123'),
+                'role_id' => $superAdminRole->id,
+                'is_super_admin' => 1,
+            ]
+        );
+        UserProfile::updateOrCreate(
+            ['user_id' => $superAdmin->id],
+            ['nama_lengkap' => 'Titis Rismawati', 'status' => 'aktif', 'role_id' => $superAdminRole->id]
+        );
+
+        // Buat Admin RW Tunggal
         $admin = User::updateOrCreate(
             ['email' => 'admin@rw-smart.test'],
             [
                 'name' => 'Admin RW Smart',
                 'password' => Hash::make('password123'),
-                'role_id' => $adminRole->id
+                'role_id' => $rwRole->id,
+                'is_super_admin' => 0,
             ]
         );
         UserProfile::updateOrCreate(
             ['user_id' => $admin->id],
-            ['nama_lengkap' => 'Admin RW Smart', 'status' => 'aktif', 'role_id' => $adminRole->id]
-        );
-        
-        // Buat Bendahara
-        $bendahara = User::updateOrCreate(
-            ['email' => 'bendahara@rw-smart.test'],
-            [
-                'name' => 'Bendahara RW',
-                'password' => Hash::make('password123'),
-                'role_id' => $bendaharaRole->id
-            ]
-        );
-        UserProfile::updateOrCreate(
-            ['user_id' => $bendahara->id],
-            ['nama_lengkap' => 'Bendahara RW', 'status' => 'aktif', 'role_id' => $bendaharaRole->id]
+            ['nama_lengkap' => 'Admin RW Smart', 'status' => 'aktif', 'role_id' => $rwRole->id]
         );
         
         // Buat Warga Utama (Demo)

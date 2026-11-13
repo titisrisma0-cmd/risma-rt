@@ -14,62 +14,63 @@ class UserSeeder extends Seeder
     public function run()
     {
         // Pastikan role utama tersedia
-        $adminRole = Role::firstOrCreate(['nama_role' => 'admin']);
+        $superAdminRole = Role::firstOrCreate(['nama_role' => 'super_admin']);
         $rwRole = Role::firstOrCreate(['nama_role' => 'rw']);
-        $bendaharaRole = Role::firstOrCreate(['nama_role' => 'bendahara']);
         $wargaRole = Role::firstOrCreate(['nama_role' => 'warga']);
         $genericRtRole = Role::firstOrCreate(['nama_role' => 'rt']);
 
-        // 1. Akun Demo Admin / RW
+        // 0. Akun Super Admin: Titis Rismawati
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'titisrisma0@gmail.com'],
+            [
+                'name' => 'Titis Rismawati',
+                'password' => Hash::make('password123'),
+                'role_id' => $superAdminRole->id,
+                'is_super_admin' => 1,
+            ]
+        );
+
+        UserProfile::updateOrCreate(
+            ['user_id' => $superAdmin->id],
+            [
+                'role_id' => $superAdminRole->id,
+                'no_kk' => '3276010000000001',
+                'nik' => '3276010000000001',
+                'nama_lengkap' => 'Titis Rismawati',
+                'tempat_lahir' => 'Jakarta',
+                'tanggal_lahir' => '1995-01-01',
+                'jenis_kelamin' => 'P',
+                'alamat' => 'Pusat Wilayah RW 01',
+                'no_hp' => '081234567899',
+                'pekerjaan' => 'Lead System Architect',
+                'status' => 'aktif'
+            ]
+        );
+
+        // 1. Akun Tunggal Admin / RW
         $admin = User::updateOrCreate(
             ['email' => 'admin@rw-smart.test'],
             [
                 'name' => 'Admin RW Smart',
                 'password' => Hash::make('password123'),
-                'role_id' => $adminRole->id
+                'role_id' => $rwRole->id,
+                'is_super_admin' => 0,
             ]
         );
         
         UserProfile::updateOrCreate(
             ['user_id' => $admin->id],
             [
-                'role_id' => $adminRole->id,
+                'role_id' => $rwRole->id,
                 'no_kk' => '0000000000000000',
                 'nik' => '0000000000000000',
                 'nama_lengkap' => 'Admin RW Smart',
                 'tempat_lahir' => 'Jakarta',
                 'tanggal_lahir' => '1990-01-01',
                 'jenis_kelamin' => 'L',
-                'alamat' => 'Jl. Contoh No. 1',
+                'alamat' => 'Kantor Sekretariat RW 01',
                 'no_hp' => '081234567890',
-                'pekerjaan' => 'Administrator RW',
-                'status' => 'aktif'
-            ]
-        );
-        
-        // 2. Akun Demo Bendahara
-        $bendahara = User::updateOrCreate(
-            ['email' => 'bendahara@rw-smart.test'],
-            [
-                'name' => 'Bendahara RW',
-                'password' => Hash::make('password123'),
-                'role_id' => $bendaharaRole->id
-            ]
-        );
-        
-        UserProfile::updateOrCreate(
-            ['user_id' => $bendahara->id],
-            [
-                'role_id' => $bendaharaRole->id,
-                'no_kk' => '1111111111111111',
-                'nik' => '1111111111111111',
-                'nama_lengkap' => 'Bendahara RW',
-                'tempat_lahir' => 'Jakarta',
-                'tanggal_lahir' => '1985-05-05',
-                'jenis_kelamin' => 'P',
-                'alamat' => 'Jl. Contoh No. 2',
-                'no_hp' => '081234567891',
-                'pekerjaan' => 'Bendahara RW',
+                'pekerjaan' => 'Pengurus RW',
                 'status' => 'aktif'
             ]
         );
