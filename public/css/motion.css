@@ -898,3 +898,32 @@
         transform: none !important;
     }
 }
+
+/* ==========================================================================
+   9. MOBILE OPTIMIZATION (< 768px): LIGHTWEIGHT MOTION & ZERO TRAPPED OPACITY
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    /* Disable heavy repeating float / parallax animations */
+    .m-float,
+    .m-float-delayed,
+    .m-parallax {
+        animation: none !important;
+        transform: none !important;
+    }
+
+    /* Dampen animation transition times & cap stagger delay to max 0.6s */
+    .js-motion [data-m] {
+        transition-duration: 0.35s !important;
+        --d: min(var(--d, 0ms), 600ms) !important;
+    }
+
+    /* Safeguard: ensure essential content is never trapped at opacity: 0 on mobile */
+    .hero-surface [data-m],
+    .hero-superadmin [data-m],
+    .auth-card [data-m],
+    .card [data-m],
+    .table-responsive [data-m] {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}

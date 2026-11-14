@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>404 — Halaman Tidak Ditemukan | RW SMART</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +50,7 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-card);
-            padding: 48px 36px;
+            padding: clamp(28px, 6vw, 48px) clamp(18px, 5vw, 36px);
             max-width: 520px;
             width: 100%;
             text-align: center;
@@ -77,7 +77,7 @@
         }
 
         .error-code {
-            font-size: 5rem;
+            font-size: clamp(3.2rem, 16vw, 5rem);
             font-weight: 800;
             color: var(--primary);
             line-height: 1;

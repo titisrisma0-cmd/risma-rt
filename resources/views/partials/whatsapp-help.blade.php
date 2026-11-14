@@ -65,14 +65,18 @@
                 position: relative;
                 transition: transform 0.2s ease, background-color 0.2s ease;
             }
+            @keyframes waRing {
+                0% { transform: scale(1); opacity: 0.5; }
+                100% { transform: scale(1.35); opacity: 0; }
+            }
             /* Cincin Pulsa (Pulse Ring) */
             .whatsapp-help__pulse {
                 position: absolute;
-                inset: -6px;
+                inset: -4px;
                 border-radius: 50%;
-                border: 2.5px solid var(--primary, #0e7a4b);
+                border: 2px solid var(--primary, #0e7a4b);
                 pointer-events: none;
-                animation: ring 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+                animation: waRing 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
             }
             .whatsapp-help:hover .whatsapp-help__label,
             .whatsapp-help:focus-visible .whatsapp-help__label {
@@ -91,8 +95,16 @@
                 outline-offset: 3px;
             }
             @media (max-width: 576px) {
-                .whatsapp-help { right: 16px; bottom: 16px; }
-                .whatsapp-help__button { width: 48px; height: 48px; flex-basis: 48px; font-size: 25px; }
+                .whatsapp-help {
+                    right: max(16px, env(safe-area-inset-right, 16px));
+                    bottom: max(20px, env(safe-area-inset-bottom, 20px));
+                }
+                .whatsapp-help__button {
+                    width: 52px;
+                    height: 52px;
+                    flex-basis: 52px;
+                    font-size: 26px;
+                }
                 .whatsapp-help__label { display: none; }
             }
             @media (prefers-reduced-motion: reduce) {

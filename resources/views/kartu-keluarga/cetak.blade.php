@@ -2,25 +2,26 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Kartu Keluarga - {{ $kartuKeluarga->no_kk }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { font-family: 'Times New Roman', Times, serif; background: #fff; color: #000; font-size: 13px; }
-        .border-double { border: 3px double #000; }
+        .border-double { border: 3px double #000; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-bordered th, .table-bordered td { border: 1px solid #000 !important; padding: 4px 6px; }
         @media print {
             .no-print { display: none !important; }
-            body { padding: 0; margin: 0; }
+            body { padding: 0 !important; margin: 0 !important; }
+            .border-double { border: 3px double #000 !important; overflow: visible !important; }
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="no-print mb-4 d-flex justify-content-between align-items-center">
-        <a href="{{ route('kartu-keluarga.show', $kartuKeluarga) }}" class="btn btn-secondary btn-sm">
+<body class="p-2 p-md-4">
+    <div class="no-print mb-4 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+        <a href="{{ route('kartu-keluarga.show', $kartuKeluarga) }}" class="btn btn-secondary btn-sm" style="min-height: 40px; display: inline-flex; align-items: center;">
             &larr; Kembali
         </a>
-        <button onclick="window.print()" class="btn btn-primary btn-sm">
+        <button onclick="window.print()" class="btn btn-primary btn-sm" style="min-height: 40px; display: inline-flex; align-items: center;">
             Cetak Dokumen KK (Print / PDF)
         </button>
     </div>

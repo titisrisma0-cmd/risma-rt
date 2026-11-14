@@ -117,7 +117,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table-saas">
+            <table class="table-saas table-mobile-cards">
                 <thead>
                     <tr>
                         <th width="50" class="text-center">#</th>
@@ -132,8 +132,8 @@
                 <tbody>
                     @forelse($metodes as $idx => $m)
                         <tr>
-                            <td class="text-center fw-medium text-secondary">{{ $idx + 1 }}</td>
-                            <td>
+                            <td data-label="#" class="text-center fw-medium text-secondary">{{ $idx + 1 }}</td>
+                            <td data-label="Metode & Kategori">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="p-2 rounded bg-light border text-center" style="width: 40px; height: 40px;">
                                         @if($m->kategori === 'qris')
@@ -154,7 +154,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Nomor Akun">
                                 <span class="font-monospace fw-bold text-dark fs-6">{{ $m->nomor_rekening ?? '-' }}</span>
                                 @if($m->instruksi)
                                     <div class="text-truncate text-secondary small" style="max-width: 260px;" title="{{ $m->instruksi }}">
@@ -162,10 +162,10 @@
                                     </div>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="Nama Penerima">
                                 <span class="fw-medium text-dark">{{ $m->nama_penerima ?? '-' }}</span>
                             </td>
-                            <td class="text-center">
+                            <td data-label="QR Code" class="text-center">
                                 @if($m->qr_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($m->qr_image))
                                     <a href="{{ asset('storage/' . $m->qr_image) }}" target="_blank" title="Lihat QR Code">
                                         <img src="{{ asset('storage/' . $m->qr_image) }}" alt="QR" class="rounded border p-1" style="width: 42px; height: 42px; object-fit: contain;">
@@ -174,7 +174,7 @@
                                     <span class="text-muted small">-</span>
                                 @endif
                             </td>
-                            <td class="text-center">
+                            <td data-label="Status" class="text-center">
                                 <form action="{{ route('rw.metode-pembayaran.toggle', $m) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('PATCH')
@@ -184,7 +184,7 @@
                                     </button>
                                 </form>
                             </td>
-                            <td class="text-end">
+                            <td data-label="Aksi" class="text-end">
                                 <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#modalEditMetode{{ $m->id }}">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>

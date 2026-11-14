@@ -2,7 +2,8 @@
 <html lang="id" data-bs-theme="light" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#147A45" id="metaThemeColor">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'RW SMART - Modern SaaS Dashboard')</title>
     
@@ -14,6 +15,8 @@
             document.documentElement.setAttribute('data-bs-theme', theme);
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.style.colorScheme = theme;
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#12201a' : '#147A45');
         })();
     </script>
     
@@ -32,9 +35,9 @@
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
     <!-- RW SMART Modern SaaS Theme (Donezo Style) -->
-    <link href="{{ asset('css/theme-dashboard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/theme-dashboard.css') }}?v={{ file_exists(public_path('css/theme-dashboard.css')) ? filemtime(public_path('css/theme-dashboard.css')) : '1.0' }}" rel="stylesheet">
     <!-- RW SMART Motion Graphics Engine -->
-    <link href="{{ asset('css/motion.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/motion.css') }}?v={{ file_exists(public_path('css/motion.css')) ? filemtime(public_path('css/motion.css')) : '1.0' }}" rel="stylesheet">
     @stack('styles')
 </head>
 
@@ -418,18 +421,18 @@
        TOP NAVBAR (MODERN CLEAN SAAS)
        ========================================================================== -->
     <header class="navbar-saas navbar">
-        <div class="d-flex align-items-center gap-3">
-            <button class="toggle-sidebar-btn" id="toggleSidebarBtn" title="Buka/Tutup Menu" aria-label="Toggle Sidebar">
+        <div class="topbar-left d-flex align-items-center gap-2 gap-md-3 flex-grow-1" style="min-width: 0;">
+            <button class="toggle-sidebar-btn flex-shrink-0" id="toggleSidebarBtn" title="Buka/Tutup Menu" aria-label="Toggle Sidebar">
                 <i class="fas fa-bars"></i>
             </button>
             
-            <div class="navbar-page-indicator d-none d-sm-flex">
-                <span class="navbar-page-title">@yield('title', 'Sistem Informasi RW SMART')</span>
-                <span class="navbar-page-subtitle">Wilayah RW 01 &bull; Kelurahan Digital</span>
+            <div class="navbar-page-indicator d-flex flex-column" style="min-width: 0; flex: 1 1 auto;">
+                <span class="navbar-page-title topbar-title text-truncate">@yield('title', 'Sistem Informasi RW SMART')</span>
+                <span class="navbar-page-subtitle topbar-subtitle d-none d-sm-inline text-truncate">Wilayah RW 01 &bull; Kelurahan Digital</span>
             </div>
         </div>
 
-        <div class="ms-auto d-flex align-items-center gap-2">
+        <div class="topbar-right ms-auto d-flex align-items-center gap-1 gap-sm-2 flex-shrink-0">
             @php
                 $user = Auth::user();
                 $defaultName = $user ? $user->name : 'Pengguna';
@@ -451,7 +454,8 @@
             <!-- Panic Button Emergency Action -->
             <button type="button" class="topbar-panic-btn" data-bs-toggle="modal" data-bs-target="#modalGlobalPanic" title="Tombol Darurat (Panic Button)" aria-label="Tombol Darurat">
                 <i class="fas fa-triangle-exclamation fa-beat text-white"></i>
-                <span class="d-none d-md-inline">DARURAT</span>
+                <span class="d-none d-sm-inline">DARURAT</span>
+                <span class="d-inline d-sm-none" style="font-size: 0.72rem; letter-spacing: 0.04em;">SOS</span>
             </button>
 
             <!-- Theme Mode Toggle -->
@@ -467,7 +471,7 @@
                         <span class="topbar-badge-dot">{{ $unreadCount }}</span>
                     @endif
                 </button>
-                <div class="dropdown-menu dropdown-menu-end p-2 border-0 shadow-lg" style="min-width: 320px; border-radius: 16px;">
+                <div class="dropdown-menu dropdown-menu-end p-2 border-0 shadow-lg" style="min-width: 280px; max-width: calc(100vw - 24px); border-radius: 16px;">
                     <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
                         <span class="fw-bold text-dark small">Notifikasi Baru</span>
                         @if($unreadCount > 0)
@@ -512,7 +516,7 @@
             <div class="dropdown">
                 <button type="button" class="topbar-profile-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="{{ $fotoUrl }}" alt="Avatar" class="topbar-avatar">
-                    <div class="topbar-user-info d-none d-md-flex">
+                    <div class="topbar-user-info d-none d-sm-flex">
                         <span class="topbar-user-name">{{ $defaultName }}</span>
                         <span class="topbar-user-role">{{ $roleLabel }}</span>
                     </div>
@@ -560,24 +564,26 @@
         <div class="page-container">
             {{-- Mode Simulasi Super Admin Banner --}}
             @if(session()->has('super_admin_context'))
-                <div class="alert border border-warning border-opacity-25 rounded-4 shadow-sm mb-4 d-flex flex-wrap align-items-center justify-content-between p-3" style="background: var(--accent-soft);">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-warning text-dark px-2.5 py-1.5 rounded-pill fw-bold">
-                            <i class="fas fa-user-astronaut me-1"></i> MODE SIMULASI AKTIF
-                        </span>
-                        <span class="fw-semibold" style="color: var(--ink);">
+                <div class="simulation-banner alert border border-warning border-opacity-25 rounded-4 shadow-sm mb-4 p-3" style="background: var(--accent-soft);">
+                    <div class="simulation-banner-info">
+                        <div class="simulation-banner-badge mb-1 mb-sm-0">
+                            <span class="badge bg-warning text-dark px-2.5 py-1.5 rounded-pill fw-bold">
+                                <i class="fas fa-user-astronaut me-1"></i> MODE SIMULASI AKTIF
+                            </span>
+                        </div>
+                        <div class="simulation-banner-text fw-semibold" style="color: var(--ink);">
                             {{ session('super_admin_context.label') ?? 'Mode Simulasi' }}
-                        </span>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
-                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill fw-semibold" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
+                    <div class="simulation-banner-actions">
+                        <button type="button" class="btn btn-sm btn-sim-outline rounded-pill fw-semibold" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
                             <i class="fas fa-arrows-rotate me-1"></i> Ganti Role
                         </button>
-                        <form method="POST" action="{{ route('superadmin.switch-role') }}" class="m-0">
+                        <form method="POST" action="{{ route('superadmin.switch-role') }}" class="m-0 p-0 d-grid">
                             @csrf
                             <input type="hidden" name="mode" value="super_admin">
-                            <button type="submit" class="btn btn-sm btn-warning text-dark rounded-pill fw-semibold">
-                                <i class="fas fa-shield-alt me-1"></i> Kembali ke Super Admin
+                            <button type="submit" class="btn btn-sm btn-warning text-dark rounded-pill fw-semibold w-100">
+                                <i class="fas fa-shield-alt me-1"></i> <span class="d-none d-sm-inline">Kembali ke Super Admin</span><span class="d-inline d-sm-none">Keluar Simulasi</span>
                             </button>
                         </form>
                     </div>
@@ -586,22 +592,22 @@
 
             {{-- Flash Session Alerts --}}
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show d-flex align-items-center justify-content-between mb-4 shadow-xs" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-check-circle fa-lg me-2 text-success"></i>
-                        <span>{{ session('success') }}</span>
+                <div class="alert alert-success alert-saas alert-dismissible fade show mb-4 shadow-xs" role="alert">
+                    <div class="alert-content-wrapper">
+                        <i class="fas fa-check-circle fa-lg alert-icon text-success"></i>
+                        <span class="alert-text">{{ session('success') }}</span>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close alert-close-btn" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center justify-content-between mb-4 shadow-xs" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-circle fa-lg me-2 text-danger"></i>
-                        <span>{{ session('error') }}</span>
+                <div class="alert alert-danger alert-saas alert-dismissible fade show mb-4 shadow-xs" role="alert">
+                    <div class="alert-content-wrapper">
+                        <i class="fas fa-exclamation-circle fa-lg alert-icon text-danger"></i>
+                        <span class="alert-text">{{ session('error') }}</span>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close alert-close-btn" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
@@ -677,20 +683,81 @@
             }
         });
 
-        // Sidebar Drawer toggle for mobile & desktop
+        // Mobile-First Sidebar Drawer Controller
         const toggleBtn = document.getElementById('toggleSidebarBtn');
         const closeBtn = document.getElementById('closeSidebarBtn');
         const sidebar = document.getElementById('sidebar');
         const backdrop = document.getElementById('sidebarBackdrop');
+        let lastFocusedElement = null;
+
+        function openSidebar() {
+            if (!sidebar) return;
+            lastFocusedElement = document.activeElement;
+            sidebar.classList.add('show');
+            if (backdrop) backdrop.classList.add('show');
+            document.body.classList.add('sidebar-open');
+            // Focus on close button or first nav link for keyboard accessibility
+            const firstFocusable = sidebar.querySelector('#closeSidebarBtn, .sidebar-nav-item');
+            if (firstFocusable) firstFocusable.focus();
+        }
+
+        function closeSidebar() {
+            if (!sidebar) return;
+            sidebar.classList.remove('show');
+            if (backdrop) backdrop.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+            if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                lastFocusedElement.focus();
+            }
+        }
 
         function toggleSidebar() {
-            sidebar.classList.toggle('show');
-            if (backdrop) backdrop.classList.toggle('show');
+            if (!sidebar) return;
+            if (sidebar.classList.contains('show')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
         }
 
         if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
-        if (closeBtn) closeBtn.addEventListener('click', toggleSidebar);
-        if (backdrop) backdrop.addEventListener('click', toggleSidebar);
+        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+        // Auto-close on menu selection in mobile drawer mode (< 1024px)
+        if (sidebar) {
+            sidebar.querySelectorAll('.sidebar-nav-item').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 1024) {
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                    closeSidebar();
+                }
+            });
+
+            // Focus trap inside sidebar drawer when open
+            sidebar.addEventListener('keydown', function(e) {
+                if (e.key !== 'Tab' || !sidebar.classList.contains('show') || window.innerWidth >= 1024) return;
+                const focusables = sidebar.querySelectorAll('a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])');
+                if (!focusables.length) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            });
+        }
 
         // Lightweight count-up animation for stats (0.8s - 1.2s, preserving exact server numbers)
         document.addEventListener('DOMContentLoaded', function () {
@@ -728,6 +795,8 @@
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.style.colorScheme = theme;
             localStorage.setItem('risma-theme', theme);
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#12201a' : '#147A45');
             if (themeToggleIcon) {
                 themeToggleIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
             }
@@ -1080,7 +1149,7 @@
 
     @stack('scripts')
     <!-- RW SMART Motion Graphics Engine -->
-    <script src="{{ asset('js/motion.js') }}"></script>
+    <script src="{{ asset('js/motion.js') }}?v={{ file_exists(public_path('js/motion.js')) ? filemtime(public_path('js/motion.js')) : '1.0' }}"></script>
     @include('partials.whatsapp-help')
 </body>
 </html>

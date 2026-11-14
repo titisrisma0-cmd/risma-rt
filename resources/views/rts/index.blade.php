@@ -41,9 +41,9 @@
         </div>
     @endif
 
-    {{-- Ringkasan Wilayah RW (Donezo Metric Cards) --}}
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
+    {{-- Ringkasan Wilayah RW (Donezo Metric Cards - 2x2 Grid di HP) --}}
+    <div class="row g-2 g-md-3 mb-4">
+        <div class="col-6 col-md-3">
             <div class="stat-card-saas accent-emerald">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total RT Terdaftar</span>
@@ -57,7 +57,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="stat-card-saas accent-info">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Akun Ketua RT Aktif</span>
@@ -73,7 +73,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="stat-card-saas accent-amber">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total Kepala Keluarga</span>
@@ -87,7 +87,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="stat-card-saas accent-emerald">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total Warga Terdata</span>

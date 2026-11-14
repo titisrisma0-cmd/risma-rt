@@ -30,7 +30,7 @@
             <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-list text-emerald me-2"></i> Daftar Pengeluaran</h6>
         </div>
         <div class="table-responsive">
-            <table class="table-saas">
+            <table class="table-saas table-mobile-cards">
                 <thead>
                     <tr>
                         <th>Tanggal</th>
@@ -44,8 +44,8 @@
                 <tbody>
                     @forelse($pengeluaran as $item)
                     <tr>
-                        <td class="text-secondary small font-monospace">{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
-                        <td>
+                        <td data-label="Tanggal" class="text-secondary small font-monospace">{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
+                        <td data-label="Kategori">
                             @if($item->kategori == 'Kebersihan')
                                 <span class="badge-soft-emerald"><i class="fas fa-broom me-1"></i> Kebersihan</span>
                             @elseif($item->kategori == 'Keamanan')
@@ -60,10 +60,10 @@
                                 <span class="badge bg-light text-dark border">{{ $item->kategori }}</span>
                             @endif
                         </td>
-                        <td class="text-dark small" style="max-width: 320px;">{{ Str::limit($item->keterangan, 70) }}</td>
-                        <td class="text-danger fw-bold">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
-                        <td class="text-secondary small">{{ $item->creator->name ?? '-' }}</td>
-                        <td class="text-end">
+                        <td data-label="Keterangan" class="text-dark small" style="max-width: 320px;">{{ Str::limit($item->keterangan, 70) }}</td>
+                        <td data-label="Nominal" class="text-danger fw-bold">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>
+                        <td data-label="Dicatat oleh" class="text-secondary small">{{ $item->creator->name ?? '-' }}</td>
+                        <td data-label="Aksi" class="text-end">
                             <div class="btn-group btn-group-sm" role="group">
                                 <a href="{{ route('pengeluaran.edit', $item->id) }}" class="btn btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>

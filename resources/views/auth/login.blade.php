@@ -2,7 +2,8 @@
 <html lang="id" data-bs-theme="light" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#147A45" id="metaThemeColor">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Masuk & Pendaftaran | RW SMART</title>
     
@@ -14,6 +15,8 @@
             document.documentElement.setAttribute('data-bs-theme', theme);
             document.documentElement.setAttribute('data-theme', theme);
             document.documentElement.style.colorScheme = theme;
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#12201a' : '#147A45');
         })();
     </script>
     
@@ -465,7 +468,31 @@
                 padding: 32px 24px;
             }
             .form-panel {
-                padding: 32px 24px;
+                padding: 28px 20px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            body {
+                padding: 16px 10px;
+                align-items: flex-start;
+            }
+            .input-group-saas input,
+            .input-group-saas select {
+                font-size: 16px !important; /* iOS zoom prevention */
+            }
+            .demo-pills {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .demo-pill {
+                flex: 1 1 calc(50% - 6px);
+                text-align: center;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         }
     </style>
@@ -529,6 +556,15 @@
                 <!-- Right Panel - Forms -->
                 <div class="col-lg-7">
                     <div class="form-panel">
+                        <!-- Compact Mobile Brand Header (< lg) -->
+                        <div class="d-lg-none text-center mb-3 pt-1">
+                            <a href="{{ url('/') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none mb-1">
+                                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART" width="36" height="36">
+                                <span class="fs-4 fw-bold" style="color: var(--ink); letter-spacing: -0.02em;">RW <span style="color: var(--primary);">SMART</span></span>
+                            </a>
+                            <p class="small text-muted mb-0">Platform Digital Tata Kelola & Layanan Warga</p>
+                        </div>
+
                         <!-- Navigation Tabs -->
                         <div class="auth-nav-tabs">
                             <button class="tab-btn active" data-tab="login" type="button">

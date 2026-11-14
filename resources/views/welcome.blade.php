@@ -2,7 +2,8 @@
 <html lang="id" data-bs-theme="light" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#147A45" id="metaThemeColor">
     <title>RW SMART — Modern Community & Neighborhood Platform</title>
 
     <script>
@@ -10,6 +11,8 @@
             const savedTheme = localStorage.getItem('risma-theme') || 'light';
             document.documentElement.setAttribute('data-bs-theme', savedTheme);
             document.documentElement.setAttribute('data-theme', savedTheme);
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) metaTheme.setAttribute('content', savedTheme === 'dark' ? '#12201a' : '#147A45');
         })();
     </script>
 
@@ -20,9 +23,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Stylesheets -->
-    <link href="{{ asset('css/theme-welcome.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/theme-welcome.css') }}?v={{ file_exists(public_path('css/theme-welcome.css')) ? filemtime(public_path('css/theme-welcome.css')) : '1.0' }}" rel="stylesheet">
     <!-- RW SMART Motion Graphics Engine -->
-    <link href="{{ asset('css/motion.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/motion.css') }}?v={{ file_exists(public_path('css/motion.css')) ? filemtime(public_path('css/motion.css')) : '1.0' }}" rel="stylesheet">
 </head>
 <body>
     <!-- Scroll Progress Bar -->
@@ -34,7 +37,7 @@
     <header class="landing-nav">
         <div class="nav-container">
             <a href="{{ url('/') }}" class="brand-link">
-                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="38" height="38">
+                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="38" height="38" class="brand-logo-img">
                 <span class="brand-title">RW <span>SMART</span></span>
             </a>
 
@@ -47,25 +50,73 @@
             </ul>
 
             <div class="nav-actions">
-                <button type="button" class="theme-toggle-pill" id="themeToggleBtn" title="Ganti mode tampilan" aria-label="Toggle Theme">
+                <!-- Desktop Only Theme Toggle -->
+                <button type="button" class="theme-toggle-pill d-desktop-only" id="themeToggleBtn" title="Ganti mode tampilan" aria-label="Toggle Theme">
                     <i class="fas fa-sun" id="themeToggleIcon" aria-hidden="true"></i>
                 </button>
 
                 @if(Auth::check())
-                    <a href="{{ route('dashboard') }}" class="btn-saas-primary">
+                    <a href="{{ route('dashboard') }}" class="btn-saas-primary nav-btn-compact">
                         <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
-                        <span>Buka Dashboard</span>
+                        <span>Dashboard</span>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="btn-saas-outline">Masuk</a>
-                    <a href="{{ route('login') }}#register" class="btn-saas-primary">
+                    <a href="{{ route('login') }}" class="btn-saas-outline nav-btn-compact nav-btn-masuk">Masuk</a>
+                    <a href="{{ route('login') }}#register" class="btn-saas-primary nav-btn-compact nav-btn-daftar">
                         <span>Daftar Warga</span>
-                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        <i class="fas fa-arrow-right nav-btn-arrow" aria-hidden="true"></i>
                     </a>
                 @endif
+
+                <!-- Mobile Hamburger Button -->
+                <button type="button" class="landing-hamburger-btn" id="landingDrawerBtn" aria-label="Buka Menu" title="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
     </header>
+
+    <!-- Mobile Drawer Nav for Landing Page -->
+    <div class="landing-drawer-backdrop" id="landingDrawerBackdrop"></div>
+    <aside class="landing-drawer" id="landingDrawer" aria-label="Menu Navigasi Mobile">
+        <div class="landing-drawer-header">
+            <a href="{{ url('/') }}" class="brand-link">
+                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="32" height="32" class="brand-logo-img">
+                <span class="brand-title">RW <span>SMART</span></span>
+            </a>
+            <button type="button" class="landing-drawer-close" id="landingDrawerClose" aria-label="Tutup Menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="landing-drawer-menu">
+            <li><a href="#fitur" class="landing-drawer-item"><i class="fas fa-layer-group me-2" style="width: 22px;"></i>Fitur Utama</a></li>
+            <li><a href="#layanan" class="landing-drawer-item"><i class="fas fa-hands-holding-child me-2" style="width: 22px;"></i>Layanan Warga</a></li>
+            <li><a href="#manfaat" class="landing-drawer-item"><i class="fas fa-id-badge me-2" style="width: 22px;"></i>Manfaat Role</a></li>
+            <li><a href="#cara-kerja" class="landing-drawer-item"><i class="fas fa-diagram-project me-2" style="width: 22px;"></i>Cara Kerja</a></li>
+            <li><a href="#keamanan" class="landing-drawer-item"><i class="fas fa-shield-halved me-2" style="width: 22px;"></i>Keamanan</a></li>
+            <li class="landing-drawer-divider"></li>
+            <li>
+                <button type="button" class="landing-drawer-item landing-drawer-theme-btn" id="drawerThemeToggleBtn">
+                    <i class="fas fa-sun me-2" id="drawerThemeToggleIcon" style="width: 22px;"></i>
+                    <span id="drawerThemeToggleText">Mode Terang / Gelap</span>
+                </button>
+            </li>
+        </ul>
+        <div class="landing-drawer-footer">
+            @if(Auth::check())
+                <a href="{{ route('dashboard') }}" class="btn-saas-primary" style="width: 100%; justify-content: center;">
+                    <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                    <span>Buka Dashboard</span>
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="btn-saas-outline" style="width: 100%; justify-content: center; margin-bottom: 0.5rem;">Masuk</a>
+                <a href="{{ route('login') }}#register" class="btn-saas-primary" style="width: 100%; justify-content: center;">
+                    <span>Daftar Warga</span>
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            @endif
+        </div>
+    </aside>
 
     <!-- ==========================================================================
        2. HERO SECTION
@@ -717,22 +768,72 @@
     <script>
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const themeToggleIcon = document.getElementById('themeToggleIcon');
+        const drawerThemeToggleBtn = document.getElementById('drawerThemeToggleBtn');
+        const drawerThemeToggleIcon = document.getElementById('drawerThemeToggleIcon');
+        const drawerThemeToggleText = document.getElementById('drawerThemeToggleText');
 
         function setTheme(theme) {
             document.documentElement.setAttribute('data-bs-theme', theme);
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('risma-theme', theme);
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#12201a' : '#147A45');
             if (themeToggleIcon) {
                 themeToggleIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+            if (drawerThemeToggleIcon) {
+                drawerThemeToggleIcon.className = theme === 'dark' ? 'fas fa-moon me-2' : 'fas fa-sun me-2';
+            }
+            if (drawerThemeToggleText) {
+                drawerThemeToggleText.textContent = theme === 'dark' ? 'Mode Gelap (Aktif)' : 'Mode Terang (Aktif)';
             }
         }
 
         setTheme(localStorage.getItem('risma-theme') || 'light');
 
+        function toggleAppTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        }
+
         if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', function () {
-                const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
-                setTheme(current === 'dark' ? 'light' : 'dark');
+            themeToggleBtn.addEventListener('click', toggleAppTheme);
+        }
+        if (drawerThemeToggleBtn) {
+            drawerThemeToggleBtn.addEventListener('click', toggleAppTheme);
+        }
+
+        // Landing Page Mobile Drawer Controller
+        const drawerBtn = document.getElementById('landingDrawerBtn');
+        const drawerClose = document.getElementById('landingDrawerClose');
+        const drawer = document.getElementById('landingDrawer');
+        const drawerBackdrop = document.getElementById('landingDrawerBackdrop');
+
+        function openLandingDrawer() {
+            if (drawer) drawer.classList.add('show');
+            if (drawerBackdrop) drawerBackdrop.classList.add('show');
+            document.body.classList.add('drawer-open');
+        }
+
+        function closeLandingDrawer() {
+            if (drawer) drawer.classList.remove('show');
+            if (drawerBackdrop) drawerBackdrop.classList.remove('show');
+            document.body.classList.remove('drawer-open');
+        }
+
+        if (drawerBtn) drawerBtn.addEventListener('click', openLandingDrawer);
+        if (drawerClose) drawerClose.addEventListener('click', closeLandingDrawer);
+        if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeLandingDrawer);
+
+        // Auto close on menu item click or Escape key
+        if (drawer) {
+            drawer.querySelectorAll('.landing-drawer-item').forEach(link => {
+                link.addEventListener('click', closeLandingDrawer);
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && drawer.classList.contains('show')) {
+                    closeLandingDrawer();
+                }
             });
         }
 

@@ -8,8 +8,8 @@
 <div class="py-2">
     <!-- Welcome Header RT -->
     <div class="page-header-saas mb-4">
-        <div class="page-header-info">
-            <div class="d-flex align-items-center gap-2 mb-1">
+        <div class="page-header-info" style="min-width: 0;">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2" style="min-width: 0;">
                 <span class="badge badge-soft-primary px-3 py-1">
                     <i class="fas fa-shield-alt me-1"></i> Ketua RT {{ $rtKode }} &bull; Pengurus Wilayah
                 </span>
@@ -18,10 +18,10 @@
                 </span>
                 <span class="text-secondary small d-none d-md-inline">{{ now()->locale('id')->translatedFormat('l, d F Y') }}</span>
             </div>
-            <h1 class="h3 fw-bold text-dark mb-1">
+            <h1 class="h3 fw-bold text-dark mb-1 text-break">
                 Selamat Datang, Ketua RT {{ $rtKode }} 👋
             </h1>
-            <p class="text-secondary mb-0">
+            <p class="text-secondary mb-0 text-break">
                 Pusat komando administrasi kependudukan, keuangan kas warga, dan pelayanan masyarakat {{ $namaRt }}.
             </p>
         </div>
