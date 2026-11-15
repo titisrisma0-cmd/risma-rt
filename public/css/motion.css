@@ -297,7 +297,7 @@
    6.1 MODAL & DROPDOWN SMOOTH FADE & SCALE & BACKDROP SAFEGUARD
    ========================================================================== */
 .modal-backdrop {
-    z-index: var(--z-backdrop, 70) !important;
+    z-index: var(--z-modal-backdrop, 70) !important;
 }
 
 .modal {

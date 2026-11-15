@@ -43,18 +43,18 @@
 
 <body>
     <!-- Floating Centered Toast Stack Container (Bagian 3) -->
-    <div class="toast-stack" id="toastStack" role="region" aria-label="Notifikasi"></div>
+    <div class="toast-stack" id="toastStack" role="region" aria-label="Notifikasi" data-no-motion="true"></div>
 
     <!-- Scroll Progress Bar -->
-    <div class="m-progress" aria-hidden="true"></div>
+    <div class="m-progress" aria-hidden="true" data-no-motion="true"></div>
 
     <!-- Mobile Sidebar Backdrop -->
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop" data-no-motion="true"></div>
 
     <!-- ==========================================================================
        SIDEBAR NAVIGATION (DONEZO CLEAN WHITE STYLE)
        ========================================================================== -->
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" data-no-motion="true">
         @php
             $authUser = Auth::user();
             $roleLabel = 'PENGURUS RW';
@@ -675,9 +675,13 @@
         function openSidebar() {
             if (!sidebar) return;
             lastFocusedElement = document.activeElement;
-            sidebar.classList.add('show');
-            if (backdrop) backdrop.classList.add('show');
+            sidebar.classList.add('show', 'is-open');
+            if (backdrop) backdrop.classList.add('show', 'is-open');
             document.body.classList.add('sidebar-open');
+            document.body.style.overflow = 'hidden';
+            document.body.style.touchAction = 'none';
+            const main = document.getElementById('mainContent');
+            if (main) main.setAttribute('aria-hidden', 'true');
             // Focus on close button or first nav link for keyboard accessibility
             const firstFocusable = sidebar.querySelector('#closeSidebarBtn, .sidebar-nav-item');
             if (firstFocusable) firstFocusable.focus();
@@ -685,17 +689,23 @@
 
         function closeSidebar() {
             if (!sidebar) return;
-            sidebar.classList.remove('show');
-            if (backdrop) backdrop.classList.remove('show');
+            sidebar.classList.remove('show', 'is-open');
+            if (backdrop) backdrop.classList.remove('show', 'is-open');
             document.body.classList.remove('sidebar-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('touch-action');
+            const main = document.getElementById('mainContent');
+            if (main) main.removeAttribute('aria-hidden');
             if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
                 lastFocusedElement.focus();
+            } else if (toggleBtn) {
+                toggleBtn.focus();
             }
         }
 
         function toggleSidebar() {
             if (!sidebar) return;
-            if (sidebar.classList.contains('show')) {
+            if (sidebar.classList.contains('show') || sidebar.classList.contains('is-open')) {
                 closeSidebar();
             } else {
                 openSidebar();
@@ -718,14 +728,14 @@
 
             // Close on Escape key
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                if (e.key === 'Escape' && (sidebar.classList.contains('show') || sidebar.classList.contains('is-open'))) {
                     closeSidebar();
                 }
             });
 
             // Focus trap inside sidebar drawer when open
             sidebar.addEventListener('keydown', function(e) {
-                if (e.key !== 'Tab' || !sidebar.classList.contains('show') || window.innerWidth >= 1024) return;
+                if (e.key !== 'Tab' || (!sidebar.classList.contains('show') && !sidebar.classList.contains('is-open')) || window.innerWidth >= 1024) return;
                 const focusables = sidebar.querySelectorAll('a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])');
                 if (!focusables.length) return;
                 const first = focusables[0];

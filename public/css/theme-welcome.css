@@ -50,8 +50,9 @@
     --z-base: 1;
     --z-topbar: 40;
     --z-wa: 50;
+    --z-drawer-backdrop: 55;
     --z-drawer: 60;
-    --z-backdrop: 70;
+    --z-modal-backdrop: 70;
     --z-modal: 80;
     --z-toast: 90;
     --toast-top: 76px;
@@ -387,7 +388,7 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(15, 42, 29, 0.5);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: var(--z-backdrop, 70);
+    z-index: var(--z-drawer-backdrop, 55);
     display: none;
 }
 

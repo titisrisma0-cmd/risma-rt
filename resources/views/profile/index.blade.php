@@ -50,21 +50,26 @@
         <div class="card hero-surface hero-profile-banner border-0 rounded-4 shadow-sm mb-4 text-white overflow-hidden" data-hero
              style="background: linear-gradient(135deg, #0e7a4b 0%, #177245 60%, #0a4f30 100%);">
             <div class="card-body p-3 p-md-4 hero-profile-banner__body">
-                <div class="hero-profile-banner__main d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-circle bg-warning text-dark shadow-sm flex-shrink-0 hero-profile-banner__icon">
-                        <i class="fas fa-crown fa-2x"></i>
-                    </div>
-                    <div class="hero-profile-banner__info min-w-0">
-                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                            <span class="badge bg-warning text-dark fw-bold rounded-pill px-2.5 py-1">PENGEMBANG SISTEM</span>
-                            <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-2.5 py-1">ROOT PRIVILEGES</span>
+                <div class="hero-profile-banner__main">
+                    {{-- Baris 1: Ikon mahkota 44px di sebelah badge-badge (PENGEMBANG SISTEM + ROOT PRIVILEGES) --}}
+                    <div class="hero-profile-banner__row-top d-flex align-items-center gap-2 gap-sm-3 mb-2">
+                        <div class="hero-profile-banner__icon rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-crown"></i>
                         </div>
+                        <div class="hero-profile-banner__badges d-flex flex-wrap align-items-center gap-2">
+                            <span class="badge hero-badge-dev rounded-pill px-2.5 py-1">PENGEMBANG SISTEM</span>
+                            <span class="badge hero-badge-root rounded-pill px-2.5 py-1">ROOT PRIVILEGES</span>
+                        </div>
+                    </div>
+                    {{-- Baris 2: Judul + Paragraf penjelasan --}}
+                    <div class="hero-profile-banner__content">
                         <h5 class="fw-bold text-white mb-1 hero-profile-banner__title">Titis Rismawati &bull; Hak Akses Tertinggi Aktif</h5>
-                        <p class="text-white-50 mb-0 small hero-profile-banner__desc">
+                        <p class="hero-profile-banner__desc mb-0">
                             Akun ini memiliki hak akses penuh ke seluruh master wilayah (RW & seluruh unit RT) dan dapat menguji pengalaman sistem sebagai RT/RW atau Warga secara dinamis.
                         </p>
                     </div>
                 </div>
+                {{-- Baris 3: Tombol aksi --}}
                 <div class="hero-profile-banner__action">
                     <button type="button" class="btn btn-warning text-dark fw-bold px-3 py-2 rounded-3 shadow-sm w-100" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
                         <i class="fas fa-arrows-rotate me-1"></i> Ganti Role Simulasi
