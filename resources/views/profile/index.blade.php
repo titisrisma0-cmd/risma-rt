@@ -5,26 +5,32 @@
 @section('content')
 <div class="content-container">
     {{-- ==================== PAGE HEADER ==================== --}}
-    <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <div class="page-head-icon" style="background: rgba(14, 122, 75, 0.1); color: #0e7a4b; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.35rem;">
-                <i class="fas fa-user-gear"></i>
-            </div>
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <h1 class="page-title mb-0" style="font-size: 1.4rem; font-weight: 700; color: #1e293b;">Profil Pengguna</h1>
-                    @if($user->isSuperAdmin())
-                        <span class="badge bg-warning text-dark px-2.5 py-1 rounded-pill fw-bold" style="font-size: 0.75rem;">
-                            <i class="fas fa-crown me-1"></i> SUPER ADMIN
-                        </span>
-                    @else
-                        <span class="badge-rt-pill">{{ $user->getRoleDisplayName() }}</span>
-                    @endif
+    <div class="page-head page-header page-header-profile mb-4">
+        <div class="page-header-profile__main">
+            {{-- Baris 1: Ikon 44px + Judul "Profil Pengguna" sejajar --}}
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="page-head-icon page-head-icon-profile" style="background: rgba(14, 122, 75, 0.1); color: #0e7a4b; width: 44px; height: 44px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.25rem;">
+                    <i class="fas fa-user-gear"></i>
                 </div>
-                <p class="page-subtitle mb-0 text-muted small">Kelola informasi identitas diri, kependudukan, alamat domisili, dan keamanan akun Anda</p>
+                <h1 class="page-title page-title-profile mb-0">Profil Pengguna</h1>
             </div>
+            {{-- Baris 2: Badge Role --}}
+            <div class="page-header-profile__badge mb-1">
+                @if($user->isSuperAdmin())
+                    <span class="badge bg-warning text-dark px-2.5 py-1 rounded-pill fw-bold" style="font-size: 0.75rem;">
+                        <i class="fas fa-crown me-1"></i> SUPER ADMIN
+                    </span>
+                @else
+                    <span class="badge-rt-pill">{{ $user->getRoleDisplayName() }}</span>
+                @endif
+            </div>
+            {{-- Baris 3: Deskripsi ringkas --}}
+            <p class="page-subtitle page-subtitle-profile mb-0 text-muted small">
+                Kelola informasi identitas diri, kependudukan, alamat domisili, dan keamanan akun Anda
+            </p>
         </div>
-        <div class="page-header-actions d-flex flex-wrap gap-2">
+        {{-- Baris 4: Tombol aksi --}}
+        <div class="page-header-actions page-header-profile__actions">
             @if($user->isSuperAdmin())
                 <button type="button" class="btn btn-warning text-dark fw-bold rounded-3 shadow-xs" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
                     <i class="fas fa-arrows-rotate me-1.5"></i> Beralih Peran (Ganti Role)
@@ -41,26 +47,26 @@
 
     {{-- ==================== SUPER ADMIN EXCLUSIVE BADGE BANNER ==================== --}}
     @if($user->isSuperAdmin())
-        <div class="card hero-surface border-0 rounded-4 shadow-sm mb-4 text-white overflow-hidden" data-hero
+        <div class="card hero-surface hero-profile-banner border-0 rounded-4 shadow-sm mb-4 text-white overflow-hidden" data-hero
              style="background: linear-gradient(135deg, #0e7a4b 0%, #177245 60%, #0a4f30 100%);">
-            <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-circle bg-warning text-dark shadow-sm flex-shrink-0">
+            <div class="card-body p-3 p-md-4 hero-profile-banner__body">
+                <div class="hero-profile-banner__main d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-circle bg-warning text-dark shadow-sm flex-shrink-0 hero-profile-banner__icon">
                         <i class="fas fa-crown fa-2x"></i>
                     </div>
-                    <div>
-                        <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="hero-profile-banner__info min-w-0">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                             <span class="badge bg-warning text-dark fw-bold rounded-pill px-2.5 py-1">PENGEMBANG SISTEM</span>
                             <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-2.5 py-1">ROOT PRIVILEGES</span>
                         </div>
-                        <h5 class="fw-bold text-white mb-1">Titis Rismawati &bull; Hak Akses Tertinggi Aktif</h5>
-                        <p class="text-white-50 mb-0 small">
+                        <h5 class="fw-bold text-white mb-1 hero-profile-banner__title">Titis Rismawati &bull; Hak Akses Tertinggi Aktif</h5>
+                        <p class="text-white-50 mb-0 small hero-profile-banner__desc">
                             Akun ini memiliki hak akses penuh ke seluruh master wilayah (RW & seluruh unit RT) dan dapat menguji pengalaman sistem sebagai RT/RW atau Warga secara dinamis.
                         </p>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-warning text-dark fw-bold px-3 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
+                <div class="hero-profile-banner__action">
+                    <button type="button" class="btn btn-warning text-dark fw-bold px-3 py-2 rounded-3 shadow-sm w-100" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
                         <i class="fas fa-arrows-rotate me-1"></i> Ganti Role Simulasi
                     </button>
                 </div>
@@ -68,17 +74,7 @@
         </div>
     @endif
 
-    {{-- ==================== ALERTS ==================== --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center justify-content-between mb-4 shadow-xs rounded-3" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-check-circle fa-lg me-2 text-success"></i>
-                <span>{{ session('success') }}</span>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
+    {{-- ==================== FORM VALIDATION ERRORS ==================== --}}
     @if(isset($errors) && $errors->any())
         <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-xs rounded-3" role="alert">
             <div class="d-flex align-items-start gap-2">

@@ -1,10 +1,10 @@
 @php
-    $whatsappNumber = preg_replace('/\D+/', '', (string) config('rw-smart.whatsapp_number'));
+    $whatsappNumber = preg_replace('/\D+/', '', (string) config('rw-smart.whatsapp_number', '6285183110392'));
     if (str_starts_with($whatsappNumber, '0')) {
         $whatsappNumber = '62' . substr($whatsappNumber, 1);
     }
-    $whatsappMessage = 'Halo, saya butuh bantuan terkait aplikasi RW SMART.';
-    $whatsappUrl = 'https://wa.me/' . $whatsappNumber . '?text=' . rawurlencode($whatsappMessage);
+    // Tautan langsung ke WhatsApp tanpa pesan otomatis
+    $whatsappUrl = 'https://wa.me/' . $whatsappNumber;
 @endphp
 
 @if($whatsappNumber)
@@ -12,9 +12,9 @@
        href="{{ $whatsappUrl }}"
        target="_blank"
        rel="noopener noreferrer"
-       aria-label="Butuh bantuan? Chat kami di WhatsApp"
-       title="Butuh bantuan? Chat kami di WhatsApp">
-        <span class="whatsapp-help__label">Butuh bantuan? Chat kami di WhatsApp</span>
+       aria-label="Chat WhatsApp"
+       title="Chat WhatsApp">
+        <span class="whatsapp-help__label">Chat WhatsApp</span>
         <span class="whatsapp-help__button" aria-hidden="true">
             <span class="whatsapp-help__pulse"></span>
             <i class="fab fa-whatsapp"></i>
@@ -26,8 +26,8 @@
             .whatsapp-help {
                 position: fixed;
                 right: 24px;
-                bottom: 24px;
-                z-index: 1085;
+                bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+                z-index: var(--z-wa, 50) !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
@@ -97,7 +97,7 @@
             @media (max-width: 576px) {
                 .whatsapp-help {
                     right: max(16px, env(safe-area-inset-right, 16px));
-                    bottom: max(20px, env(safe-area-inset-bottom, 20px));
+                    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
                 }
                 .whatsapp-help__button {
                     width: 52px;

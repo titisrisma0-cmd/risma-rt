@@ -42,6 +42,9 @@
 </head>
 
 <body>
+    <!-- Floating Centered Toast Stack Container (Bagian 3) -->
+    <div class="toast-stack" id="toastStack" role="region" aria-label="Notifikasi"></div>
+
     <!-- Scroll Progress Bar -->
     <div class="m-progress" aria-hidden="true"></div>
 
@@ -590,27 +593,6 @@
                 </div>
             @endif
 
-            {{-- Flash Session Alerts --}}
-            @if(session('success'))
-                <div class="alert alert-success alert-saas alert-dismissible fade show mb-4 shadow-xs" role="alert">
-                    <div class="alert-content-wrapper">
-                        <i class="fas fa-check-circle fa-lg alert-icon text-success"></i>
-                        <span class="alert-text">{{ session('success') }}</span>
-                    </div>
-                    <button type="button" class="btn-close alert-close-btn" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger alert-saas alert-dismissible fade show mb-4 shadow-xs" role="alert">
-                    <div class="alert-content-wrapper">
-                        <i class="fas fa-exclamation-circle fa-lg alert-icon text-danger"></i>
-                        <span class="alert-text">{{ session('error') }}</span>
-                    </div>
-                    <button type="button" class="btn-close alert-close-btn" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
             {{-- Yield Page Content --}}
             @yield('content')
         </div>
@@ -817,25 +799,130 @@
         }
 
         // =========================================================================
-        // MODERN TOAST & CONFIRMATION MODALS (REPLACING BROWSER ALERTS/CONFIRMS)
+        // BAGIAN 3: FLOATING CENTERED TOAST NOTIFICATION STACK (PILL DESIGN)
         // =========================================================================
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 4000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer);
-                toast.addEventListener('mouseleave', Swal.resumeTimer);
-            }
-        });
+        function escapeHtml(str) {
+            if (typeof str !== 'string') return str ?? '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
 
-        window.showToast = function(message, type = 'success') {
-            Toast.fire({
-                icon: type,
-                title: message
-            });
+        function dismissToast(pill) {
+            if (!pill || pill.dataset.dismissing) return;
+            pill.dataset.dismissing = 'true';
+            pill.style.animation = 'toastSlideOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+            setTimeout(() => {
+                if (pill.parentElement) {
+                    pill.parentElement.removeChild(pill);
+                }
+            }, 260);
+        }
+
+        window.showToast = function(message, type = 'success', customTitle = null) {
+            const stack = document.getElementById('toastStack');
+            if (!stack) return;
+
+            let title = customTitle;
+            if (!title) {
+                switch (type) {
+                    case 'error':
+                    case 'danger':
+                        title = 'Gagal';
+                        break;
+                    case 'warning':
+                        title = 'Peringatan';
+                        break;
+                    case 'info':
+                        title = 'Informasi';
+                        break;
+                    default:
+                        title = 'Berhasil';
+                        break;
+                }
+            }
+
+            const isError = (type === 'error' || type === 'danger');
+            const duration = isError ? 5000 : 3500;
+            const roleAttr = isError ? 'alert' : 'status';
+            const ariaLive = isError ? 'assertive' : 'polite';
+
+            let iconClass = 'fa-check';
+            if (isError) iconClass = 'fa-times';
+            else if (type === 'warning') iconClass = 'fa-exclamation';
+            else if (type === 'info') iconClass = 'fa-info';
+
+            const pill = document.createElement('div');
+            pill.className = `toast-pill toast-pill--${type}`;
+            pill.setAttribute('role', roleAttr);
+            pill.setAttribute('aria-live', ariaLive);
+            pill.setAttribute('data-no-motion', 'true');
+
+            pill.innerHTML = `
+                <div class="toast-pill__icon" aria-hidden="true">
+                    <i class="fas ${iconClass}"></i>
+                </div>
+                <div class="toast-pill__content">
+                    <div class="toast-pill__title">${escapeHtml(title)}</div>
+                    <div class="toast-pill__desc">${escapeHtml(message)}</div>
+                </div>
+                <button type="button" class="toast-pill__close" aria-label="Tutup notifikasi">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+                <div class="toast-pill__progress" aria-hidden="true">
+                    <div class="toast-pill__progress-bar" style="animation-duration: ${duration}ms;"></div>
+                </div>
+            `;
+
+            // Max 3 visible toasts, dismiss older
+            while (stack.children.length >= 3) {
+                dismissToast(stack.firstElementChild);
+            }
+
+            stack.appendChild(pill);
+
+            let remainingTime = duration;
+            let startTime = Date.now();
+            let timerId = null;
+            let isPaused = false;
+
+            function startTimer() {
+                startTime = Date.now();
+                timerId = setTimeout(() => {
+                    dismissToast(pill);
+                }, remainingTime);
+            }
+
+            function pauseTimer() {
+                if (isPaused) return;
+                isPaused = true;
+                clearTimeout(timerId);
+                remainingTime -= (Date.now() - startTime);
+                if (remainingTime < 300) remainingTime = 300;
+                pill.classList.add('is-paused');
+            }
+
+            function resumeTimer() {
+                if (!isPaused) return;
+                isPaused = false;
+                pill.classList.remove('is-paused');
+                startTimer();
+            }
+
+            pill.addEventListener('mouseenter', pauseTimer);
+            pill.addEventListener('mouseleave', resumeTimer);
+            pill.addEventListener('touchstart', pauseTimer, { passive: true });
+            pill.addEventListener('touchend', resumeTimer, { passive: true });
+
+            const closeBtn = pill.querySelector('.toast-pill__close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dismissToast(pill);
+                });
+            }
+
+            startTimer();
         };
 
         // Automatic flash message toasts from Laravel Session
@@ -986,17 +1073,45 @@
             if (modal && modal.parentElement !== document.body) {
                 document.body.appendChild(modal);
             }
+            // Clean up any orphan backdrops before showing
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(bd => bd.remove());
         });
 
         document.addEventListener('shown.bs.modal', function (event) {
             const modal = event.target;
             const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(bd => {
-                bd.style.zIndex = '1050';
+            backdrops.forEach((bd, idx) => {
+                if (idx > 0) {
+                    bd.remove();
+                } else {
+                    bd.style.zIndex = 'var(--z-backdrop, 70)';
+                }
             });
             if (modal) {
-                modal.style.zIndex = '1060';
+                modal.style.zIndex = 'var(--z-modal, 80)';
             }
+        });
+
+        document.addEventListener('hide.bs.modal', function () {
+            // Safety timer in case Bootstrap transitionend is cancelled or interrupted
+            setTimeout(function () {
+                if (!document.querySelector('.modal.show')) {
+                    document.querySelectorAll('.modal-backdrop').forEach(bd => bd.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('overflow');
+                    document.body.style.removeProperty('padding-right');
+                }
+            }, 300);
+        });
+
+        document.addEventListener('hidden.bs.modal', function () {
+            // Remove zombie backdrops and reset body state completely
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(bd => bd.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
         });
     </script>
 
@@ -1006,12 +1121,12 @@
             $modalRws = \App\Models\Rw::orderBy('kode_rw')->get();
         @endphp
         <!-- Modal Beralih Peran (Role Switcher) -->
-        <div class="modal fade" id="modalSwitchRole" tabindex="-1" aria-labelledby="modalSwitchRoleLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 shadow-lg rounded-4">
-                    <div class="modal-header border-bottom py-3 px-4 bg-light rounded-top-4">
+        <div class="modal fade" id="modalSwitchRole" tabindex="-1" aria-labelledby="modalSwitchRoleLabel" aria-hidden="true" data-no-motion="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" data-no-motion="true">
+                <div class="modal-content border-0 shadow-lg rounded-4" data-no-motion="true">
+                    <div class="modal-header border-bottom py-3 px-4 rounded-top-4" data-no-motion="true">
                         <div class="d-flex align-items-center gap-2">
-                            <div class="p-2 rounded-3 bg-warning text-dark">
+                            <div class="p-2 rounded-3 bg-warning text-dark flex-shrink-0">
                                 <i class="fas fa-arrows-rotate"></i>
                             </div>
                             <div>
@@ -1021,9 +1136,9 @@
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body p-4">
+                    <div class="modal-body p-3 p-md-4" data-no-motion="true">
                         <div class="alert alert-info border-0 rounded-3 small mb-4 d-flex align-items-center gap-2">
-                            <i class="fas fa-circle-info fa-lg"></i>
+                            <i class="fas fa-circle-info fa-lg flex-shrink-0"></i>
                             <div>
                                 <strong>Fitur Eksklusif Super Admin:</strong> Anda dapat menguji seluruh hak akses dan alur sistem dari sudut pandang Pengurus RW, Ketua RT di wilayah mana pun, atau Warga biasa.
                             </div>
@@ -1031,18 +1146,18 @@
 
                         <div class="row g-3">
                             {{-- Pilihan 1: Super Admin --}}
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
                                     @csrf
                                     <input type="hidden" name="mode" value="super_admin">
-                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ !Auth::user()->isSimulatingRole() ? 'border-2 border-warning bg-warning bg-opacity-10' : 'bg-white' }}">
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ !Auth::user()->isSimulatingRole() ? 'border-2 border-warning bg-warning bg-opacity-10' : '' }}" data-no-motion="true">
                                         <div>
                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                 <span class="badge bg-warning text-dark fw-bold px-2 py-1 rounded-pill">ROLE DEFAULT</span>
                                                 <i class="fas fa-crown text-warning fs-5"></i>
                                             </div>
-                                            <h6 class="fw-bold text-dark mb-1">Super Admin Asli</h6>
-                                            <p class="small text-secondary mb-3">Hak akses tak terbatas ke seluruh unit RT, master database, dan konfigurasi sistem.</p>
+                                            <h6 class="fw-bold mb-1">Super Admin Asli</h6>
+                                            <p class="small mb-3">Hak akses tak terbatas ke seluruh unit RT, master database, dan konfigurasi sistem.</p>
                                         </div>
                                         <button type="submit" class="btn btn-warning text-dark fw-bold w-100 rounded-3">
                                             <i class="fas fa-check-circle me-1"></i> Aktifkan Super Admin
@@ -1052,21 +1167,21 @@
                             </div>
 
                             {{-- Pilihan 2: Ketua RW --}}
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
                                     @csrf
                                     <input type="hidden" name="mode" value="rw">
                                     @if($modalRws->count() > 0)
                                         <input type="hidden" name="rw_id" value="{{ $modalRws->first()->id }}">
                                     @endif
-                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'rw' ? 'border-2 border-success bg-success bg-opacity-10' : 'bg-white' }}">
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'rw' ? 'border-2 border-success bg-success bg-opacity-10' : '' }}" data-no-motion="true">
                                         <div>
                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                 <span class="badge bg-success text-white fw-semibold px-2 py-1 rounded-pill">TINGKAT RW</span>
                                                 <i class="fas fa-building text-success fs-5"></i>
                                             </div>
-                                            <h6 class="fw-bold text-dark mb-1">Ketua / Pengurus RW</h6>
-                                            <p class="small text-secondary mb-3">Memvalidasi persetujuan surat RW, audit keuangan antar-RT, dan monitoring pengumuman RW.</p>
+                                            <h6 class="fw-bold mb-1">Ketua / Pengurus RW</h6>
+                                            <p class="small mb-3">Memvalidasi persetujuan surat RW, audit keuangan antar-RT, dan monitoring pengumuman RW.</p>
                                         </div>
                                         <button type="submit" class="btn btn-success fw-bold w-100 rounded-3">
                                             <i class="fas fa-play me-1"></i> Simulasikan Pengurus RW
@@ -1076,23 +1191,23 @@
                             </div>
 
                             {{-- Pilihan 3: Ketua RT (Dinamis RT 001 - RT 012...) --}}
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
                                     @csrf
                                     <input type="hidden" name="mode" value="rt">
-                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'rt' ? 'border-2 border-primary bg-primary bg-opacity-10' : 'bg-white' }}">
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'rt' ? 'border-2 border-primary bg-primary bg-opacity-10' : '' }}" data-no-motion="true">
                                         <div>
                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                 <span class="badge bg-primary text-white fw-semibold px-2 py-1 rounded-pill">TINGKAT RT</span>
                                                 <i class="fas fa-landmark text-primary fs-5"></i>
                                             </div>
-                                            <h6 class="fw-bold text-dark mb-1">Ketua RT (Pilih Unit RT)</h6>
-                                            <p class="small text-secondary mb-2">Pilih unit RT yang ingin Anda pimpin untuk verifikasi warga, kas RT, dan jadwal ronda:</p>
+                                            <h6 class="fw-bold mb-1">Ketua RT (Pilih Unit RT)</h6>
+                                            <p class="small mb-2">Pilih unit RT yang ingin Anda pimpin untuk verifikasi warga, kas RT, dan jadwal ronda:</p>
                                             <div class="mb-3">
                                                 <select name="rt_id" class="form-select form-select-sm" required>
                                                     @foreach($modalRts as $mRt)
                                                         <option value="{{ $mRt->id }}" {{ (session('super_admin_context.rt_id') == $mRt->id) ? 'selected' : '' }}>
-                                                            RT {{ $mRt->kode_rt }} - {{ $mRt->nama_rt }}
+                                                             RT {{ $mRt->kode_rt }} - {{ $mRt->nama_rt }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -1106,18 +1221,18 @@
                             </div>
 
                             {{-- Pilihan 4: Warga (Dinamis Domisili RT) --}}
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <form method="POST" action="{{ route('superadmin.switch-role') }}" class="h-100">
                                     @csrf
                                     <input type="hidden" name="mode" value="warga">
-                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'warga' ? 'border-2 border-info bg-info bg-opacity-10' : 'bg-white' }}">
+                                    <div class="card h-100 border rounded-4 p-3 hover-lift d-flex flex-column justify-content-between {{ (session('super_admin_context.mode') ?? '') === 'warga' ? 'border-2 border-info bg-info bg-opacity-10' : '' }}" data-no-motion="true">
                                         <div>
                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                 <span class="badge bg-info text-white fw-semibold px-2 py-1 rounded-pill">PORTAL WARGA</span>
                                                 <i class="fas fa-users text-info fs-5"></i>
                                             </div>
-                                            <h6 class="fw-bold text-dark mb-1">Warga Biasa</h6>
-                                            <p class="small text-secondary mb-2">Simulasikan pengalaman warga mengajukan surat, bayar iuran, dan kirim aspirasi di RT:</p>
+                                            <h6 class="fw-bold mb-1">Warga Biasa</h6>
+                                            <p class="small mb-2">Simulasikan pengalaman warga mengajukan surat, bayar iuran, dan kirim aspirasi di RT:</p>
                                             <div class="mb-3">
                                                 <select name="rt_id" class="form-select form-select-sm" required>
                                                     @foreach($modalRts as $mRt)
@@ -1136,8 +1251,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-top py-3 px-4 bg-light rounded-bottom-4">
-                        <button type="button" class="btn btn-secondary px-4 rounded-3" data-bs-dismiss="modal">Tutup</button>
+                    <div class="modal-footer border-top py-3 px-4 rounded-bottom-4" data-no-motion="true">
+                        <button type="button" class="btn btn-secondary px-4 rounded-3 w-100" data-bs-dismiss="modal" style="min-height: 48px; font-weight: 700;">Tutup</button>
                     </div>
                 </div>
             </div>

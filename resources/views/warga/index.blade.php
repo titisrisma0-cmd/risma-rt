@@ -134,19 +134,19 @@
                     $hasAccount = (bool) $item->user_id;
                 @endphp
                 <div class="col-12">
-                    <div class="saas-card p-3 border" style="background-color: var(--surface-2);">
+                    <div class="saas-card card-warga p-3 border mb-3" style="background-color: var(--surface-2);">
                         <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
-                            <div>
-                                <div class="d-flex align-items-center gap-2 mb-1">
-                                    <span class="badge bg-secondary">{{ $warga->firstItem() + $index }}</span>
-                                    <h6 class="mb-0 fw-bold text-dark fs-6">{{ $item->nama_lengkap ?? optional($item->user)->name }}</h6>
+                            <div class="w-100 min-w-0">
+                                <div class="card-warga__header mb-1">
+                                    <span class="badge bg-secondary card-warga__num">{{ $warga->firstItem() + $index }}</span>
+                                    <h6 class="mb-0 fw-bold text-dark fs-6 card-warga__name">{{ $item->nama_lengkap ?? optional($item->user)->name }}</h6>
                                     @if($hasAccount)
-                                        <span class="badge bg-light text-success border"><i class="fas fa-envelope me-1"></i>{{ $item->user->email }}</span>
+                                        <span class="badge bg-light text-success border card-warga__email"><i class="fas fa-envelope me-1"></i>{{ $item->user->email }}</span>
                                     @else
-                                        <span class="badge bg-light text-secondary border"><i class="fas fa-user-clock me-1"></i>Belum Ada Akun</span>
+                                        <span class="badge bg-light text-secondary border card-warga__email"><i class="fas fa-user-clock me-1"></i>Belum Ada Akun</span>
                                     @endif
                                 </div>
-                                <div class="d-flex flex-wrap gap-2 mb-2 mt-2">
+                                <div class="card-warga__chips mb-2 mt-2">
                                     <span class="badge bg-light text-secondary border">NIK: <span class="font-monospace text-dark">{{ $item->nik ?? '-' }}</span></span>
                                     <span class="badge bg-light text-secondary border">No. KK: <span class="font-monospace text-dark">{{ $item->no_kk ?? '-' }}</span></span>
                                     @if($item->no_kk)
@@ -177,7 +177,7 @@
                                 </div>
                                 <div class="text-secondary small"><i class="fas fa-map-marker-alt text-muted me-1"></i> Alamat: {{ Str::limit($item->alamat ?? '-', 90) }}</div>
                             </div>
-                            <div class="text-md-end d-flex flex-column justify-content-between align-items-md-end">
+                            <div class="card-warga__actions-col text-md-end d-flex flex-column justify-content-between align-items-md-end">
                                 <div class="mb-2">
                                     @if(!$hasAccount)
                                         <span class="badge bg-light text-secondary border"><i class="fas fa-id-badge me-1"></i> Belum Ada Akun</span>
@@ -192,7 +192,7 @@
                                     @endif
                                 </div>
                                 @if(Auth::user()->isAdminRw() || Auth::user()->isAdminRt())
-                                    <div class="btn-group btn-group-sm" role="group">
+                                    <div class="card-warga__btn-group btn-group btn-group-sm" role="group">
                                         @if($item->status == 'pending')
                                             <form action="{{ route('warga.verify', $targetId) }}" method="POST" class="d-inline">
                                                 @csrf

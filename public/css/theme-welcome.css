@@ -45,6 +45,16 @@
     --radius-card: 20px;
     --shadow-soft: 0 16px 36px rgba(15, 42, 29, 0.10);
     --shadow-hover: 0 20px 40px rgba(14, 122, 75, 0.15);
+
+    /* Skala Lapisan (Z-Index) Global RW SMART */
+    --z-base: 1;
+    --z-topbar: 40;
+    --z-wa: 50;
+    --z-drawer: 60;
+    --z-backdrop: 70;
+    --z-modal: 80;
+    --z-toast: 90;
+    --toast-top: 76px;
 }
 
 [data-bs-theme="dark"],
@@ -186,7 +196,7 @@ h1, h2, h3, h4, h5, h6 {
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
-    z-index: 1000;
+    z-index: var(--z-topbar, 40);
     transition: all 0.3s ease;
     padding-top: env(safe-area-inset-top, 0px);
 }
@@ -377,7 +387,7 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(15, 42, 29, 0.5);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 1045;
+    z-index: var(--z-backdrop, 70);
     display: none;
 }
 
@@ -393,7 +403,7 @@ h1, h2, h3, h4, h5, h6 {
     width: min(86vw, 320px);
     background: var(--surface);
     border-right: 1px solid var(--border);
-    z-index: 1050;
+    z-index: var(--z-drawer, 60);
     display: flex;
     flex-direction: column;
     transform: translateX(-100%);

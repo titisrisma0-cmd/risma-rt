@@ -98,8 +98,8 @@
                 if (
                     el.dataset.m ||
                     el.hasAttribute('data-seen') ||
-                    el.closest('[data-no-motion], .hero-surface, .hero-superadmin, [data-hero], .modal, [role=dialog], canvas, svg, aside, .navbar-saas, .landing-nav, .topbar, .hero-shield-decor, .pointer-events-none') ||
-                    el.matches('.hero-surface, .hero-superadmin, [data-hero], .hero-profile-card, .hero-shield-decor')
+                    el.closest('[data-no-motion], .hero-surface, .hero-superadmin, [data-hero], .modal, .modal-backdrop, .toast-stack, .toast-pill, .whatsapp-help, [role=dialog], canvas, svg, aside, .navbar-saas, .landing-nav, .topbar, .hero-shield-decor, .pointer-events-none') ||
+                    el.matches('.hero-surface, .hero-superadmin, [data-hero], .hero-profile-card, .hero-profile-banner, .hero-shield-decor')
                 ) {
                     return;
                 }
