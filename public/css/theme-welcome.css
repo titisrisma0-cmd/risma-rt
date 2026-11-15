@@ -27,6 +27,7 @@
     --info: #2a6fdb;
     --info-soft: #eaf1fc;
     --on-primary: #ffffff;
+    --header-h: 74px;
 
     /* Semantic Compatibility */
     --page-bg: var(--bg);
@@ -155,7 +156,7 @@ html {
 }
 
 section[id], [id] {
-    scroll-margin-top: 74px;
+    scroll-margin-top: var(--header-h, 74px);
 }
 
 body {
@@ -608,8 +609,9 @@ h1, h2, h3, h4, h5, h6 {
    HERO SECTION
    ========================================================================== */
 .hero-section {
-    padding-top: 135px;
-    padding-bottom: 45px;
+    padding-top: clamp(16px, 2.5vw, 36px);
+    padding-bottom: clamp(24px, 4vw, 45px);
+    min-height: auto !important;
     position: relative;
     overflow: hidden;
 }
@@ -786,14 +788,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .floating-badge.top-badge {
-    top: -24px;
-    left: -20px;
+    top: -18px;
+    left: 16px;
     animation: bob 3.5s ease-in-out infinite;
 }
 
 .floating-badge.bottom-badge {
-    bottom: -22px;
-    right: -16px;
+    bottom: -18px;
+    right: 16px;
     animation: bob 4.2s ease-in-out 1.5s infinite; /* distinct delay */
 }
 
@@ -1340,17 +1342,144 @@ h1, h2, h3, h4, h5, h6 {
     .steps-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 991.98px) {
-    .hero-container { grid-template-columns: 1fr; gap: 2rem; }
-    .hero-title { font-size: clamp(2rem, 5.5vw, 2.6rem); }
-    .nav-menu { display: none !important; }
-    .stats-grid-card { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-    .roles-grid { grid-template-columns: 1fr; }
-    .security-box { grid-template-columns: 1fr; padding: 2rem 1.5rem; gap: 1.5rem; }
-    .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+@media (max-width: 1023.98px) {
+    :root {
+        --header-h: 65px;
+    }
+    section[id], [id] {
+        scroll-margin-top: 65px;
+    }
+    .hero-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    .hero-title {
+        font-size: clamp(2rem, 5.5vw, 2.6rem);
+    }
+    .nav-menu {
+        display: none !important;
+    }
+    .stats-grid-card {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+    .roles-grid {
+        grid-template-columns: 1fr;
+    }
+    .security-box {
+        grid-template-columns: 1fr;
+        padding: 2rem 1.5rem;
+        gap: 1.5rem;
+    }
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    /* Requirement 3: Floating Badges below 1024px stay inside illustration column without absolute escape */
+    .hero-visual-wrapper {
+        width: 100%;
+        max-width: 580px;
+        margin: 0 auto;
+    }
+    .hero-svg-frame {
+        position: relative !important;
+        overflow: visible !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        padding: 1.25rem !important;
+    }
+    .hero-illustration-svg {
+        order: 1 !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+    .floating-badge {
+        position: static !important;
+        animation: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 14px !important;
+        box-shadow: var(--shadow-xs) !important;
+        border: 1px solid var(--border) !important;
+        background: var(--surface) !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .floating-badge.top-badge {
+        order: 2 !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+    }
+    .floating-badge.bottom-badge {
+        order: 3 !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 1023.98px) {
+    /* Tablet 2-column layout for badges under illustration */
+    .hero-svg-frame {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        padding: 1.5rem !important;
+    }
+    .hero-illustration-svg {
+        grid-column: 1 / -1 !important;
+        order: 1 !important;
+    }
+    .floating-badge.top-badge {
+        grid-column: 1 !important;
+        order: 2 !important;
+    }
+    .floating-badge.bottom-badge {
+        grid-column: 2 !important;
+        order: 3 !important;
+    }
 }
 
 @media (max-width: 575.98px) {
+    /* Requirement 2: Hero padding-top reduced on HP (<= 24px distance) */
+    .hero-section {
+        padding-top: 16px !important;
+        padding-bottom: 24px !important;
+    }
+    .hero-container {
+        padding: 0 1rem !important;
+    }
+    .hero-svg-frame {
+        padding: 0.85rem !important;
+        gap: 10px !important;
+        border-radius: 20px !important;
+    }
+    .floating-badge {
+        display: flex !important;
+        padding: 0.65rem 0.85rem !important;
+        gap: 0.65rem !important;
+    }
+    .floating-badge-icon {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        font-size: 1.05rem !important;
+        border-radius: 10px !important;
+    }
+    .floating-badge-title {
+        font-size: 0.82rem !important;
+    }
+    .floating-badge-sub {
+        font-size: 0.72rem !important;
+    }
     .hero-title { font-size: clamp(1.65rem, 6.8vw, 2.15rem); line-height: 1.25; }
     .hero-subtitle { font-size: 0.92rem; line-height: 1.6; }
     .hero-cta-group {
@@ -1408,8 +1537,5 @@ h1, h2, h3, h4, h5, h6 {
         flex-direction: column;
         text-align: center;
         gap: 0.75rem;
-    }
-    .floating-badge {
-        display: none !important; /* Prevent horizontal overflow on narrow screens <= 360px */
     }
 }
