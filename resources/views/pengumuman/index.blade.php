@@ -21,14 +21,14 @@
         }
     @endphp
     <header class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center flex-wrap gap-2 gap-sm-3">
             <div class="page-head-icon">
                 <i class="fas fa-bullhorn"></i>
             </div>
             <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                     <h1 class="page-title mb-0">{{ $pageTitle }}</h1>
-                    <span class="badge-rt-pill">{{ $rtLabel }}</span>
+                    <span class="badge-rt-pill" style="position: static !important; display: inline-flex !important;">{{ $rtLabel }}</span>
                 </div>
                 <p class="page-subtitle mb-0">Pusat warta informasi publik, surat edaran resmi, dan instruksi koordinasi pengurus wilayah.</p>
             </div>
@@ -54,31 +54,35 @@
 
     {{-- Filter Card --}}
     <div class="form-card saas-card p-4 mb-4">
-        <form method="GET" action="{{ $user->isWarga() ? route('warga.pengumuman') : ($user->isAdminRt() ? route('rt.informasi.pengumuman') : route('pengumuman.index')) }}" class="row g-3 align-items-center">
+        <form method="GET" action="{{ $user->isWarga() ? route('warga.pengumuman') : ($user->isAdminRt() ? route('rt.informasi.pengumuman') : route('pengumuman.index')) }}" class="row g-3 align-items-end">
             @if(!empty($scope))
                 <input type="hidden" name="scope" value="{{ $scope }}">
             @endif
             <div class="col-12 col-md-{{ ($user->isAdminRw() || $user->hasRole('bendahara')) ? '4' : '6' }}">
-                <label class="form-label-saas mb-1">Kategori Pengumuman</label>
-                <select name="kategori" class="form-select-saas" onchange="this.form.submit()">
-                    <option value="">Semua Kategori</option>
-                    <option value="Umum" {{ request('kategori') == 'Umum' ? 'selected' : '' }}>Umum</option>
-                    <option value="Keamanan" {{ request('kategori') == 'Keamanan' ? 'selected' : '' }}>Keamanan</option>
-                    <option value="Kerja Bakti" {{ request('kategori') == 'Kerja Bakti' ? 'selected' : '' }}>Kerja Bakti</option>
-                    <option value="Iuran" {{ request('kategori') == 'Iuran' ? 'selected' : '' }}>Iuran & Keuangan</option>
-                    <option value="Darurat" {{ request('kategori') == 'Darurat' ? 'selected' : '' }}>Darurat / Penting</option>
-                </select>
+                <div class="d-flex flex-column gap-2.5">
+                    <label for="filterKategoriPengumuman" class="form-label-saas fw-semibold mb-0 text-dark">Kategori Pengumuman</label>
+                    <select name="kategori" id="filterKategoriPengumuman" class="form-select form-select-saas rounded-xl border border-slate-200 bg-white px-3.5 py-2 appearance-none" onchange="this.form.submit()">
+                        <option value="">Semua Kategori</option>
+                        <option value="Umum" {{ request('kategori') == 'Umum' ? 'selected' : '' }}>Umum</option>
+                        <option value="Keamanan" {{ request('kategori') == 'Keamanan' ? 'selected' : '' }}>Keamanan</option>
+                        <option value="Kerja Bakti" {{ request('kategori') == 'Kerja Bakti' ? 'selected' : '' }}>Kerja Bakti</option>
+                        <option value="Iuran" {{ request('kategori') == 'Iuran' ? 'selected' : '' }}>Iuran & Keuangan</option>
+                        <option value="Darurat" {{ request('kategori') == 'Darurat' ? 'selected' : '' }}>Darurat / Penting</option>
+                    </select>
+                </div>
             </div>
 
             @if($user->isAdminRw() || $user->hasRole('bendahara'))
                 <div class="col-12 col-md-4">
-                    <label class="form-label-saas mb-1">Status Publikasi</label>
-                    <select name="status" class="form-select-saas" onchange="this.form.submit()">
-                        <option value="">Semua Status</option>
-                        <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Dipublikasikan</option>
-                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="arsip" {{ request('status') == 'arsip' ? 'selected' : '' }}>Diarsipkan</option>
-                    </select>
+                    <div class="d-flex flex-column gap-2.5">
+                        <label for="filterStatusPengumuman" class="form-label-saas fw-semibold mb-0 text-dark">Status Publikasi</label>
+                        <select name="status" id="filterStatusPengumuman" class="form-select form-select-saas rounded-xl border border-slate-200 bg-white px-3.5 py-2 appearance-none" onchange="this.form.submit()">
+                            <option value="">Semua Status</option>
+                            <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Dipublikasikan</option>
+                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                            <option value="arsip" {{ request('status') == 'arsip' ? 'selected' : '' }}>Diarsipkan</option>
+                        </select>
+                    </div>
                 </div>
             @endif
 
@@ -86,7 +90,7 @@
                 @php
                     $resetRoute = $user->isWarga() ? route('warga.pengumuman', !empty($scope) ? ['scope' => $scope] : []) : ($user->isAdminRt() ? route('rt.informasi.pengumuman') : route('pengumuman.index'));
                 @endphp
-                <a href="{{ $resetRoute }}" class="btn btn-outline-saas w-100">
+                <a href="{{ $resetRoute }}" class="btn btn-outline-saas w-100 rounded-xl" style="min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
                     <i class="fas fa-redo me-1"></i> Reset Filter
                 </a>
             </div>
@@ -161,7 +165,7 @@
     </div>
 
     @if($pengumumans->hasPages())
-        <div class="mt-4">
+        <div class="mt-4 d-flex justify-content-center">
             {{ $pengumumans->links() }}
         </div>
     @endif

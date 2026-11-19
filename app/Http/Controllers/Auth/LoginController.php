@@ -37,7 +37,8 @@ class LoginController extends Controller
         if ($this->attemptLogin($request)) {
             $user = $this->guard()->user()->loadMissing('profile', 'role');
 
-            if ($user->hasRole('warga') && optional($user->profile)->status !== 'aktif') {
+            $statusLower = strtolower(optional($user->profile)->status ?? '');
+            if ($user->hasRole('warga') && !in_array($statusLower, ['aktif', 'terdaftar'])) {
                 $status = optional($user->profile)->status;
                 $catatan = optional($user->profile)->catatan_verifikasi;
                 $this->guard()->logout();

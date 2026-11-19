@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Log Audit Sistem - Super Admin RW SMART')
+@section('title', 'Log Audit Sistem - Super Admin Smart RW')
 
 @section('content')
 <div class="content-container">
     {{-- Header --}}
     <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center flex-wrap gap-2 gap-sm-3">
             <div class="page-head-icon">
                 <i class="fas fa-shield-halved"></i>
             </div>
             <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                     <h1 class="page-title mb-0" style="color: var(--ink);">Log Audit Sistem</h1>
-                    <span class="badge-rt-pill">Super Admin</span>
+                    <span class="badge-rt-pill" style="position: static !important; display: inline-flex !important;">Super Admin</span>
                 </div>
                 <p class="page-subtitle mb-0" style="color: var(--ink-soft);">Rekam jejak seluruh mutasi data, aksi beralih peran, dan aktivitas keamanan sistem</p>
             </div>
@@ -65,14 +65,14 @@
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr class="small" style="background: var(--surface-2); color: var(--ink-soft);">
-                        <th class="ps-4">ID</th>
-                        <th>Waktu Kejadian</th>
-                        <th>Pengguna</th>
-                        <th>Wilayah / RT</th>
-                        <th>Aksi</th>
-                        <th>Entitas Terkait</th>
-                        <th>Deskripsi</th>
-                        <th class="pe-4 text-end">IP Address</th>
+                        <th class="ps-4" style="min-width: 70px;">ID</th>
+                        <th style="min-width: 160px;">Waktu Kejadian</th>
+                        <th style="min-width: 160px;">Pengguna</th>
+                        <th style="min-width: 120px;">Wilayah / RT</th>
+                        <th style="min-width: 130px;">Aksi</th>
+                        <th style="min-width: 150px;">Entitas Terkait</th>
+                        <th style="min-width: 280px; max-width: 450px;">Deskripsi</th>
+                        <th class="pe-4 text-end" style="min-width: 130px;">IP Address</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,8 +112,8 @@
                             <td class="small font-monospace" style="color: var(--ink-mute);">
                                 {{ $log->entity_type ? $log->entity_type . ($log->entity_id ? ' #' . $log->entity_id : '') : '-' }}
                             </td>
-                            <td class="small" style="max-width: 300px; color: var(--ink-soft);">
-                                {{ $log->deskripsi ?? '-' }}
+                            <td class="small" style="min-width: 280px; max-width: 450px; color: var(--ink-soft); line-height: 1.6; word-break: break-word;">
+                                <div class="text-wrap" style="line-height: 1.55;">{{ $log->deskripsi ?? '-' }}</div>
                             </td>
                             <td class="pe-4 text-end small font-monospace" style="color: var(--ink-mute);">
                                 {{ $log->ip_address ?? '127.0.0.1' }}
@@ -131,7 +131,7 @@
             </table>
         </div>
         @if($logs->hasPages())
-            <div class="p-3 border-top d-flex justify-content-end" style="border-color: var(--border) !important;">
+            <div class="p-3 border-top d-flex justify-content-center bg-transparent" style="border-color: var(--border) !important;">
                 {{ $logs->links() }}
             </div>
         @endif

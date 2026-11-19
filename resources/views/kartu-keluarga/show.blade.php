@@ -6,14 +6,14 @@
 <div class="content-container">
     {{-- Page Header --}}
     <div class="page-head page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center flex-wrap gap-2 gap-sm-3">
             <div class="page-head-icon">
                 <i class="fas fa-id-card"></i>
             </div>
             <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                     <h1 class="page-title mb-0">Kartu Keluarga: {{ $kartuKeluarga->no_kk }}</h1>
-                    <span class="badge-rt-pill">RT {{ optional($kartuKeluarga->rt)->kode_rt ?? '-' }}</span>
+                    <span class="badge-rt-pill" style="position: static !important; display: inline-flex !important;">RT {{ optional($kartuKeluarga->rt)->kode_rt ?? '-' }}</span>
                 </div>
                 <p class="page-subtitle mb-0">Wilayah RT {{ optional($kartuKeluarga->rt)->kode_rt ?? '-' }} / RW 01 &bull; Kepala Keluarga: {{ $kartuKeluarga->nama_kepala_keluarga }}</p>
             </div>
@@ -122,32 +122,32 @@
             <table class="table-saas">
                 <thead>
                     <tr>
-                        <th width="45">No</th>
-                        <th>Nama Lengkap</th>
-                        <th>NIK</th>
-                        <th>Hubungan Keluarga</th>
-                        <th>Jenis Kelamin</th>
-                        <th>Tgl Lahir / Usia</th>
-                        <th>Pekerjaan</th>
-                        <th>No. HP</th>
-                        <th>Status</th>
+                        <th width="45" class="text-center">No</th>
+                        <th style="min-width: 170px;">Nama Lengkap</th>
+                        <th style="min-width: 180px;">NIK</th>
+                        <th style="min-width: 140px;">Hubungan Keluarga</th>
+                        <th style="min-width: 110px;">Jenis Kelamin</th>
+                        <th style="min-width: 140px;">Tgl Lahir / Usia</th>
+                        <th style="min-width: 130px;">Pekerjaan</th>
+                        <th style="min-width: 130px;">No. HP</th>
+                        <th style="min-width: 100px;">Status</th>
                         @if($user->isAdminRt() || $user->isAdminRw())
-                            <th class="text-end">Aksi</th>
+                            <th class="text-end" style="min-width: 120px;">Aksi</th>
                         @endif
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($kartuKeluarga->anggota as $idx => $anggota)
                         <tr>
-                            <td class="text-secondary">{{ $idx + 1 }}</td>
+                            <td class="text-secondary text-center">{{ $idx + 1 }}</td>
                             <td>
                                 <div class="fw-bold text-dark">{{ $anggota->nama_lengkap }}</div>
                                 @if($anggota->user)
                                     <small class="text-emerald"><i class="fas fa-check-circle me-1"></i>Akun Login Terdaftar</small>
                                 @endif
                             </td>
-                            <td class="font-monospace text-emerald fw-semibold">
-                                {{ $anggota->nik ?? '-' }}
+                            <td class="font-monospace text-emerald fw-semibold text-nowrap" style="min-width: 180px; white-space: nowrap;">
+                                <span>{{ $anggota->nik ?? '-' }}</span>
                                 <div class="mt-1">
                                     @if($anggota->rfid_uid)
                                         <span class="badge bg-light text-primary border" title="E-KTP: {{ $anggota->rfid_uid }}">

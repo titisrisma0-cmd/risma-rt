@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#147A45" id="metaThemeColor">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'RW SMART - Modern SaaS Dashboard')</title>
+    <title>@yield('title', 'Smart RW - Modern SaaS Dashboard')</title>
     
     <script>
         (function () {
@@ -34,9 +34,9 @@
     <!-- DataTables Bootstrap 5 -->
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
-    <!-- RW SMART Modern SaaS Theme (Donezo Style) -->
+    <!-- SMART RW Modern SaaS Theme (Donezo Style) -->
     <link href="{{ asset('css/theme-dashboard.css') }}?v={{ file_exists(public_path('css/theme-dashboard.css')) ? filemtime(public_path('css/theme-dashboard.css')) : '1.0' }}" rel="stylesheet">
-    <!-- RW SMART Motion Graphics Engine -->
+    <!-- SMART RW Motion Graphics Engine -->
     <link href="{{ asset('css/motion.css') }}?v={{ file_exists(public_path('css/motion.css')) ? filemtime(public_path('css/motion.css')) : '1.0' }}" rel="stylesheet">
     @stack('styles')
 </head>
@@ -84,9 +84,9 @@
         <!-- Sidebar Header / Brand -->
         <div class="sidebar-header">
             <a href="{{ route('dashboard') }}" class="sidebar-brand-link d-flex align-items-center gap-2">
-                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="34" height="34" class="flex-shrink-0">
+                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="SMART RW Logo" width="34" height="34" class="flex-shrink-0">
                 <div class="sidebar-brand-text">
-                    <span class="sidebar-brand-title">RW SMART</span>
+                    <span class="sidebar-brand-title">SMART <span>RW</span></span>
                     <span class="sidebar-brand-badge">{{ $roleLabel }}</span>
                 </div>
             </a>
@@ -114,6 +114,22 @@
                     <a class="sidebar-nav-item {{ request()->routeIs('superadmin.audit-logs') ? 'active' : '' }}" href="{{ route('superadmin.audit-logs') }}">
                         <i class="fas fa-shield-halved text-success"></i>
                         <span>Log Audit Sistem</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('superadmin.api-settings.*') ? 'active' : '' }}" href="{{ route('superadmin.api-settings.index') }}">
+                        <i class="fas fa-key text-primary"></i>
+                        <span>Pengaturan Token API</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('superadmin.rfid-devices.*') ? 'active' : '' }}" href="{{ route('superadmin.rfid-devices.index') }}">
+                        <i class="fas fa-microchip text-info"></i>
+                        <span>Perangkat RFID</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('rfid.history*') ? 'active' : '' }}" href="{{ route('rfid.history') }}">
+                        <i class="fas fa-id-card-clip text-success"></i>
+                        <span>Riwayat Scan RFID</span>
+                    </a>
+                    <a class="sidebar-nav-item {{ request()->routeIs('assistant.faqs.*') ? 'active' : '' }}" href="{{ route('assistant.faqs.index') }}">
+                        <i class="fas fa-robot text-warning"></i>
+                        <span>Kelola FAQ Asisten</span>
                     </a>
                 </div>
             @endif
@@ -194,6 +210,12 @@
                         <i class="fas fa-shield-halved"></i>
                         <span>Keamanan / Ronda</span>
                     </a>
+                    @if(!Auth::user()->isSuperAdmin() || Auth::user()->isSimulatingRole())
+                    <a class="sidebar-nav-item {{ request()->routeIs('rfid.history*') ? 'active' : '' }}" href="{{ route('rfid.history') }}">
+                        <i class="fas fa-id-card-clip"></i>
+                        <span>Riwayat Scan RFID</span>
+                    </a>
+                    @endif
                     <a class="sidebar-nav-item {{ request()->routeIs('kegiatan.*') && request('tingkat') !== 'rw' ? 'active' : '' }}" href="{{ route('kegiatan.index') }}">
                         <i class="fas fa-calendar-check"></i>
                         <span>Manajemen Kegiatan</span>
@@ -386,6 +408,16 @@
                         <i class="fas fa-list-check"></i>
                         <span>Log & Audit Trail</span>
                     </a>
+                    @if(!Auth::user()->isSuperAdmin() || Auth::user()->isSimulatingRole())
+                    <a class="sidebar-nav-item {{ request()->routeIs('rfid.history*') ? 'active' : '' }}" href="{{ route('rfid.history') }}">
+                        <i class="fas fa-id-card-clip"></i>
+                        <span>Riwayat Scan RFID</span>
+                    </a>
+                    @endif
+                    <a class="sidebar-nav-item {{ request()->routeIs('assistant.faqs.*') ? 'active' : '' }}" href="{{ route('assistant.faqs.index') }}">
+                        <i class="fas fa-robot"></i>
+                        <span>Kelola FAQ Asisten</span>
+                    </a>
                 </div>
 
                 <div class="sidebar-group">
@@ -409,7 +441,7 @@
         <!-- Sidebar Footer -->
         <div class="sidebar-footer">
             <div class="d-flex align-items-center gap-2">
-                <span class="badge badge-soft-primary px-2 py-1">RW 01 Smart v2.5</span>
+                <span class="badge badge-soft-primary px-2 py-1">Smart RW 01 v2.5</span>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="m-0">
                 @csrf
@@ -430,7 +462,7 @@
             </button>
             
             <div class="navbar-page-indicator d-flex flex-column" style="min-width: 0; flex: 1 1 auto;">
-                <span class="navbar-page-title topbar-title text-truncate">@yield('title', 'Sistem Informasi RW SMART')</span>
+                <span class="navbar-page-title topbar-title text-truncate">@yield('title', 'Sistem Informasi Smart RW')</span>
                 <span class="navbar-page-subtitle topbar-subtitle d-none d-sm-inline text-truncate">Wilayah RW 01 &bull; Kelurahan Digital</span>
             </div>
         </div>
@@ -598,7 +630,7 @@
         </div>
 
         <footer>
-            <p class="mb-0">&copy; {{ date('Y') }} <strong>RW SMART</strong> &bull; Sistem Informasi Rukun Warga & Pelayanan Masyarakat Digital</p>
+            <p class="mb-0">&copy; {{ date('Y') }} <strong>SMART RW</strong> &bull; Sistem Informasi Rukun Warga & Pelayanan Masyarakat Digital</p>
         </footer>
     </main>
 
@@ -1123,6 +1155,28 @@
             document.body.style.removeProperty('overflow');
             document.body.style.removeProperty('padding-right');
         });
+
+        // Inisialisasi strategi Popper "fixed" dan boundary "viewport" untuk dropdown di dalam tabel
+        function initTableDropdowns() {
+            document.querySelectorAll('.table .dropdown-toggle, .table-responsive .dropdown-toggle, [data-bs-boundary="viewport"]').forEach(function (btn) {
+                if (!btn.hasAttribute('data-bs-boundary')) {
+                    btn.setAttribute('data-bs-boundary', 'viewport');
+                }
+                if (!btn.hasAttribute('data-bs-popper-config')) {
+                    btn.setAttribute('data-bs-popper-config', '{"strategy":"fixed"}');
+                }
+            });
+        }
+        initTableDropdowns();
+        document.addEventListener('show.bs.dropdown', function (e) {
+            const toggle = e.target;
+            if (toggle.closest('.table-responsive, table, .table, .card-table') || toggle.getAttribute('data-bs-boundary') === 'viewport') {
+                toggle.setAttribute('data-bs-boundary', 'viewport');
+                if (!toggle.getAttribute('data-bs-popper-config')) {
+                    toggle.setAttribute('data-bs-popper-config', '{"strategy":"fixed"}');
+                }
+            }
+        });
     </script>
 
     @if(Auth::check() && Auth::user()->isSuperAdmin())
@@ -1273,7 +1327,7 @@
     @stack('modals')
 
     @stack('scripts')
-    <!-- RW SMART Motion Graphics Engine -->
+    <!-- SMART RW Motion Graphics Engine -->
     <script src="{{ asset('js/motion.js') }}?v={{ file_exists(public_path('js/motion.js')) ? filemtime(public_path('js/motion.js')) : '1.0' }}"></script>
     @include('partials.whatsapp-help')
 </body>

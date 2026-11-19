@@ -202,7 +202,7 @@
                         <div class="p-3 border-top d-flex justify-content-between align-items-center bg-white">
                             <strong class="text-emerald fs-6">Rp {{ number_format($item->harga, 0, ',', '.') }}<small class="text-muted fw-normal">/{{ $item->satuan ?: 'pcs' }}</small></strong>
                             @if($nomorWhatsapp)
-                                <a href="https://wa.me/{{ $nomorWhatsapp }}?text={{ urlencode('Halo, saya tertarik dengan produk ' . $item->nama_produk . ' yang ada di RW Smart.') }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                <a href="https://wa.me/{{ $nomorWhatsapp }}?text={{ urlencode('Halo, saya tertarik dengan produk ' . $item->nama_produk . ' yang ada di Smart RW.') }}" target="_blank" class="btn btn-sm btn-outline-success">
                                     <i class="fab fa-whatsapp me-1"></i>Pesan
                                 </a>
                             @endif

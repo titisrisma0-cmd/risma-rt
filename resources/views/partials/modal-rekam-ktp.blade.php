@@ -45,15 +45,32 @@
                         </div>
                     </div>
                     
-                    <h6 class="fw-bold text-dark mb-1" id="scannerTitle">Menunggu Kartu E-KTP...</h6>
-                    <p class="small text-muted mb-3" id="scannerSubtitle">Silakan tempelkan fisik kartu E-KTP pada sensor RFID RC522</p>
+                    <h6 class="fw-bold text-dark mb-1" id="scannerTitle">Menunggu Kartu...</h6>
+                    <p class="small text-muted mb-3" id="scannerSubtitle">Silakan tempelkan fisik kartu pada sensor RFID RC522</p>
 
-                    <!-- Preview UID Terdeteksi -->
+                    <!-- Preview UID & Info Kartu Terdeteksi -->
                     <div id="detectedUidWrapper" class="d-none">
                         <div class="small text-secondary mb-1 fw-medium">UID Kartu Terbaca:</div>
                         <span class="badge bg-dark text-white px-3 py-2 fs-5 font-monospace shadow-sm" id="detectedUidBadge">
                             --:--:--:--
                         </span>
+
+                        <!-- Info Tipe, SAK, ATQA, UID Size -->
+                        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2" id="detectedCardDetails">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 font-monospace" id="cardTypeBadge">
+                                Tipe: -
+                            </span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border font-monospace" id="cardSakBadge">
+                                SAK: -
+                            </span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border font-monospace" id="cardAtqaBadge">
+                                ATQA: -
+                            </span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border font-monospace" id="cardSizeBadge">
+                                Size: -
+                            </span>
+                        </div>
+
                         <div class="small text-muted mt-2" id="scannedAtText">Waktu scan: -</div>
                     </div>
 
@@ -63,6 +80,21 @@
                     </div>
                     <div id="modalSuccessAlert" class="alert alert-success py-2 px-3 small mt-3 mb-0 d-none text-start">
                         <i class="fas fa-check-circle me-1"></i> <span id="modalSuccessMessage">Kartu siap disimpan untuk warga ini.</span>
+                    </div>
+                </div>
+
+                <!-- Box Konfirmasi NIK oleh Petugas -->
+                <div class="card bg-white border p-3 rounded-3 mb-3 shadow-2xs">
+                    <label class="form-label small fw-bold text-dark mb-1">
+                        <i class="fas fa-fingerprint text-primary me-1"></i> Konfirmasi NIK Warga <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-id-card text-muted"></i></span>
+                        <input type="text" class="form-control font-monospace border-start-0" id="inputKonfirmasiNik" placeholder="Ketik ulang 16 digit NIK warga..." maxlength="20">
+                    </div>
+                    <div class="alert alert-info py-2 px-3 small mb-0 border-0 rounded-3 text-secondary" style="background: rgba(14, 165, 233, 0.08);">
+                        <i class="fas fa-circle-info text-info me-1"></i>
+                        <strong>Catatan Petugas:</strong> Pencocokan NIK dilakukan oleh petugas secara visual dengan kartu fisik E-KTP/KTP asli warga, bukan dibaca otomatis dari chip RFID.
                     </div>
                 </div>
 
@@ -138,6 +170,7 @@
         let currentWargaNama = '';
         let currentWargaNik = '';
         let currentRfidUid = '';
+        let detectedCardType = '';
         let rfidPollTimer = null;
         let rfidListenStartTime = 0;
         let lastBeepUid = null;
@@ -186,6 +219,9 @@
             document.getElementById('modalRtWarga').textContent = 'RT ' + rt;
             document.getElementById('modalAvatar').textContent = currentWargaNama.charAt(0).toUpperCase();
 
+            // Kolom konfirmasi NIK
+            document.getElementById('inputKonfirmasiNik').value = currentWargaNik !== '-' ? currentWargaNik : '';
+
             const statusEl = document.getElementById('modalCurrentStatus');
             const btnLepas = document.getElementById('btnLepasKtp');
             if (currentRfidUid) {
@@ -207,19 +243,32 @@
             document.getElementById('scannerBox').style.background = 'linear-gradient(180deg, #f8fbf9 0%, #edf7f0 100%)';
             document.getElementById('scannerIconPulse').className = 'rounded-circle d-flex align-items-center justify-content-center text-emerald mx-auto pulse-ring';
             document.getElementById('scannerIcon').className = 'fas fa-satellite-dish fa-2x text-emerald';
-            document.getElementById('scannerTitle').textContent = 'Menunggu Kartu E-KTP...';
-            document.getElementById('scannerSubtitle').textContent = 'Silakan tempelkan fisik kartu E-KTP pada sensor RFID RC522';
+            document.getElementById('scannerTitle').textContent = 'Menunggu Kartu...';
+            document.getElementById('scannerSubtitle').textContent = 'Silakan tempelkan fisik kartu pada sensor RFID RC522';
             document.getElementById('detectedUidWrapper').classList.add('d-none');
             document.getElementById('modalAlert').classList.add('d-none');
             document.getElementById('modalSuccessAlert').classList.add('d-none');
             document.getElementById('inputManualUid').value = '';
             document.getElementById('btnSimpanKtp').disabled = true;
             lastBeepUid = null;
+            detectedCardType = '';
         }
 
         // Event saat modal terbuka
         modalEl.addEventListener('shown.bs.modal', function () {
             rfidListenStartTime = Math.floor(Date.now() / 1000) - 3;
+
+            // Tandai sesi perekaman aktif di server
+            fetch('{{ route("warga.rfid.session.start") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).catch(e => console.log('Gagal mengaktifkan sesi perekaman:', e));
+
             if (rfidPollTimer) clearInterval(rfidPollTimer);
             rfidPollTimer = setInterval(pollLatestScan, 1200);
             pollLatestScan();
@@ -231,6 +280,17 @@
                 clearInterval(rfidPollTimer);
                 rfidPollTimer = null;
             }
+
+            // Hentikan sesi perekaman di server
+            fetch('{{ route("warga.rfid.session.stop") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).catch(e => console.log('Gagal menghentikan sesi perekaman:', e));
         });
 
         // Polling ke backend untuk cek apakah ada tap kartu baru dari NodeMCU
@@ -248,6 +308,13 @@
                 if (data.status === 'detected' && data.data && data.data.uid) {
                     const detectedUid = data.data.uid;
                     const formattedUid = data.data.formatted_uid || detectedUid;
+                    const cardType = data.data.card_type || 'Smart Card / RFID';
+                    const sak = data.data.sak || '-';
+                    const atqa = data.data.atqa || '-';
+                    const uidSize = data.data.uid_size ? data.data.uid_size + ' Byte' : '-';
+                    const scanTimeStr = new Date().toLocaleTimeString();
+
+                    detectedCardType = cardType;
 
                     if (lastBeepUid !== detectedUid) {
                         playBeepSound();
@@ -256,13 +323,18 @@
 
                     document.getElementById('detectedUidBadge').textContent = formattedUid;
                     document.getElementById('inputManualUid').value = detectedUid;
+                    document.getElementById('cardTypeBadge').textContent = 'Tipe: ' + cardType;
+                    document.getElementById('cardSakBadge').textContent = 'SAK: 0x' + sak;
+                    document.getElementById('cardAtqaBadge').textContent = 'ATQA: 0x' + atqa;
+                    document.getElementById('cardSizeBadge').textContent = 'Size: ' + uidSize;
+
                     document.getElementById('detectedUidWrapper').classList.remove('d-none');
-                    document.getElementById('scannedAtText').textContent = 'Waktu scan: ' + new Date().toLocaleTimeString();
+                    document.getElementById('scannedAtText').textContent = 'Waktu scan: ' + scanTimeStr;
 
                     document.getElementById('scannerIconPulse').className = 'rounded-circle d-flex align-items-center justify-content-center text-white bg-emerald mx-auto';
                     document.getElementById('scannerIcon').className = 'fas fa-check fa-2x text-white';
-                    document.getElementById('scannerTitle').textContent = 'E-KTP Berhasil Terdeteksi!';
-                    document.getElementById('scannerSubtitle').textContent = 'Alat RC522 berhasil membaca chip kartu E-KTP.';
+                    document.getElementById('scannerTitle').textContent = 'Kartu terdeteksi';
+                    document.getElementById('scannerSubtitle').textContent = cardType + ' • UID: ' + formattedUid + ' • ' + scanTimeStr;
 
                     const alertEl = document.getElementById('modalAlert');
                     const successEl = document.getElementById('modalSuccessAlert');
@@ -271,8 +343,8 @@
                     // Validasi duplikasi
                     if (data.is_used && data.used_by && parseInt(data.used_by.id) !== parseInt(currentWargaId)) {
                         alertEl.classList.remove('d-none');
-                        document.getElementById('modalAlertMessage').innerHTML = 
-                            `Kartu ini sudah terdaftar atas nama warga: <strong>${data.used_by.nama_lengkap}</strong> (NIK: ${data.used_by.nik}, RT ${data.used_by.rt}). Tidak dapat digunakan ganda!`;
+                        const duplicateMsg = data.duplicate_message || `Kartu ini sudah terdaftar atas nama ${data.used_by.nama_lengkap}`;
+                        document.getElementById('modalAlertMessage').textContent = duplicateMsg;
                         successEl.classList.add('d-none');
                         btnSimpan.disabled = true;
                     } else {
@@ -307,7 +379,15 @@
         // Simpan E-KTP ke Warga
         document.getElementById('btnSimpanKtp').addEventListener('click', function () {
             const uid = document.getElementById('inputManualUid').value.trim();
+            const konfirmasiNik = document.getElementById('inputKonfirmasiNik').value.trim();
             if (!uid || !currentWargaId) return;
+
+            if (!konfirmasiNik) {
+                const alertEl = document.getElementById('modalAlert');
+                alertEl.classList.remove('d-none');
+                document.getElementById('modalAlertMessage').textContent = 'Kolom Konfirmasi NIK wajib diisi.';
+                return;
+            }
 
             const btn = this;
             const originalHtml = btn.innerHTML;
@@ -322,7 +402,11 @@
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify({ rfid_uid: uid })
+                body: JSON.stringify({
+                    rfid_uid: uid,
+                    card_type: detectedCardType,
+                    konfirmasi_nik: konfirmasiNik
+                })
             })
             .then(res => res.json())
             .then(data => {

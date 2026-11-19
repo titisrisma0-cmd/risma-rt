@@ -28,6 +28,13 @@ class RegisterController extends Controller
 
     protected function validator(array $data)
     {
+        if (isset($data['nik'])) {
+            $data['nik'] = preg_replace('/\D/', '', (string) $data['nik']);
+        }
+        if (isset($data['no_kk'])) {
+            $data['no_kk'] = preg_replace('/\D/', '', (string) $data['no_kk']);
+        }
+
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'nik' => ['required', 'string', 'digits:16'],
@@ -53,15 +60,17 @@ class RegisterController extends Controller
             'password.min' => 'Kata sandi minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ])->after(function ($validator) use ($data) {
-            if (isset($data['nik']) && strlen($data['nik']) === 16) {
-                $existing = UserProfile::where('nik', $data['nik'])->first();
+            $nik = preg_replace('/\D/', '', (string) ($data['nik'] ?? ''));
+            $noKk = preg_replace('/\D/', '', (string) ($data['no_kk'] ?? ''));
+            if (strlen($nik) === 16) {
+                $existing = UserProfile::where('nik', $nik)->first();
                 if ($existing) {
                     if ($existing->user_id !== null) {
                         $validator->errors()->add('nik', 'NIK sudah memiliki akun terdaftar.');
                     } else {
                         // Check identity match: no_kk and rt_id must match
                         $rtMatch = (int) $existing->rt_id === (int) ($data['rt_id'] ?? 0);
-                        $kkMatch = $existing->no_kk === ($data['no_kk'] ?? '');
+                        $kkMatch = (string) $existing->no_kk === (string) $noKk;
                         if (!$rtMatch || !$kkMatch) {
                             $validator->errors()->add('nik', 'Data NIK terdaftar pada kependudukan tetapi Nomor KK atau Wilayah RT tidak sesuai. Harap hubungi Ketua RT.');
                         }
@@ -175,6 +184,13 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
+        if ($request->has('nik')) {
+            $request->merge(['nik' => preg_replace('/\D/', '', (string) $request->nik)]);
+        }
+        if ($request->has('no_kk')) {
+            $request->merge(['no_kk' => preg_replace('/\D/', '', (string) $request->no_kk)]);
+        }
+
         $this->validator($request->all())->validate();
 
         event(new \Illuminate\Auth\Events\Registered($user = $this->create($request->all())));

@@ -52,7 +52,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>RW Smart</h1>
+        <h1>Smart RW</h1>
         <p>Sistem Informasi Iuran RW</p>
         <h3>Laporan {{ ucfirst($jenis_laporan) }}</h3>
         <p>Periode: {{ date('d/m/Y', strtotime($periode_awal)) }} - {{ date('d/m/Y', strtotime($periode_akhir)) }}</p>
@@ -99,7 +99,7 @@
     </div>
 
     <div class="footer">
-        <p>Laporan ini digenerate secara otomatis oleh sistem RW Smart</p>
+        <p>Laporan ini digenerate secara otomatis oleh sistem Smart RW</p>
     </div>
 </body>
 </html>

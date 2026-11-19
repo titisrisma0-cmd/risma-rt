@@ -32,9 +32,9 @@
 
   <!-- Typography -->
   <g transform="translate(56, 12)">
-    <!-- RW SMART Main Text -->
+    <!-- SMART RW Main Text -->
     <text x="0" y="20" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-size="20" font-weight="800" letter-spacing="-0.5" fill="#17221C">
-      RW <tspan fill="#147A45">SMART</tspan>
+      SMART <tspan fill="#147A45">RW</tspan>
     </text>
     <!-- Tagline / Subtitle -->
     <text x="1" y="32" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-size="8" font-weight="600" letter-spacing="1.2" fill="#758078" text-transform="uppercase">

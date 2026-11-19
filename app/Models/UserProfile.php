@@ -10,8 +10,8 @@ class UserProfile extends Model
     
     protected $fillable = [
         'user_id', 'role_id', 'rw_id', 'rt_id', 'kartu_keluarga_id',
-        'no_kk', 'nik', 'rfid_uid', 'nama_lengkap',
-        'tempat_lahir', 'tanggal_lahir', 
+        'no_kk', 'nik', 'rfid_uid', 'rfid_card_type', 'rfid_registered_at', 'rfid_registered_by',
+        'nama_lengkap', 'tempat_lahir', 'tanggal_lahir', 
         'jenis_kelamin', 'agama',
         'alamat', 'nomor_rumah', 'rt', 'rw', 'kelurahan', 'kecamatan', 'kota',
         'no_hp', 'pekerjaan', 
@@ -26,6 +26,7 @@ class UserProfile extends Model
         'tanggal_lahir' => 'date',
         'siap_ronda' => 'boolean',
         'verified_at' => 'datetime',
+        'rfid_registered_at' => 'datetime',
     ];
 
     public function user()
@@ -77,12 +78,12 @@ class UserProfile extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'aktif');
+        return $query->whereIn('status', ['aktif', 'Terdaftar', 'terdaftar']);
     }
 
     public function scopeEligibleRonda($query)
     {
-        return $query->where('status', 'aktif')
+        return $query->whereIn('status', ['aktif', 'Terdaftar', 'terdaftar'])
             ->where('jenis_kelamin', 'L')
             ->where(function ($q) {
                 $q->whereNull('siap_ronda')

@@ -24,7 +24,12 @@ use App\Http\Controllers\WargaVerifikasiController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\MetodePembayaranController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\SuperAdmin\ApiSettingController;
+use App\Http\Controllers\SuperAdmin\RfidDeviceController;
 use App\Http\Controllers\RfidController;
+use App\Http\Controllers\Auth\OtpVerificationController;
+use App\Http\Controllers\AssistantChatController;
+use App\Http\Controllers\AssistantFaqController;
 
 Route::get('/', function () {
     try {
@@ -45,10 +50,37 @@ Route::get('/register', function () {
     return redirect('/login#register');
 })->name('register');
 
+Route::get('/home', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        if ($user && $user->is_super_admin) {
+            return redirect()->route('superadmin.dashboard');
+        }
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('home');
+
 Auth::routes(['verify' => true]);
 
+// ==================== ALUR OTP LUPA KATA SANDI (FRONTEND VIEW) ====================
+Route::get('/password/otp', [OtpVerificationController::class, 'show'])->name('password.otp');
+Route::post('/password/otp/verify', [OtpVerificationController::class, 'verify'])->name('password.otp.verify');
+Route::post('/password/otp/resend', [OtpVerificationController::class, 'resend'])->name('password.otp.resend');
+
 // ==================== IOT RFID SCANNER (NodeMCU ESP-32S + RC522) ====================
-Route::post('api/rfid/scan', [RfidController::class, 'receiveScan'])->name('api.rfid.scan');
+Route::post('api/rfid/scan', [RfidController::class, 'receiveScan'])
+    ->middleware(['throttle:60,1', 'device.token'])
+    ->name('api.rfid.scan');
+
+// ==================== ASISTEN SMART RW (LIVE CHAT FAQ) ====================
+Route::get('api/assistant/init', [AssistantChatController::class, 'init'])->name('api.assistant.init');
+Route::post('api/assistant/chat', [AssistantChatController::class, 'chat'])
+    ->middleware('throttle:20,60')
+    ->name('api.assistant.chat');
+Route::post('assistant/chat', [AssistantChatController::class, 'chat'])
+    ->middleware('throttle:20,60')
+    ->name('assistant.chat');
 
 Route::middleware(['auth'])->group(function () {
     
@@ -57,7 +89,30 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
         Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/audit-logs', [SuperAdminController::class, 'auditLogs'])->name('audit-logs');
+
+        // Pengaturan Token API Hardware IoT & Profil Kartu
+        Route::get('/api-settings', [ApiSettingController::class, 'index'])->name('api-settings.index');
+        Route::post('/api-settings/generate', [ApiSettingController::class, 'generate'])->name('api-settings.generate');
+        Route::post('/api-settings/{token}/regenerate', [ApiSettingController::class, 'regenerate'])->name('api-settings.regenerate');
+        Route::patch('/api-settings/{token}/toggle', [ApiSettingController::class, 'toggle'])->name('api-settings.toggle');
+        Route::delete('/api-settings/{token}', [ApiSettingController::class, 'destroy'])->name('api-settings.destroy');
+        Route::post('/api-settings/card-profile', [ApiSettingController::class, 'updateCardProfile'])->name('api-settings.card-profile');
+
+        // Perangkat RFID Hardware IoT
+        Route::get('/rfid-devices', [RfidDeviceController::class, 'index'])->name('rfid-devices.index');
+        Route::post('/rfid-devices', [RfidDeviceController::class, 'store'])->name('rfid-devices.store');
+        Route::put('/rfid-devices/{device}', [RfidDeviceController::class, 'update'])->name('rfid-devices.update');
+        Route::patch('/rfid-devices/{device}/toggle', [RfidDeviceController::class, 'toggle'])->name('rfid-devices.toggle');
+        Route::delete('/rfid-devices/{device}', [RfidDeviceController::class, 'destroy'])->name('rfid-devices.destroy');
     });
+
+    // ==================== KELOLA FAQ ASISTEN (SUPER ADMIN & RW) ====================
+    Route::get('/assistant/faqs', [AssistantFaqController::class, 'index'])->name('assistant.faqs.index');
+    Route::post('/assistant/faqs', [AssistantFaqController::class, 'store'])->name('assistant.faqs.store');
+    Route::put('/assistant/faqs/{faq}', [AssistantFaqController::class, 'update'])->name('assistant.faqs.update');
+    Route::patch('/assistant/faqs/{faq}/toggle', [AssistantFaqController::class, 'toggle'])->name('assistant.faqs.toggle');
+    Route::delete('/assistant/faqs/{faq}', [AssistantFaqController::class, 'destroy'])->name('assistant.faqs.destroy');
+    Route::delete('/assistant/unanswered/{unanswered}', [AssistantFaqController::class, 'destroyUnanswered'])->name('assistant.unanswered.destroy');
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -122,10 +177,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('warga-verifikasi/{id}/approve', [WargaVerifikasiController::class, 'approve'])->name('warga.verifikasi.approve');
     Route::post('warga-verifikasi/{id}/reject', [WargaVerifikasiController::class, 'reject'])->name('warga.verifikasi.reject');
 
-    // ==================== REKAM E-KTP (RFID RC522) ====================
+    // ==================== REKAM E-KTP & RIWAYAT SCAN (RFID RC522) ====================
     Route::get('warga/rfid/latest', [RfidController::class, 'latestScan'])->name('warga.rfid.latest');
+    Route::post('warga/rfid/session/start', [RfidController::class, 'startRecordingSession'])->name('warga.rfid.session.start');
+    Route::post('warga/rfid/session/stop', [RfidController::class, 'stopRecordingSession'])->name('warga.rfid.session.stop');
     Route::post('warga/{id}/rfid/save', [RfidController::class, 'assignToWarga'])->name('warga.rfid.save');
     Route::delete('warga/{id}/rfid/unlink', [RfidController::class, 'unlinkFromWarga'])->name('warga.rfid.unlink');
+    Route::get('rfid/riwayat', [RfidController::class, 'history'])->name('rfid.history');
+    Route::get('rfid/riwayat/data', [RfidController::class, 'historyData'])->name('rfid.history.data');
     Route::resource('rts', RtController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::post('rts/{rt}/ketua', [RtController::class, 'storeKetua'])->name('rts.ketua.store');
     Route::put('rts/{rt}/ketua/{user}', [RtController::class, 'updateKetua'])->name('rts.ketua.update');
@@ -193,6 +252,9 @@ Route::middleware(['auth'])->group(function () {
     // ==================== BANK SAMPAH ====================
     Route::prefix('bank-sampah')->name('bank-sampah.')->group(function () {
         Route::get('/', [BankSampahController::class, 'index'])->name('index');
+        Route::get('/setoran-rfid', [BankSampahController::class, 'setoranRfidView'])->name('setoran-rfid');
+        Route::get('/rfid/latest', [BankSampahController::class, 'rfidLatestScan'])->name('rfid.latest');
+        Route::post('/setoran-rfid/store', [BankSampahController::class, 'storeSetoranRfid'])->name('setoran-rfid.store');
         Route::post('/setoran', [BankSampahController::class, 'storeSetoran'])->name('setoran.store');
         Route::patch('/setoran/{setoran}/verifikasi', [BankSampahController::class, 'verifySetoran'])->name('setoran.verify');
         Route::post('/harga', [BankSampahController::class, 'updateHarga'])->name('harga.store');

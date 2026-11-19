@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\JenisSampah;
 use App\Models\JadwalBankSampah;
 use App\Models\Notifikasi;
 use App\Models\PenarikanSaldoSampah;
+use App\Models\Rt;
 use App\Models\SaldoSampah;
 use App\Models\SetoranSampah;
 use App\Models\User;
+use App\Models\UserProfile;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -390,6 +394,212 @@ class BankSampahController extends Controller
         return redirect()->route('bank-sampah.index')->with('success', 'Status pencairan saldo berhasil diperbarui.');
     }
 
+    /**
+     * Halaman Setoran Bank Sampah (RW dan RT sesuai wilayah)
+     * Menggunakan mekanisme menunggu scan kartu RFID / E-KTP warga
+     */
+    public function setoranRfidView(Request $request)
+    {
+        abort_unless($this->isPengurus() || Auth::user()?->isSuperAdmin(), 403, 'Akses khusus pengurus Bank Sampah.');
+
+        $this->ensureDefaultJenisSampah();
+        $user = Auth::user();
+        $isRt = $user->isAdminRt();
+        $managedRtId = $user->managedRtId();
+
+        $selectedRtId = $isRt ? $managedRtId : $request->input('rt_id');
+
+        $wargaUserIds = null;
+        if ($selectedRtId) {
+            $wargaUserIds = User::where(function ($q) use ($selectedRtId) {
+                $q->where('rt_id', $selectedRtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $selectedRtId));
+            })->pluck('id');
+        }
+
+        // 1. Jenis Sampah yang Aktif Beserta Harga
+        $jenisSampahs = JenisSampah::where('status', true)->orderBy('nama')->get();
+
+        // 2. Rekap Harian (Hari Ini)
+        $today = Carbon::today();
+        $validSetoranHariIni = SetoranSampah::where('status', 'valid')
+            ->where(function ($q) use ($today) {
+                $q->whereDate('tanggal_setor', $today)
+                  ->orWhere(function ($sub) use ($today) {
+                      $sub->whereNull('tanggal_setor')->whereDate('created_at', $today);
+                  });
+            })
+            ->when($wargaUserIds, fn ($q) => $q->whereIn('user_id', $wargaUserIds));
+
+        $rekapHarian = [
+            'berat' => (clone $validSetoranHariIni)->sum('berat_kg'),
+            'nilai' => (clone $validSetoranHariIni)->sum('total_saldo'),
+            'transaksi' => (clone $validSetoranHariIni)->count(),
+            'warga_count' => (clone $validSetoranHariIni)->distinct('user_id')->count('user_id'),
+        ];
+
+        // 3. Riwayat Setoran (bisa difilter per warga)
+        $riwayatQuery = SetoranSampah::with(['user.profile.wilayahRt', 'jenisSampah', 'validator'])
+            ->when($wargaUserIds, fn ($q) => $q->whereIn('user_id', $wargaUserIds));
+
+        if ($request->filled('warga_id')) {
+            $riwayatQuery->where('user_id', $request->input('warga_id'));
+        }
+
+        $riwayatSetoran = $riwayatQuery->latest()->limit(30)->get();
+
+        // Daftar Warga untuk filter / pilihan fallback
+        $wargas = User::with('profile')
+            ->whereHas('role', fn ($q) => $q->where('nama_role', 'warga'))
+            ->when($selectedRtId, fn ($q) => $q->where(fn ($sub) => $sub->where('rt_id', $selectedRtId)->orWhereHas('profile', fn ($p) => $p->where('rt_id', $selectedRtId))))
+            ->orderBy('name')
+            ->get();
+
+        $rts = Rt::orderBy('kode_rt')->get();
+
+        return view('bank-sampah.setoran-rfid', compact(
+            'jenisSampahs',
+            'rekapHarian',
+            'riwayatSetoran',
+            'wargas',
+            'rts',
+            'isRt',
+            'selectedRtId'
+        ));
+    }
+
+    /**
+     * Polling endpoint untuk menangkap scan kartu warga dari perangkat Bank Sampah
+     * Endpoint: GET /bank-sampah/rfid/latest
+     */
+    public function rfidLatestScan(Request $request)
+    {
+        abort_unless($this->isPengurus() || Auth::user()?->isSuperAdmin(), 403);
+
+        $scan = Cache::get('rfid_bank_sampah_latest_scan');
+
+        if (! $scan) {
+            return response()->json([
+                'status' => 'waiting',
+                'message' => 'Menunggu scan kartu RFID / E-KTP warga...',
+                'data' => null,
+            ]);
+        }
+
+        if ($request->filled('since')) {
+            $since = (int) $request->input('since');
+            if (($scan['timestamp'] ?? 0) < $since) {
+                return response()->json([
+                    'status' => 'waiting',
+                    'message' => 'Menunggu kartu baru ditempelkan...',
+                    'data' => null,
+                ]);
+            }
+        }
+
+        $user = Auth::user();
+        if ($user->isAdminRt()) {
+            $managedRtId = $user->managedRtId();
+            if ($managedRtId && isset($scan['rt_id']) && (int) $scan['rt_id'] !== (int) $managedRtId) {
+                $scan['warning'] = "Perhatian: Warga ini terdaftar di RT {$scan['rt_kode']} (di luar RT Anda).";
+            }
+        }
+
+        return response()->json([
+            'status' => 'detected',
+            'message' => 'Kartu warga berhasil terdeteksi',
+            'data' => $scan,
+        ]);
+    }
+
+    /**
+     * Simpan setoran bank sampah dari form petugas (menambah saldo warga secara langsung)
+     * Endpoint: POST /bank-sampah/setoran-rfid/store
+     */
+    public function storeSetoranRfid(Request $request)
+    {
+        abort_unless($this->isPengurus() || Auth::user()?->isSuperAdmin(), 403);
+
+        $validated = $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+            'jenis_sampah_id' => ['required', 'exists:jenis_sampahs,id'],
+            'berat_kg' => ['required', 'numeric', 'min:0.01'],
+            'tanggal_setor' => ['nullable', 'date'],
+            'catatan' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $user = Auth::user();
+        $targetUser = User::with('profile')->findOrFail($validated['user_id']);
+
+        if ($user->isAdminRt()) {
+            $managedRtId = $user->managedRtId();
+            $targetRtId = $targetUser->managedRtId() ?? $targetUser->profile?->rt_id;
+            if ($managedRtId && $targetRtId && (int) $managedRtId !== (int) $targetRtId) {
+                if ($request->wantsJson()) {
+                    return response()->json(['status' => 'error', 'message' => 'Anda hanya dapat memproses setoran warga di RT Anda.'], 403);
+                }
+                return back()->with('error', 'Anda hanya dapat memproses setoran warga di RT Anda.');
+            }
+        }
+
+        $jenisSampah = JenisSampah::findOrFail($validated['jenis_sampah_id']);
+        $beratKg = (float) $validated['berat_kg'];
+        $hargaPerKg = (float) $jenisSampah->harga_per_kg;
+        $totalSaldo = $beratKg * $hargaPerKg;
+        $tanggalSetor = $validated['tanggal_setor'] ?? now()->toDateString();
+
+        $setoran = DB::transaction(function () use ($validated, $user, $targetUser, $jenisSampah, $beratKg, $hargaPerKg, $totalSaldo, $tanggalSetor) {
+            $createdSetoran = SetoranSampah::create([
+                'user_id' => $targetUser->id,
+                'jenis_sampah_id' => $jenisSampah->id,
+                'berat_kg' => $beratKg,
+                'harga_per_kg' => $hargaPerKg,
+                'total_saldo' => $totalSaldo,
+                'tanggal_setor' => $tanggalSetor,
+                'status' => 'valid',
+                'created_by' => $user->id,
+                'validated_by' => $user->id,
+                'validated_at' => now(),
+                'catatan' => $validated['catatan'] ?? 'Setoran via RFID Scanner',
+            ]);
+
+            // Menambah saldo bank sampah warga
+            $saldo = SaldoSampah::firstOrCreate(
+                ['user_id' => $targetUser->id],
+                ['saldo' => 0, 'total_berat_kg' => 0]
+            );
+            $saldo->increment('saldo', $totalSaldo);
+            $saldo->increment('total_berat_kg', $beratKg);
+
+            // Audit Log
+            AuditLog::record(
+                action: 'setoran_bank_sampah_rfid',
+                entityType: 'SetoranSampah',
+                entityId: $createdSetoran->id,
+                deskripsi: "Petugas {$user->name} mencatat setoran bank sampah: {$beratKg} kg {$jenisSampah->nama} senilai Rp " . number_format($totalSaldo, 0, ',', '.') . " untuk warga {$targetUser->name}",
+                nominal: (float) $totalSaldo,
+                rtId: $targetUser->profile?->rt_id,
+                userId: $user->id
+            );
+
+            // Hapus cache scan setelah berhasil disimpan
+            Cache::forget('rfid_bank_sampah_latest_scan');
+
+            return $createdSetoran;
+        });
+
+        $msg = "Setoran {$beratKg} kg {$jenisSampah->nama} (Rp " . number_format($totalSaldo, 0, ',', '.') . ") berhasil disimpan dan saldo warga {$targetUser->name} telah bertambah.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => $msg,
+                'data' => $setoran,
+            ]);
+        }
+
+        return redirect()->route('bank-sampah.setoran-rfid')->with('success', $msg);
+    }
+
     private function schemaReady(): bool
     {
         return Schema::hasTable('jenis_sampahs')
@@ -417,14 +627,20 @@ class BankSampahController extends Controller
     {
         $user = Auth::user();
 
-        return $user && in_array(optional($user->role)->nama_role, [
-            'admin',
-            'bendahara',
-            'ketua_rt',
-            'ketua_rw',
-            'petugas',
-            'sekretaris',
-        ], true) || ($user && ($user->isAdminRt() || $user->isAdminRw()));
+        return $user && (
+            in_array(optional($user->role)->nama_role, [
+                'admin',
+                'bendahara',
+                'ketua_rt',
+                'ketua_rw',
+                'petugas',
+                'sekretaris',
+                'superadmin',
+            ], true)
+            || $user->isAdminRt()
+            || $user->isAdminRw()
+            || $user->isSuperAdmin()
+        );
     }
 
     private function wargaQuery()

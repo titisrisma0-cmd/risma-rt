@@ -256,6 +256,93 @@
         </div>
     @endif
 
+    {{-- Section Grafik Keuangan Iuran RT --}}
+    <div class="saas-card rounded-2xl p-4 mb-4 border shadow-xs">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pb-3 border-bottom">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="stat-icon-wrapper stat-icon-green" style="width: 38px; height: 38px; font-size: 1rem;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5 class="card-title-saas mb-0 fw-bold text-dark fs-6">
+                        Grafik Keuangan Iuran RT {{ $rtKode }}
+                    </h5>
+                    <span class="badge-soft-emerald px-3 py-1 rounded-full">
+                        <i class="fas fa-shield-halved me-1"></i> Transparansi Warga
+                    </span>
+                </div>
+                <small class="text-secondary">Ringkasan penerimaan dan kepatuhan pembayaran iuran warga di lingkungan RT {{ $rtKode }} RW 01.</small>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="badge-soft-emerald px-3 py-1 rounded-full">
+                    <i class="fas fa-circle-check me-1"></i> {{ $chartStatusData['lunas'] ?? 0 }} Lunas
+                </span>
+                <span class="badge-soft-amber px-3 py-1 rounded-full">
+                    <i class="fas fa-clock me-1"></i> {{ $chartStatusData['pending'] ?? 0 }} Proses
+                </span>
+                <a href="{{ route('pembayaran.index') }}" class="btn btn-sm btn-light border rounded-pill px-3 py-1">
+                    <i class="fas fa-wallet me-1 text-primary"></i> Iuran Saya
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4 align-items-center">
+            {{-- Grafik Batang / Garis Tren Penerimaan --}}
+            <div class="col-lg-8">
+                <div class="p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-dark small fw-bold">Tren Penerimaan Iuran (6 Bulan Terakhir)</span>
+                        <span class="text-secondary small font-monospace"><i class="fas fa-calendar-alt me-1"></i>Data Riil RT {{ $rtKode }}</span>
+                    </div>
+                    <div style="position: relative; height: 250px; width: 100%;">
+                        <canvas id="chartIuranRt"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 3 Kartu Mini Ringkasan Soft Pastel --}}
+            <div class="col-lg-4">
+                <div class="d-flex flex-column gap-2.5">
+                    {{-- Total Penerimaan Lunas --}}
+                    <div class="p-3 rounded-xl border" style="background-color: #ecfdf5; border-color: rgba(167, 243, 208, 0.8) !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-semibold" style="color: #047857;">Total Iuran Terkumpul</span>
+                            <i class="fas fa-vault" style="color: #047857;"></i>
+                        </div>
+                        <div class="h5 fw-bold font-monospace mb-0" style="color: #065f46;">
+                            Rp {{ number_format($totalIuranRt ?? 0, 0, ',', '.') }}
+                        </div>
+                        <small style="color: #047857; font-size: 0.72rem;">Akumulasi iuran berstatus resmi lunas di RT {{ $rtKode }}</small>
+                    </div>
+
+                    {{-- Total Transaksi Tercatat --}}
+                    <div class="p-3 rounded-xl border" style="background-color: #f0f9ff; border-color: rgba(186, 230, 253, 0.8) !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-semibold" style="color: #0369a1;">Total Transaksi RT</span>
+                            <i class="fas fa-receipt" style="color: #0369a1;"></i>
+                        </div>
+                        <div class="h5 fw-bold font-monospace mb-0" style="color: #075985;">
+                            {{ number_format($totalTransaksiRt ?? 0) }} <span class="fs-6 fw-normal" style="color: #0284c7;">Transaksi</span>
+                        </div>
+                        <small style="color: #0369a1; font-size: 0.72rem;">{{ $chartStatusData['lunas'] ?? 0 }} transaksi berhasil diverifikasi</small>
+                    </div>
+
+                    {{-- Menunggu Verifikasi --}}
+                    <div class="p-3 rounded-xl border" style="background-color: #fffbeb; border-color: rgba(253, 230, 138, 0.8) !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-semibold" style="color: #92400e;">Dalam Antrean Verifikasi</span>
+                            <i class="fas fa-hourglass-half" style="color: #92400e;"></i>
+                        </div>
+                        <div class="h5 fw-bold font-monospace mb-0" style="color: #78350f;">
+                            {{ number_format($chartStatusData['pending'] ?? 0) }} <span class="fs-6 fw-normal" style="color: #b45309;">Menunggu</span>
+                        </div>
+                        <small style="color: #92400e; font-size: 0.72rem;">Dalam proses verifikasi pengurus RT/RW</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Dua Kolom: Permohonan Surat Saya & Pengumuman --}}
     <div class="row g-4">
         {{-- Permohonan Surat Saya --}}
@@ -327,3 +414,82 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('chartIuranRt');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const labels = {!! json_encode($monthlyTrendLabels ?? ['Bulan 1', 'Bulan 2', 'Bulan 3', 'Bulan 4', 'Bulan 5', 'Bulan 6']) !!};
+    const values = {!! json_encode($monthlyTrendData ?? [0, 0, 0, 0, 0, 0]) !!};
+
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Pemasukan Iuran (Rp)',
+                data: values,
+                backgroundColor: 'rgba(16, 185, 129, 0.25)',
+                borderColor: '#10b981',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false,
+                maxBarThickness: 42,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#ffffff',
+                    titleColor: '#0f172a',
+                    bodyColor: '#0f172a',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 10,
+                    boxPadding: 4,
+                    callbacks: {
+                        label: function (context) {
+                            const val = context.parsed.y || 0;
+                            return ' Pemasukan: Rp ' + val.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(226, 232, 240, 0.6)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 11, family: 'Plus Jakarta Sans, sans-serif' },
+                        callback: function (value) {
+                            if (value >= 1000000) return (value / 1000000) + ' Jt';
+                            if (value >= 1000) return (value / 1000) + ' Rb';
+                            return value;
+                        }
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 11, family: 'Plus Jakarta Sans, sans-serif' }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+@endpush

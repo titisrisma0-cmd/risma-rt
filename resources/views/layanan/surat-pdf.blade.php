@@ -157,7 +157,7 @@
 </head>
 <body>
     <div class="page-footer">
-        Dokumen resmi RW Smart &mdash; Halaman <span class="page-number"></span>
+        Dokumen resmi Smart RW &mdash; Halaman <span class="page-number"></span>
     </div>
 
     <div class="letterhead">
@@ -165,7 +165,7 @@
             <div class="government">Pemerintah Lingkungan Rukun Warga</div>
             <div class="name">Sekretariat RW</div>
             <div class="address">
-                Sistem Informasi RW Smart<br>
+                Sistem Informasi Smart RW<br>
                 Sekretariat Rukun Warga setempat
             </div>
         </div>

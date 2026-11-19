@@ -99,20 +99,20 @@
             <table class="table-saas table align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Waktu</th>
-                        <th>Aktor (Pengguna)</th>
-                        <th>Wilayah</th>
-                        <th>Aksi</th>
-                        <th>Deskripsi Tindakan</th>
-                        <th class="text-end">Nominal</th>
-                        <th class="text-end">IP Address</th>
+                        <th style="min-width: 160px;">Waktu</th>
+                        <th style="min-width: 170px;">Aktor (Pengguna)</th>
+                        <th style="min-width: 100px;">Wilayah</th>
+                        <th style="min-width: 140px;">Aksi</th>
+                        <th style="min-width: 280px; max-width: 450px;">Deskripsi Tindakan</th>
+                        <th class="text-end" style="min-width: 130px;">Nominal</th>
+                        <th class="text-end" style="min-width: 130px;">IP Address</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($logs as $log)
                         <tr>
-                            <td class="text-secondary font-monospace small" style="width: 17%;">{{ $log->created_at->format('d M Y H:i:s') }}</td>
-                            <td style="width: 20%;">
+                            <td class="text-secondary font-monospace small text-nowrap">{{ $log->created_at->format('d M Y H:i:s') }}</td>
+                            <td>
                                 <div class="fw-semibold text-dark small">{{ optional($log->user)->name ?? 'Sistem' }}</div>
                                 <small class="text-secondary">{{ optional($log->user)->email }}</small>
                             </td>
@@ -124,7 +124,9 @@
                             <td>
                                 <span class="badge badge-soft-info font-monospace small">{{ $log->action }}</span>
                             </td>
-                            <td class="small text-secondary">{{ $log->deskripsi }}</td>
+                            <td class="small text-secondary" style="min-width: 280px; max-width: 450px; line-height: 1.6; word-break: break-word;">
+                                <div class="text-wrap">{{ $log->deskripsi }}</div>
+                            </td>
                             <td class="text-end font-monospace small fw-bold">
                                 {{ $log->nominal ? 'Rp ' . number_format($log->nominal, 0, ',', '.') : '-' }}
                             </td>
@@ -142,7 +144,7 @@
         </div>
 
         @if($logs->hasPages())
-            <div class="p-3 border-top">
+            <div class="p-3 border-top d-flex justify-content-center bg-transparent">
                 {{ $logs->links() }}
             </div>
         @endif

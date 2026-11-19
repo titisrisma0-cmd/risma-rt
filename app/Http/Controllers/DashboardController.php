@@ -93,6 +93,48 @@ class DashboardController extends Controller
         ->orderBy('tanggal', 'asc')
         ->first();
 
+        // Data Grafik & Ringkasan Keuangan Iuran RT
+        $rtId = optional($user->profile)->rt_id ?? $user->rt_id;
+        $rtQuery = Pembayaran::query();
+        if ($rtId) {
+            $rtQuery->whereHas('user.profile', fn ($q) => $q->where('rt_id', $rtId));
+        }
+
+        $statusCounts = (clone $rtQuery)
+            ->select('status', DB::raw('count(*) as count'), DB::raw('sum(jumlah_bayar) as total'))
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        $chartStatusData = [
+            'lunas' => (int) ($statusCounts->get('lunas')->count ?? 0),
+            'pending' => (int) ($statusCounts->get('pending')->count ?? 0),
+            'gagal' => (int) ($statusCounts->get('gagal')->count ?? 0),
+            'total_nominal_lunas' => (float) ($statusCounts->get('lunas')->total ?? 0),
+        ];
+
+        $monthlyTrendLabels = [];
+        $monthlyTrendData = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = \Carbon\Carbon::now()->subMonths($i);
+            $m = $date->month;
+            $y = $date->year;
+            $label = $date->locale('id')->translatedFormat('M Y');
+            $monthlyTrendLabels[] = $label;
+
+            $sum = (float) (clone $rtQuery)
+                ->where('status', 'lunas')
+                ->whereYear('tanggal_bayar', $y)
+                ->whereMonth('tanggal_bayar', $m)
+                ->sum('jumlah_bayar');
+
+            $monthlyTrendData[] = $sum;
+        }
+
+        $totalIuranRt = $chartStatusData['total_nominal_lunas'];
+        $totalTransaksiRt = $chartStatusData['lunas'] + $chartStatusData['pending'] + $chartStatusData['gagal'];
+
         return view('dashboard.warga', compact(
             'user',
             'rtKode',
@@ -103,7 +145,12 @@ class DashboardController extends Controller
             'suratSaya',
             'pengumumanRt',
             'notifikasis',
-            'rondaSayaTerdekat'
+            'rondaSayaTerdekat',
+            'chartStatusData',
+            'monthlyTrendLabels',
+            'monthlyTrendData',
+            'totalIuranRt',
+            'totalTransaksiRt'
         ));
     }
 

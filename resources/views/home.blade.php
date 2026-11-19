@@ -11,7 +11,7 @@
             </div>
             <h4 class="fw-bold text-dark mb-2">Anda Telah Berhasil Masuk</h4>
             <p class="text-secondary small mb-4">
-                Sesi akun aktif. Silakan menuju dashboard utama untuk mengakses menu dan layanan lingkungan RW SMART.
+                Sesi akun aktif. Silakan menuju dashboard utama untuk mengakses menu dan layanan lingkungan Smart RW.
             </p>
 
             @if (session('status'))

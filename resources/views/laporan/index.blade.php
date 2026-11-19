@@ -161,7 +161,7 @@
                 <div class="saas-card h-100 p-4">
                     <h6 class="fw-bold text-dark mb-3"><i class="fas fa-info-circle text-emerald me-2"></i>Panduan Laporan RW</h6>
                     <div class="text-secondary small">
-                        <p class="mb-2">Sesuai tata kelola wilayah dan RBAC RW Smart:</p>
+                        <p class="mb-2">Sesuai tata kelola wilayah dan RBAC Smart RW:</p>
                         <ul class="ps-3 mb-3" style="line-height: 1.8;">
                             <li>Pengurus RW berfokus pada <strong>Laporan Agregat Wilayah</strong> RT 01 – RT 08.</li>
                             <li>Laporan individu per warga dikelola langsung oleh masing-masing Ketua RT.</li>

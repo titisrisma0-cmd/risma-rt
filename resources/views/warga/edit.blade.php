@@ -64,7 +64,7 @@
                     <label class="form-label text-secondary small fw-medium">NIK <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-id-card"></i></span>
-                        <input type="text" name="nik" value="{{ old('nik', $profile?->nik) }}" class="form-control form-control-saas border-start-0 font-monospace" required>
+                        <input type="text" name="nik" value="{{ old('nik', $profile?->nik) }}" class="form-control form-control-saas border-start-0 font-monospace" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" placeholder="16 digit NIK" required>
                     </div>
                 </div>
                 
@@ -72,7 +72,7 @@
                     <label class="form-label text-secondary small fw-medium">No. KK <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-address-book"></i></span>
-                        <input type="text" name="no_kk" value="{{ old('no_kk', $profile?->no_kk) }}" class="form-control form-control-saas border-start-0 font-monospace" required>
+                        <input type="text" name="no_kk" value="{{ old('no_kk', $profile?->no_kk) }}" class="form-control form-control-saas border-start-0 font-monospace" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" placeholder="16 digit No. KK" required>
                     </div>
                 </div>
             </div>

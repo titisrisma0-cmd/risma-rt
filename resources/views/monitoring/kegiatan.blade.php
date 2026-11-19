@@ -85,7 +85,7 @@
     </div>
 
     @if($kegiatans->hasPages())
-        <div class="p-3 mt-4">
+        <div class="p-3 mt-4 d-flex justify-content-center">
             {{ $kegiatans->links() }}
         </div>
     @endif

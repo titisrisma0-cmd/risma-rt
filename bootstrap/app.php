@@ -16,11 +16,26 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/rfid/*',
             'api/rfid',
+            'api/assistant/*',
+            'api/assistant',
+            'assistant/chat',
         ]);
+
+        $middleware->redirectTo(
+            guests: '/login',
+            users: function () {
+                $user = auth()->user();
+                if ($user && $user->is_super_admin) {
+                    return route('superadmin.dashboard');
+                }
+                return route('dashboard');
+            }
+        );
 
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'superadmin' => SuperAdminMiddleware::class,
+            'device.token' => \App\Http\Middleware\VerifyDeviceToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

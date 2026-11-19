@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Super Admin Command Center - RW SMART')
+@section('title', 'Super Admin Command Center - Smart RW')
 
 @section('content')
 <div class="content-container">
@@ -18,7 +18,7 @@
                             <i class="fas fa-crown text-warning me-1"></i> SUPER ADMIN & SYSTEM DEVELOPER
                         </span>
                         <span class="badge bg-black bg-opacity-25 text-white px-3 py-1.5 rounded-pill fw-semibold">
-                            <i class="fas fa-code-branch me-1"></i> RW SMART v2.5
+                            <i class="fas fa-code-branch me-1"></i> Smart RW 01 v2.5
                         </span>
                         <span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill fw-bold">
                             <i class="fas fa-fingerprint me-1"></i> FULL ACCESS ACTIVE
@@ -28,7 +28,7 @@
                         Selamat Datang, {{ $user->name }}
                     </h1>
                     <p class="text-white-50 mb-4 fs-6" style="max-width: 650px;">
-                        Pusat kendali tertinggi sistem RW SMART. Pantau ekosistem kependudukan, keuangan, pelayanan masyarakat, dan simulasikan peran pengurus RT/RW maupun warga secara dinamis kapan saja tanpa logout.
+                        Pusat kendali tertinggi sistem Smart RW. Pantau ekosistem kependudukan, keuangan, pelayanan masyarakat, dan simulasikan peran pengurus RT/RW maupun warga secara dinamis kapan saja tanpa logout.
                     </p>
                     <div class="d-flex flex-wrap gap-2">
                         <button type="button" class="btn btn-warning text-dark fw-bold px-3 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">

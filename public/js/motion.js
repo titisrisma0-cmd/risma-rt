@@ -1,5 +1,5 @@
 /**
- * RW SMART — Motion Graphics & Scroll Reveal Engine
+ * SMART RW — Motion Graphics & Scroll Reveal Engine
  * Designed for Progressive Enhancement, Zero Layout Shift, and Full Accessibility.
  */
 (() => {

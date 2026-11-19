@@ -124,7 +124,7 @@
         </div>
 
         @if($kasList->hasPages())
-            <div class="p-3 border-top">
+            <div class="p-3 border-top d-flex justify-content-center bg-transparent">
                 {{ $kasList->links() }}
             </div>
         @endif

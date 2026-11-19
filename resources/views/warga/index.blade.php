@@ -237,10 +237,8 @@
             </div>
         </div>
         @if($warga->hasPages())
-        <div class="card-footer bg-white border-top p-3">
-            <div class="d-flex justify-content-end">
-                {{ $warga->appends(request()->query())->links() }}
-            </div>
+        <div class="card-footer bg-transparent border-top p-3 d-flex justify-content-center">
+            {{ $warga->appends(request()->query())->links() }}
         </div>
         @endif
     </div>

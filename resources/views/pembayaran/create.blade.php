@@ -171,7 +171,7 @@
                             @else
                                 <img id="qris_code" src="" alt="QRIS Code" class="img-fluid rounded" style="max-width: 220px;">
                             @endif
-                            <div class="mt-2 fw-semibold text-dark">{{ $qrisMetode->nama_penerima ?? 'RW SMART' }}</div>
+                            <div class="mt-2 fw-semibold text-dark">{{ $qrisMetode->nama_penerima ?? 'SMART RW' }}</div>
                             <small class="text-secondary">{{ $qrisMetode->nomor_rekening ?? 'NMID: Terverifikasi' }}</small>
                         </div>
                     </div>

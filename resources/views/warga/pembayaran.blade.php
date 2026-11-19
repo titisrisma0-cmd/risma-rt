@@ -148,14 +148,14 @@
                         <div class="p-3 rounded-3 border bg-light">
                             <span class="badge badge-soft-primary mb-1">Bank BCA</span>
                             <div class="fw-bold text-dark fs-6 font-monospace">123-456-7890</div>
-                            <small class="text-muted">a.n. Bendahara RW 05</small>
+                            <small class="text-muted">a.n. Bendahara RW 01</small>
                         </div>
                     </div>
                     <div class="col-12 col-sm-6">
                         <div class="p-3 rounded-3 border bg-light">
                             <span class="badge badge-soft-warning mb-1">Bank Mandiri</span>
                             <div class="fw-bold text-dark fs-6 font-monospace">987-654-3210</div>
-                            <small class="text-muted">a.n. Bendahara RW 05</small>
+                            <small class="text-muted">a.n. Bendahara RW 01</small>
                         </div>
                     </div>
                 </div>
@@ -173,19 +173,19 @@
             <table class="table table-saas align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>No. Transaksi</th>
-                        <th>Pos Iuran</th>
-                        <th>Tanggal Bayar</th>
-                        <th>Nominal</th>
-                        <th>Metode</th>
-                        <th>Status Verifikasi</th>
-                        <th class="text-center">Bukti</th>
+                        <th style="min-width: 170px;">No. Transaksi</th>
+                        <th style="min-width: 160px;">Pos Iuran</th>
+                        <th style="min-width: 130px;">Tanggal Bayar</th>
+                        <th style="min-width: 130px;">Nominal</th>
+                        <th style="min-width: 110px;">Metode</th>
+                        <th style="min-width: 160px;">Status Verifikasi</th>
+                        <th class="text-center" style="min-width: 110px;">Bukti</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($pembayaran as $item)
                         <tr>
-                            <td>
+                            <td style="min-width: 170px; white-space: nowrap;">
                                 <strong class="text-dark font-monospace">{{ $item->no_transaksi }}</strong>
                                 <small class="text-muted d-block">{{ $item->created_at->format('d/m/Y H:i') }}</small>
                             </td>

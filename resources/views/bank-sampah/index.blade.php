@@ -26,8 +26,9 @@
                 <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalSetoran"><i class="fas fa-plus me-1"></i>Setor Sampah</button>
                 <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalTarikSaldo"><i class="fas fa-money-bill-wave me-1 text-emerald"></i>Tarik Saldo</button>
             @else
-                <button class="btn btn-emerald text-white px-3" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus me-1"></i>Buat Jadwal Pengumpulan</button>
-                <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalHarga"><i class="fas fa-tags me-1 text-emerald"></i>Atur Harga Sampah</button>
+                <a href="{{ route('bank-sampah.setoran-rfid') }}" class="btn btn-emerald text-white px-3"><i class="fas fa-id-card-clip me-1"></i>Setoran RFID</a>
+                <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalJadwal"><i class="fas fa-calendar-plus me-1 text-emerald"></i>Buat Jadwal</button>
+                <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#modalHarga"><i class="fas fa-tags me-1 text-emerald"></i>Atur Harga</button>
             @endif
             <a href="{{ route('dashboard') }}" class="btn btn-light border"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
         </div>

@@ -34,7 +34,7 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label text-secondary small fw-medium">Nomor Kartu Keluarga (16 Digit) *</label>
-                    <input type="text" name="no_kk" maxlength="16" minlength="16" class="form-control form-control-saas @error('no_kk') is-invalid @enderror font-monospace" placeholder="Contoh: 3273010101010001" value="{{ old('no_kk') }}" required>
+                    <input type="text" name="no_kk" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" minlength="16" class="form-control form-control-saas @error('no_kk') is-invalid @enderror font-monospace" placeholder="Contoh: 3273010101010001" value="{{ old('no_kk') }}" required>
                     @error('no_kk')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -71,7 +71,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-secondary small fw-medium">NIK Kepala Keluarga (16 Digit) *</label>
-                        <input type="text" name="nik_kepala" maxlength="16" minlength="16" class="form-control form-control-saas @error('nik_kepala') is-invalid @enderror font-monospace" placeholder="NIK 16 digit" value="{{ old('nik_kepala') }}" required>
+                        <input type="text" name="nik_kepala" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" minlength="16" class="form-control form-control-saas @error('nik_kepala') is-invalid @enderror font-monospace" placeholder="NIK 16 digit" value="{{ old('nik_kepala') }}" required>
                         @error('nik_kepala')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

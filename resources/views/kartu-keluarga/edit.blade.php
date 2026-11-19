@@ -34,7 +34,7 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label text-secondary small fw-medium">Nomor Kartu Keluarga (16 Digit) *</label>
-                    <input type="text" name="no_kk" maxlength="16" minlength="16" class="form-control form-control-saas @error('no_kk') is-invalid @enderror font-monospace" value="{{ old('no_kk', $kartuKeluarga->no_kk) }}" required>
+                    <input type="text" name="no_kk" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" minlength="16" class="form-control form-control-saas @error('no_kk') is-invalid @enderror font-monospace" value="{{ old('no_kk', $kartuKeluarga->no_kk) }}" required>
                     @error('no_kk')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

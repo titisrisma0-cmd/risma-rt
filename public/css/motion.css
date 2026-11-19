@@ -1,5 +1,5 @@
 /**
- * RW SMART — Motion Graphics & Scroll Reveal Engine
+ * SMART RW — Motion Graphics & Scroll Reveal Engine
  * Designed for Progressive Enhancement, Zero Layout Shift, and Full Accessibility.
  */
 
@@ -749,9 +749,9 @@
 
 /* Badge RT Gelap Kontras */
 .badge-rt-pill {
-    position: absolute;
-    top: 12px;
-    right: 12px;
+    display: inline-flex;
+    align-items: center;
+    position: static;
     background: rgba(15, 42, 29, 0.85) !important;
     color: #ffffff !important;
     border-radius: 999px !important;
@@ -759,6 +759,21 @@
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     letter-spacing: 0.03em !important;
+    white-space: nowrap;
+}
+
+.page-head .badge-rt-pill,
+.page-header .badge-rt-pill,
+.d-flex > .badge-rt-pill {
+    position: static !important;
+    display: inline-flex !important;
+    vertical-align: middle;
+}
+
+.umkm-card .badge-rt-pill {
+    position: absolute !important;
+    top: 12px;
+    right: 12px;
 }
 
 .line-clamp-2 {
@@ -925,5 +940,43 @@
     .table-responsive [data-m] {
         opacity: 1 !important;
         transform: none !important;
+    }
+
+    /* Table responsiveness & mobile touch comfort */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .table-responsive table {
+        min-width: 600px;
+    }
+
+    .table-saas tbody td,
+    .table tbody td {
+        padding: 0.75rem 0.85rem !important;
+        font-size: 0.85rem;
+    }
+
+    /* Prevent awkward per-character wrapping */
+    td, th {
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
+    /* Action buttons in tables on mobile */
+    .table-responsive .btn-sm {
+        white-space: nowrap !important;
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Cards smoother rounded corners and comfortable mobile padding */
+    .saas-card,
+    .card {
+        border-radius: 16px !important;
     }
 }

@@ -176,6 +176,7 @@ class KegiatanController extends Controller
     public function daftar(Request $request, Kegiatan $kegiatan)
     {
         $actor = $request->user()->loadMissing('profile.kartuKeluarga');
+        abort_if($kegiatan->isPast() || $kegiatan->status === 'selesai', 422, 'Pendaftaran ditutup karena kegiatan telah selesai.');
         abort_unless(in_array($kegiatan->status, ['dibuka', 'berlangsung']), 422, 'Pendaftaran belum dibuka.');
         $targetId = (int) $request->input('user_id', $actor->id);
         $this->assertCanRegister($actor, $targetId);
@@ -187,6 +188,7 @@ class KegiatanController extends Controller
 
     public function batalDaftar(Request $request, Kegiatan $kegiatan)
     {
+        abort_if($kegiatan->isPast() || $kegiatan->status === 'selesai', 422, 'Kegiatan telah selesai.');
         $actor = $request->user()->loadMissing('profile.kartuKeluarga');
         $targetId = (int) $request->input('user_id', $actor->id);
         $this->assertCanRegister($actor, $targetId);

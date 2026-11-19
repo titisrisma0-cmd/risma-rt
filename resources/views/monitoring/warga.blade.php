@@ -162,7 +162,7 @@
             </div>
 
             @if($wargas->hasPages())
-                <div class="p-3 border-top">
+                <div class="p-3 border-top d-flex justify-content-center bg-transparent">
                     {{ $wargas->links() }}
                 </div>
             @endif

@@ -26,6 +26,20 @@ class Kegiatan extends Model
         return $this->attributes['judul'] ?? '';
     }
 
+    public function getWaktuSelesaiAttribute()
+    {
+        return $this->tanggal_selesai ?? ($this->attributes['end_at'] ?? null) ?? $this->tanggal_mulai;
+    }
+
+    public function isPast(): bool
+    {
+        $waktu = $this->waktu_selesai;
+        if (! $waktu) {
+            return false;
+        }
+        return \Carbon\Carbon::parse($waktu)->isPast();
+    }
+
     public function rsvps()
     {
         return $this->hasMany(RsvpKegiatan::class);

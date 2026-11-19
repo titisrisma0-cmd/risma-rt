@@ -31,7 +31,7 @@
         <div class="text-center mb-3">
             <h4 class="fw-bold mb-0 text-uppercase tracking-wider">KARTU KELUARGA</h4>
             <h5 class="fw-bold mb-1 font-monospace">No. {{ $kartuKeluarga->no_kk }}</h5>
-            <div class="small">SISTEM INFORMASI ADMINISTRASI KEPENDUDUKAN LINGKUNGAN RW SMART</div>
+            <div class="small">SISTEM INFORMASI ADMINISTRASI KEPENDUDUKAN LINGKUNGAN SMART RW</div>
         </div>
 
         {{-- Data Kepala & Alamat --}}

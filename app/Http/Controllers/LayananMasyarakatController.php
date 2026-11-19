@@ -1908,6 +1908,7 @@ class LayananMasyarakatController extends Controller
 
     public function rsvpKegiatan(Request $request, Kegiatan $kegiatan)
     {
+        abort_if($kegiatan->isPast() || $kegiatan->status === 'selesai', 422, 'Pendaftaran ditutup karena kegiatan telah selesai.');
         RsvpKegiatan::updateOrCreate(
             ['kegiatan_id' => $kegiatan->id, 'user_id' => Auth::id()],
             $request->validate(['status' => ['required', 'in:hadir,tidak_hadir,izin']])

@@ -1,3 +1,6 @@
+@php
+    $isEnded = $kegiatan->status === 'selesai' || $kegiatan->isPast();
+@endphp
 <div class="col-12 col-lg-6">
     <div class="saas-card h-100 d-flex flex-column justify-content-between p-4 border" style="border-radius: 16px; border-color: var(--border) !important; transition: transform 0.2s, box-shadow 0.2s;">
         <div>
@@ -14,14 +17,14 @@
                 </div>
 
                 <div>
-                    @if($kegiatan->status === 'dibuka')
-                        <span class="badge-soft-info"><i class="fas fa-bullhorn me-1"></i>Akan Datang</span>
+                    @if($kegiatan->status === 'dibatalkan')
+                        <span class="badge-soft-danger"><i class="fas fa-ban me-1"></i>Dibatalkan</span>
+                    @elseif($isEnded)
+                        <span class="badge-soft-secondary"><i class="fas fa-check-circle me-1"></i>Selesai</span>
                     @elseif($kegiatan->status === 'berlangsung')
                         <span class="badge-soft-warning"><i class="fas fa-play me-1"></i>Berlangsung</span>
-                    @elseif($kegiatan->status === 'selesai')
-                        <span class="badge-soft-emerald"><i class="fas fa-check-circle me-1"></i>Selesai</span>
-                    @elseif($kegiatan->status === 'dibatalkan')
-                        <span class="badge-soft-danger"><i class="fas fa-ban me-1"></i>Dibatalkan</span>
+                    @elseif($kegiatan->status === 'dibuka')
+                        <span class="badge-soft-info"><i class="fas fa-bullhorn me-1"></i>Akan Datang</span>
                     @else
                         <span class="badge-soft-secondary"><i class="fas fa-pencil-alt me-1"></i>Draft</span>
                     @endif
@@ -60,15 +63,25 @@
 
         {{-- Action Buttons --}}
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-3 border-top">
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center flex-wrap">
                 @if($kegiatan->peserta && $kegiatan->peserta->contains('user_id', Auth::id()))
-                    <form method="POST" action="{{ route('kegiatan.batal-daftar', $kegiatan) }}" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px;">
-                            <i class="fas fa-user-minus me-1"></i> Batal Daftar
-                        </button>
-                    </form>
+                    @if($isEnded)
+                        <span class="badge badge-soft-emerald py-2 px-3 rounded-3" style="font-size: 0.82rem;">
+                            <i class="fas fa-check-circle me-1"></i> Anda Terdaftar
+                        </span>
+                    @else
+                        <form method="POST" action="{{ route('kegiatan.batal-daftar', $kegiatan) }}" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px;">
+                                <i class="fas fa-user-minus me-1"></i> Batal Daftar
+                            </button>
+                        </form>
+                    @endif
+                @elseif($isEnded)
+                    <button type="button" class="btn btn-secondary btn-sm px-3 disabled" disabled style="border-radius: 8px; opacity: 0.7; cursor: not-allowed;" title="Pendaftaran ditutup karena kegiatan telah selesai">
+                        <i class="fas fa-lock me-1"></i> Pendaftaran Ditutup
+                    </button>
                 @elseif(in_array($kegiatan->status, ['dibuka', 'berlangsung']))
                     <form method="POST" action="{{ route('kegiatan.daftar', $kegiatan) }}" class="d-inline">
                         @csrf

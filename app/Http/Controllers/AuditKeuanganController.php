@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\Iuran;
 use App\Models\Kas;
 use App\Models\Notifikasi;
 use App\Models\Pembayaran;
@@ -125,7 +126,9 @@ class AuditKeuanganController extends Controller
 
         $selectedRtId = $request->input('rt_id');
 
-        // Tab 2: Iuran
+        // Tab 2: Iuran (Daftar Master Iuran & Transaksi Pembayaran)
+        $masterIuran = Iuran::orderBy('created_at', 'desc')->get();
+
         $iuranQuery = Pembayaran::with(['user.profile', 'iuran'])
             ->where('status', 'lunas')
             ->whereYear('tanggal_bayar', $tahun)
@@ -164,7 +167,7 @@ class AuditKeuanganController extends Controller
         return view('keuangan.audit-rw', compact(
             'user', 'tahun', 'bulan', 'rekapPerRt', 'rts',
             'totalPemasukanAll', 'totalPengeluaranAll', 'totalSaldoAll',
-            'iuranList', 'pengeluaranList', 'kasList', 'auditHistory', 'selectedRtId'
+            'masterIuran', 'iuranList', 'pengeluaranList', 'kasList', 'auditHistory', 'selectedRtId'
         ));
     }
 

@@ -11,9 +11,9 @@
                 <i class="fas fa-id-card"></i>
             </div>
             <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                     <h1 class="page-title mb-0">Data Keluarga Saya</h1>
-                    <span class="badge-rt-pill">Warga</span>
+                    <span class="badge-rt-pill" style="position: static !important; display: inline-flex !important;">Warga</span>
                 </div>
                 <p class="page-subtitle mb-0">Informasi resmi Kartu Keluarga dan anggota keluarga terdaftar</p>
             </div>
@@ -98,26 +98,26 @@
                 <table class="table-saas">
                     <thead>
                         <tr>
-                            <th width="45">No</th>
-                            <th>Nama Lengkap</th>
-                            <th>NIK</th>
-                            <th>Hubungan Keluarga</th>
-                            <th>Jenis Kelamin</th>
-                            <th>Pekerjaan</th>
-                            <th>Status</th>
+                            <th width="45" class="text-center">No</th>
+                            <th style="min-width: 170px;">Nama Lengkap</th>
+                            <th style="min-width: 180px;">NIK</th>
+                            <th style="min-width: 140px;">Hubungan Keluarga</th>
+                            <th style="min-width: 110px;">Jenis Kelamin</th>
+                            <th style="min-width: 130px;">Pekerjaan</th>
+                            <th style="min-width: 100px;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($kk->anggota as $idx => $anggota)
                             <tr>
-                                <td class="text-secondary">{{ $idx + 1 }}</td>
+                                <td class="text-secondary text-center">{{ $idx + 1 }}</td>
                                 <td>
                                     <span class="fw-bold text-dark">{{ $anggota->nama_lengkap }}</span>
                                     @if($anggota->user_id === Auth::id())
                                         <span class="badge-soft-emerald ms-1">Saya</span>
                                     @endif
                                 </td>
-                                <td class="font-monospace text-emerald fw-semibold">
+                                <td class="font-monospace text-emerald fw-semibold text-nowrap" style="min-width: 180px; white-space: nowrap;">
                                     {{ Str::mask($anggota->nik ?? '0000000000000000', '*', 4, 8) }}
                                 </td>
                                 <td>

@@ -67,7 +67,7 @@
             @foreach($rtSummary as $item)
                 <div class="col-6 col-md-3 col-xl-3">
                     <a href="{{ route('kartu-keluarga.index', ['rt_id' => $item->id]) }}" class="text-decoration-none">
-                        <div class="saas-card p-3 text-center {{ request('rt_id') == $item->id ? 'border-primary' : '' }}" style="{{ request('rt_id') == $item->id ? 'background-color: var(--primary-soft); border: 1.5px solid var(--primary) !important;' : '' }}">
+                        <div class="saas-card p-3 text-center {{ request('rt_id') == $item->id ? 'border-primary' : '' }}" style="{{ request('rt_id') == $item->id ? 'background-color: #F0FDF4; border: 1.5px solid var(--primary-green) !important;' : '' }}">
                             <div class="text-secondary small mb-1 fw-semibold">RT {{ $item->kode_rt }}</div>
                             <div class="h4 text-dark fw-bold mb-0">{{ $item->kartu_keluargas_count }} <span class="small fs-6 text-muted fw-normal">KK</span></div>
                         </div>
@@ -141,12 +141,12 @@
                 <thead>
                     <tr>
                         <th width="45" class="text-center">#</th>
-                        <th>Nomor KK</th>
-                        <th>Kepala Keluarga</th>
-                        <th>Wilayah RT</th>
-                        <th>Alamat & Hunian</th>
-                        <th class="text-center">Anggota Keluarga</th>
-                        <th class="text-end">Aksi Operasional</th>
+                        <th style="min-width: 170px;">Nomor KK</th>
+                        <th style="min-width: 180px;">Kepala Keluarga</th>
+                        <th style="min-width: 100px;">Wilayah RT</th>
+                        <th style="min-width: 220px;">Alamat & Hunian</th>
+                        <th class="text-center" style="min-width: 150px;">Anggota Keluarga</th>
+                        <th class="text-end" style="min-width: 120px;">Aksi Operasional</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -198,10 +198,10 @@
                             </td>
                             <td class="text-end">
                                 <div class="dropdown d-inline-block">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle px-3" type="button" data-bs-toggle="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle px-3" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
                                         Kelola
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border p-2" style="border-radius: 12px; min-width: 190px;">
                                         <li>
                                             <a class="dropdown-item" href="{{ route('kartu-keluarga.show', $kk) }}">
                                                 <i class="fas fa-eye text-info me-2"></i> Lihat Detail Lengkap
@@ -240,7 +240,7 @@
                         </tr>
 
                         {{-- Expanded Collapsible Row: Anggota Keluarga --}}
-                        <tr class="collapse" id="anggotaKK{{ $kk->id }}" style="background-color: var(--surface-2);">
+                        <tr class="collapse" id="anggotaKK{{ $kk->id }}" style="background-color: #F8FAFC;">
                             <td colspan="7" class="p-3">
                                 <div class="saas-card p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -255,16 +255,16 @@
                                         <table class="table table-sm table-hover align-middle mb-0">
                                             <thead class="bg-light">
                                                 <tr class="small text-secondary">
-                                                    <th>No</th>
-                                                    <th>Nama Lengkap</th>
-                                                    <th>NIK</th>
-                                                    <th>Hubungan</th>
-                                                    <th>Gender</th>
-                                                    <th>Tgl Lahir / Usia</th>
-                                                    <th>Pekerjaan</th>
-                                                    <th>No. HP</th>
-                                                    <th>Status</th>
-                                                    <th class="text-end">Aksi Anggota</th>
+                                                    <th class="text-center" style="min-width: 45px;">No</th>
+                                                    <th style="min-width: 160px;">Nama Lengkap</th>
+                                                    <th style="min-width: 180px;">NIK</th>
+                                                    <th style="min-width: 130px;">Hubungan</th>
+                                                    <th style="min-width: 80px;">Gender</th>
+                                                    <th style="min-width: 140px;">Tgl Lahir / Usia</th>
+                                                    <th style="min-width: 130px;">Pekerjaan</th>
+                                                    <th style="min-width: 130px;">No. HP</th>
+                                                    <th style="min-width: 100px;">Status</th>
+                                                    <th class="text-end" style="min-width: 150px;">Aksi Anggota</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -272,8 +272,8 @@
                                                     <tr class="small">
                                                         <td class="text-center">{{ $idxAnggota + 1 }}</td>
                                                         <td class="fw-bold text-dark">{{ $anggota->nama_lengkap }}</td>
-                                                        <td class="font-monospace text-emerald fw-semibold">
-                                                            {{ $anggota->nik }}
+                                                        <td class="font-monospace text-emerald fw-semibold text-nowrap" style="min-width: 180px; white-space: nowrap;">
+                                                            <span>{{ $anggota->nik }}</span>
                                                             <div class="mt-1">
                                                                 @if($anggota->rfid_uid)
                                                                     <span class="badge bg-light text-primary border" title="E-KTP: {{ $anggota->rfid_uid }}">
@@ -365,7 +365,7 @@
         </div>
 
         @if($kartuKeluargas->hasPages())
-            <div class="p-3 border-top">
+            <div class="p-3 border-top d-flex justify-content-center bg-transparent">
                 {{ $kartuKeluargas->links() }}
             </div>
         @endif

@@ -62,7 +62,7 @@
                     <label class="form-label text-secondary small fw-medium">NIK <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-id-card"></i></span>
-                        <input type="text" name="nik" class="form-control form-control-saas border-start-0 font-monospace @error('nik') is-invalid @enderror" value="{{ old('nik') }}" required>
+                        <input type="text" name="nik" class="form-control form-control-saas border-start-0 font-monospace @error('nik') is-invalid @enderror" value="{{ old('nik') }}" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" placeholder="16 digit NIK" required>
                     </div>
                     @error('nik') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
@@ -71,7 +71,7 @@
                     <label class="form-label text-secondary small fw-medium">No. KK <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-address-book"></i></span>
-                        <input type="text" name="no_kk" class="form-control form-control-saas border-start-0 font-monospace @error('no_kk') is-invalid @enderror" value="{{ old('no_kk') }}" required>
+                        <input type="text" name="no_kk" class="form-control form-control-saas border-start-0 font-monospace @error('no_kk') is-invalid @enderror" value="{{ old('no_kk') }}" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" placeholder="16 digit No. KK" required>
                     </div>
                     @error('no_kk') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>

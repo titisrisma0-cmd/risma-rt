@@ -13,7 +13,11 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'SMART RW'),
+
+    'rw_number' => env('APP_RW_NUMBER', '01'),
+
+    'rw_name' => env('APP_RW_NAME', 'RW 01'),
 
     /*
     |--------------------------------------------------------------------------

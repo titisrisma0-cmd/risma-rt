@@ -82,7 +82,7 @@
         </div>
 
         @if($pengajuans->hasPages())
-            <div class="p-3 border-top bg-white">
+            <div class="p-3 border-top bg-transparent d-flex justify-content-center">
                 {{ $pengajuans->links() }}
             </div>
         @endif

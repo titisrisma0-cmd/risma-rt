@@ -192,10 +192,10 @@
                                     <a href="{{ route('rts.show', $rt) }}" class="btn btn-sm btn-light text-primary me-1" title="Lihat Detail RT">
                                         <i class="fas fa-eye me-1"></i> Detail
                                     </a>
-                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button class="btn btn-sm btn-light dropdown-toggle no-caret" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Menu Aksi">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2" style="border-radius: 12px;">
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2" style="border-radius: 12px; min-width: 190px;">
                                         <li>
                                             <button type="button" class="dropdown-item rounded-2 py-1.5" data-bs-toggle="modal" data-bs-target="#modalEditRt{{ $rt->id }}">
                                                 <i class="fas fa-edit me-2 text-warning"></i> Edit Profil RT

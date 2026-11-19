@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Profil Pengguna - RW SMART')
+@section('title', 'Profil Pengguna - Smart RW')
 
 @section('content')
 <div class="content-container">

@@ -47,11 +47,25 @@ class UserSeeder extends Seeder
             ]
         );
 
+        // Seeder tidak boleh membuat akun demo jika APP_ENV=production
+        if (app()->environment('production')) {
+            // Pada production, buat struktur RT 01 s/d RT 08 tanpa akun pengguna demo
+            for ($i = 1; $i <= 8; $i++) {
+                $kodeRt = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+                Role::firstOrCreate(['nama_role' => 'rt_' . $kodeRt]);
+                Rt::firstOrCreate(
+                    ['kode_rt' => $kodeRt],
+                    ['rw_id' => 1, 'nama_rt' => 'RT ' . $kodeRt]
+                );
+            }
+            return;
+        }
+
         // 1. Akun Tunggal Admin / RW
         $admin = User::updateOrCreate(
             ['email' => 'admin@rw-smart.test'],
             [
-                'name' => 'Admin RW Smart',
+                'name' => 'Admin Smart RW',
                 'password' => Hash::make('password123'),
                 'role_id' => $rwRole->id,
                 'is_super_admin' => 0,
@@ -64,7 +78,7 @@ class UserSeeder extends Seeder
                 'role_id' => $rwRole->id,
                 'no_kk' => '0000000000000000',
                 'nik' => '0000000000000000',
-                'nama_lengkap' => 'Admin RW Smart',
+                'nama_lengkap' => 'Admin Smart RW',
                 'tempat_lahir' => 'Jakarta',
                 'tanggal_lahir' => '1990-01-01',
                 'jenis_kelamin' => 'L',
@@ -120,7 +134,7 @@ class UserSeeder extends Seeder
         $wargaDemo = User::updateOrCreate(
             ['email' => 'warga@rw-smart.test'],
             [
-                'name' => 'Warga RW Smart',
+                'name' => 'Warga Smart RW',
                 'password' => Hash::make('password123'),
                 'role_id' => $wargaRole->id
             ]
@@ -133,7 +147,7 @@ class UserSeeder extends Seeder
                 'rt_id' => 1,
                 'no_kk' => '2222222222222200',
                 'nik' => '3333333333333300',
-                'nama_lengkap' => 'Warga RW Smart',
+                'nama_lengkap' => 'Warga Smart RW',
                 'tempat_lahir' => 'Jakarta',
                 'tanggal_lahir' => '1990-01-01',
                 'jenis_kelamin' => 'L',

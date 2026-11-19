@@ -249,7 +249,7 @@
 
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-medium">Nama Pemilik Akun (Atas Nama)</label>
-                        <input type="text" name="nama_penerima" class="form-control form-control-saas" placeholder="Contoh: Bendahara RW 05">
+                        <input type="text" name="nama_penerima" class="form-control form-control-saas" placeholder="Contoh: Bendahara RW 01">
                     </div>
 
                     <div class="mb-3">

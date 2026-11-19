@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#147A45" id="metaThemeColor">
-    <title>RW SMART — Modern Community & Neighborhood Platform</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Smart RW — Modern Community & Neighborhood Platform</title>
 
     <script>
         (function () {
@@ -24,7 +25,7 @@
 
     <!-- Stylesheets -->
     <link href="{{ asset('css/theme-welcome.css') }}?v={{ file_exists(public_path('css/theme-welcome.css')) ? filemtime(public_path('css/theme-welcome.css')) : '1.0' }}" rel="stylesheet">
-    <!-- RW SMART Motion Graphics Engine -->
+    <!-- SMART RW Motion Graphics Engine -->
     <link href="{{ asset('css/motion.css') }}?v={{ file_exists(public_path('css/motion.css')) ? filemtime(public_path('css/motion.css')) : '1.0' }}" rel="stylesheet">
 </head>
 <body>
@@ -36,9 +37,9 @@
        ========================================================================== -->
     <header class="landing-nav">
         <div class="nav-container">
-            <a href="{{ url('/') }}" class="brand-link">
-                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="38" height="38" class="brand-logo-img">
-                <span class="brand-title">RW <span>SMART</span></span>
+            <a href="{{ url('/') }}" class="brand-link" aria-label="SMART RW (RW SMART)">
+                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="SMART RW Logo" width="38" height="38" class="brand-logo-img">
+                <span class="brand-title">SMART <span>RW</span></span>
             </a>
 
             <ul class="nav-menu">
@@ -81,8 +82,8 @@
     <aside class="landing-drawer" id="landingDrawer" aria-label="Menu Navigasi Mobile">
         <div class="landing-drawer-header">
             <a href="{{ url('/') }}" class="brand-link">
-                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="32" height="32" class="brand-logo-img">
-                <span class="brand-title">RW <span>SMART</span></span>
+                <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="SMART RW Logo" width="32" height="32" class="brand-logo-img">
+                <span class="brand-title">SMART <span>RW</span></span>
             </a>
             <button type="button" class="landing-drawer-close" id="landingDrawerClose" aria-label="Tutup Menu">
                 <i class="fas fa-times"></i>
@@ -140,7 +141,7 @@
                 </h1>
 
                 <p class="hero-subtitle">
-                    RW SMART menghadirkan kemudahan pengelolaan warga, administrasi kependudukan, transparansi keuangan kas, keamanan ronda malam, serta pelayanan publik dalam satu platform digital yang modern dan inklusif.
+                    Smart RW menghadirkan kemudahan pengelolaan warga, administrasi kependudukan, transparansi keuangan kas, keamanan ronda malam, serta pelayanan publik dalam satu platform digital yang modern dan inklusif.
                 </p>
 
                 <div class="hero-cta-group">
@@ -404,7 +405,7 @@
     </section>
 
     <!-- ==========================================================================
-       4. FITUR UTAMA RW SMART (SECTION 3)
+       4. FITUR UTAMA SMART RW (SECTION 3)
        ========================================================================== -->
     <section class="section-wrapper" id="fitur">
         <div class="section-container">
@@ -658,7 +659,7 @@
                 <div>
                     <span style="font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; color: var(--accent); text-transform: uppercase;">Keamanan & Privasi Terjamin</span>
                     <h2 style="font-size: 2.1rem; font-weight: 800; margin: 10px 0 14px; line-height: 1.25;">Perlindungan Data Warga adalah Prioritas Tertinggi</h2>
-                    <p style="font-size: 0.95rem; color: rgba(255,255,255,0.88); line-height: 1.6; margin: 0;">RW SMART menerapkan prinsip isolasi yurisdiksi, pembatasan hak akses berbasis peran (RBAC), serta rekaman audit log komprehensif untuk mencegah kebocoran data pribadi.</p>
+                    <p style="font-size: 0.95rem; color: rgba(255,255,255,0.88); line-height: 1.6; margin: 0;">Smart RW menerapkan prinsip isolasi yurisdiksi, pembatasan hak akses berbasis peran (RBAC), serta rekaman audit log komprehensif untuk mencegah kebocoran data pribadi.</p>
                 </div>
 
                 <div class="security-grid">
@@ -714,8 +715,8 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <a href="{{ url('/') }}" class="brand-link">
-                        <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="RW SMART Logo" width="34" height="34">
-                        <span class="brand-title">RW <span>SMART</span></span>
+                        <img src="{{ asset('images/rw-smart-icon.svg') }}" alt="SMART RW Logo" width="34" height="34">
+                        <span class="brand-title">SMART <span>RW</span></span>
                     </a>
                     <p>Sistem Informasi Manajemen Rukun Warga & Pelayanan Publik Lingkungan Modern berbasis SaaS yang akuntabel, mudah digunakan, dan terintegrasi.</p>
                 </div>
@@ -755,7 +756,7 @@
             </div>
 
             <div class="footer-bottom">
-                <div>&copy; {{ date('Y') }} <strong>RW SMART</strong>. Hak Cipta Dilindungi Undang-Undang.</div>
+                <div>&copy; {{ date('Y') }} <strong>SMART RW</strong>. Hak Cipta Dilindungi Undang-Undang.</div>
                 <div>Modern SaaS Community Architecture &bull; Clean, Minimalist, Premium</div>
             </div>
         </div>
@@ -866,7 +867,7 @@
         });
     </script>
 
-    <!-- RW SMART Motion Graphics Engine -->
+    <!-- SMART RW Motion Graphics Engine -->
     <script src="{{ asset('js/motion.js') }}"></script>
 </body>
 </html>

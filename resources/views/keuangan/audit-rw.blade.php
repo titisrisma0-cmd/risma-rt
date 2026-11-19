@@ -194,7 +194,7 @@
                                     </td>
                                     <td>
                                         <div class="fw-bold text-dark small">{{ optional($rt->ketua)->name ?? 'Belum Ditentukan' }}</div>
-                                        <small class="text-secondary font-monospace">{{ optional($rt->ketua->profile)->no_hp ?? '-' }}</small>
+                                        <small class="text-secondary font-monospace">{{ optional(optional($rt->ketua)->profile)->no_hp ?? '-' }}</small>
                                     </td>
                                     <td class="text-end font-monospace text-success fw-semibold small">
                                         Rp {{ number_format($item['pemasukan'], 0, ',', '.') }}
@@ -228,20 +228,136 @@
 
         {{-- ==================== TAB 2: IURAN ==================== --}}
         <div class="tab-pane fade" id="tab-iuran" role="tabpanel">
-            <div class="saas-card mb-4">
-                <div class="card-header-saas">
-                    <h5 class="card-title-saas"><i class="fas fa-hand-holding-usd text-info"></i> Daftar Pembayaran Iuran Lunas (Hanya Baca)</h5>
-                    <span class="badge badge-soft-primary">{{ $iuranList->count() }} Data Transaksi</span>
+            {{-- Pengelolaan Master Iuran Warga RW (Tambah & Hapus Iuran) --}}
+            <div class="saas-card mb-4 rounded-xl border">
+                <div class="card-header-saas d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-bottom">
+                    <div>
+                        <h5 class="card-title-saas mb-1">
+                            <i class="fas fa-coins text-emerald me-2"></i> Master Iuran Warga RW 01
+                        </h5>
+                        <p class="text-secondary small mb-0">Kelola jenis iuran, nominal, periode penagihan, status aktif, dan penghapusan iuran.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-emerald px-3 py-1.5 rounded-pill shadow-xs" data-bs-toggle="modal" data-bs-target="#modalTambahIuranRw">
+                            <i class="fas fa-plus-circle me-1"></i> Tambah Iuran Baru
+                        </button>
+                        <a href="{{ route('iuran.index') }}" class="btn btn-sm btn-light px-3 py-1.5 rounded-pill border">
+                            <i class="fas fa-arrow-up-right-from-square me-1 text-primary"></i> Modul Master Iuran
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-saas table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Kode & Nama Iuran</th>
+                                <th>Jenis</th>
+                                <th>Periode</th>
+                                <th>Kategori</th>
+                                <th class="text-end">Tarif / Nominal</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end">Aksi Pengurus</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($masterIuran as $mi)
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark small">{{ $mi->nama_iuran }}</div>
+                                        <small class="text-secondary font-monospace">{{ $mi->kode_iuran }}</small>
+                                        @if($mi->keterangan)
+                                            <div class="text-muted small text-truncate" style="max-width: 250px;" title="{{ $mi->keterangan }}">
+                                                {{ $mi->keterangan }}
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($mi->jenis_iuran === 'wajib')
+                                            <span class="badge-soft-rose px-3 py-1 rounded-full"><i class="fas fa-circle-exclamation me-1"></i> Wajib</span>
+                                        @elseif($mi->jenis_iuran === 'sukarela')
+                                            <span class="badge-soft-sky px-3 py-1 rounded-full"><i class="fas fa-hand-holding-heart me-1"></i> Sukarela</span>
+                                        @else
+                                            <span class="badge-soft-amber px-3 py-1 rounded-full"><i class="fas fa-star me-1"></i> Khusus</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary small fw-medium">{{ ucfirst($mi->periode) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-soft-secondary px-2.5 py-0.5 rounded-full small">{{ $mi->kategori ?: 'Non-Ramadhan' }}</span>
+                                    </td>
+                                    <td class="text-end font-monospace text-emerald fw-bold small">
+                                        Rp {{ number_format($mi->nominal, 0, ',', '.') }}
+                                    </td>
+                                    <td class="text-center">
+                                        @if($mi->status === 'aktif')
+                                            <span class="badge-soft-emerald px-3 py-1 rounded-full">
+                                                <i class="fas fa-check-circle me-1"></i> Aktif
+                                            </span>
+                                        @else
+                                            <span class="badge-soft-secondary px-3 py-1 rounded-full">
+                                                <i class="fas fa-ban me-1"></i> Nonaktif
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <div class="d-inline-flex align-items-center gap-1.5">
+                                            {{-- Toggle Status --}}
+                                            <form action="{{ route('iuran.toggle-status', $mi->id) }}" method="POST" class="d-inline m-0">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm {{ $mi->status === 'aktif' ? 'btn-outline-warning' : 'btn-outline-success' }} px-2 py-1 rounded-pill" title="{{ $mi->status === 'aktif' ? 'Nonaktifkan iuran ini' : 'Aktifkan iuran ini' }}">
+                                                    <i class="fas {{ $mi->status === 'aktif' ? 'fa-toggle-on' : 'fa-toggle-off' }} me-1"></i>
+                                                    {{ $mi->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                </button>
+                                            </form>
+
+                                            {{-- Edit --}}
+                                            <a href="{{ route('iuran.edit', $mi->id) }}" class="btn btn-sm btn-light border px-2 py-1 rounded-pill text-secondary" title="Edit Iuran">
+                                                <i class="fas fa-pencil text-primary"></i>
+                                            </a>
+
+                                            {{-- Hapus (Aman: jika ada transaksi dinonaktifkan, jika belum dihapus) --}}
+                                            <form action="{{ route('iuran.destroy', $mi->id) }}" method="POST" class="d-inline m-0">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger px-2 py-1 rounded-pill" data-confirm="Hapus iuran '{{ $mi->nama_iuran }}'? Jika sudah memiliki data pembayaran warga, iuran akan dinonaktifkan agar arsip keuangan tetap terjaga." data-confirm-title="Hapus / Nonaktifkan Iuran" data-confirm-btn="Ya, Lanjutkan" title="Hapus atau nonaktifkan iuran">
+                                                    <i class="fas fa-trash-can"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-secondary">Belum ada master tarif iuran yang terdaftar.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Transaksi Pembayaran Iuran Periode Berjalan --}}
+            <div class="saas-card mb-4 rounded-xl border">
+                <div class="card-header-saas d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-bottom">
+                    <div>
+                        <h5 class="card-title-saas mb-1">
+                            <i class="fas fa-hand-holding-usd text-info me-2"></i> Riwayat Pembayaran Iuran Lunas Warga
+                        </h5>
+                        <p class="text-secondary small mb-0">Catatan pembayaran warga periode {{ \Carbon\Carbon::create($tahun, $bulan, 1)->translatedFormat('F Y') }} yang telah diverifikasi.</p>
+                    </div>
+                    <span class="badge-soft-sky px-3 py-1 rounded-full">{{ $iuranList->count() }} Data Transaksi</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table-saas table align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>No. Transaksi</th>
-                                <th>Tanggal</th>
+                                <th>Tanggal Bayar</th>
                                 <th>Warga / RT</th>
                                 <th>Jenis Iuran</th>
-                                <th class="text-end">Nominal</th>
+                                <th class="text-end">Nominal Bayar</th>
                                 <th class="text-center">Status</th>
                             </tr>
                         </thead>
@@ -255,9 +371,11 @@
                                         <small class="text-secondary">RT {{ optional(optional($byr->user)->profile)->rt_id ? str_pad($byr->user->profile->rt_id, 2, '0', STR_PAD_LEFT) : '-' }}</small>
                                     </td>
                                     <td class="small">{{ optional($byr->iuran)->nama_iuran ?? 'Iuran Bulanan' }}</td>
-                                    <td class="text-end font-monospace text-success fw-bold small">Rp {{ number_format($byr->jumlah_bayar, 0, ',', '.') }}</td>
+                                    <td class="text-end font-monospace text-emerald fw-bold small">Rp {{ number_format($byr->jumlah_bayar, 0, ',', '.') }}</td>
                                     <td class="text-center">
-                                        <span class="badge badge-soft-success">Lunas</span>
+                                        <span class="badge-soft-emerald px-3 py-1 rounded-full">
+                                            <i class="fas fa-check-circle me-1"></i> Lunas
+                                        </span>
                                     </td>
                                 </tr>
                             @empty
@@ -483,10 +601,109 @@
             label.innerHTML = 'Catatan Audit RW untuk Ketua RT';
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const hash = window.location.hash;
+        if (hash) {
+            const triggerEl = document.querySelector(`button[data-bs-target="${hash}"]`);
+            if (triggerEl && typeof bootstrap !== 'undefined') {
+                bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+            }
+        }
+    });
 </script>
 @endpush
 
 @push('modals')
+{{-- ==================== MODAL TAMBAH IURAN RW ==================== --}}
+<div class="modal fade" id="modalTambahIuranRw" tabindex="-1" aria-labelledby="modalTambahIuranRwLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-2xl border shadow-lg">
+            <div class="modal-header border-bottom p-3.5">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="stat-icon-wrapper stat-icon-green" style="width: 36px; height: 36px; font-size: 1rem;">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="modalTambahIuranRwLabel">
+                            Tambah Iuran Warga Baru (Tingkat RW)
+                        </h5>
+                        <small class="text-secondary">Tetapkan nama pos iuran, jenis kewajiban, tarif, dan periode penagihan</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('iuran.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="redirect_to" value="{{ route('rw.audit.index') }}#tab-iuran">
+                
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-semibold small mb-1">Nama Iuran <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_iuran" class="form-control form-control-saas rounded-xl" placeholder="Contoh: Iuran Keamanan & Ronda RW" required>
+                        <small class="text-secondary">Nama pos iuran yang akan muncul pada daftar tagihan warga.</small>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-dark fw-semibold small mb-1">Nominal / Tarif (Rp) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted rounded-start-xl">Rp</span>
+                                <input type="number" name="nominal" class="form-control form-control-saas border-start-0 rounded-end-xl" placeholder="25000" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-dark fw-semibold small mb-1">Jenis Iuran <span class="text-danger">*</span></label>
+                            <select name="jenis_iuran" class="form-select form-control-saas rounded-xl" required>
+                                <option value="wajib" selected>Wajib (Ditagihkan rutin ke seluruh warga)</option>
+                                <option value="sukarela">Sukarela (Sumbangan sukarela warga)</option>
+                                <option value="khusus">Khusus (Insidental / Acara tertentu)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-dark fw-semibold small mb-1">Periode Penagihan <span class="text-danger">*</span></label>
+                            <select name="periode" class="form-select form-control-saas rounded-xl" required>
+                                <option value="bulanan" selected>Bulanan</option>
+                                <option value="triwulan">Triwulan (3 Bulan)</option>
+                                <option value="tahunan">Tahunan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-dark fw-semibold small mb-1">Kategori</label>
+                            <select name="kategori" class="form-select form-control-saas rounded-xl">
+                                <option value="Non-Ramadhan" selected>Non-Ramadhan (Reguler)</option>
+                                <option value="Ramadhan">Ramadhan / Hari Raya</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-dark fw-semibold small mb-1">Status Awal</label>
+                            <select name="status" class="form-select form-control-saas rounded-xl">
+                                <option value="aktif" selected>Aktif (Langsung berlaku)</option>
+                                <option value="nonaktif">Nonaktif (Draf / Ditangguhkan)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label text-dark fw-semibold small mb-1">Keterangan / Peruntukan (Opsional)</label>
+                        <textarea name="keterangan" rows="2" class="form-control form-control-saas rounded-xl" placeholder="Deskripsi pemanfaatan iuran ini untuk warga..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top p-3 bg-light bg-opacity-40">
+                    <button type="button" class="btn btn-light px-3 py-1.5 rounded-pill border" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-emerald px-4 py-1.5 rounded-pill shadow-xs">
+                        <i class="fas fa-check me-1"></i> Simpan Iuran Baru
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- ==================== MODALS VERIFIKASI ==================== --}}
 @foreach($rekapPerRt as $item)
     @php

@@ -93,7 +93,7 @@
                 @endforelse
             </div>
             @if($recordings->hasPages())
-                <div class="mt-3">
+                <div class="mt-3 d-flex justify-content-center">
                     {{ $recordings->links() }}
                 </div>
             @endif

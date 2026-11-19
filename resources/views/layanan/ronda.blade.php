@@ -1872,10 +1872,10 @@ function renderGeneratedPreview(data) {
                 <div class="d-flex flex-wrap align-items-center">
                     ${officersHtml}
                     <div class="dropdown d-inline-block">
-                        <button class="btn btn-outline-success btn-sm py-0 px-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size:0.68rem;" title="Tambah petugas">
+                        <button class="btn btn-outline-success btn-sm py-0 px-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' style="font-size:0.68rem;" title="Tambah petugas">
                             <i class="fas fa-plus"></i> Tambah
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="max-height: 200px; overflow-y: auto;">
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" style="max-height: 200px; overflow-y: auto; z-index: 1080;">
                             ${(data.available_officers || []).map(off => `
                                 <li><a class="dropdown-item small" href="javascript:void(0)" onclick="addPreviewOfficer(${jIndex}, ${off.user_profile_id}, '${off.nama.replace(/'/g, "\\'")}', ${off.user_id || 'null'})">+ ${off.nama}</a></li>
                             `).join('')}

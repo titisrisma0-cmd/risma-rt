@@ -16,6 +16,12 @@ class DemoDataSeeder extends Seeder
 {
     public function run()
     {
+        // Seeder tidak boleh membuat akun demo jika APP_ENV=production
+        if (app()->environment('production')) {
+            $this->command?->info('DemoDataSeeder dilewati pada lingkungan production.');
+            return;
+        }
+
         // Buat Role jika belum ada
         $superAdminRole = Role::firstOrCreate(['nama_role' => 'super_admin']);
         $rwRole = Role::firstOrCreate(['nama_role' => 'rw']);
@@ -40,7 +46,7 @@ class DemoDataSeeder extends Seeder
         $admin = User::updateOrCreate(
             ['email' => 'admin@rw-smart.test'],
             [
-                'name' => 'Admin RW Smart',
+                'name' => 'Admin Smart RW',
                 'password' => Hash::make('password123'),
                 'role_id' => $rwRole->id,
                 'is_super_admin' => 0,
@@ -48,14 +54,14 @@ class DemoDataSeeder extends Seeder
         );
         UserProfile::updateOrCreate(
             ['user_id' => $admin->id],
-            ['nama_lengkap' => 'Admin RW Smart', 'status' => 'aktif', 'role_id' => $rwRole->id]
+            ['nama_lengkap' => 'Admin Smart RW', 'status' => 'aktif', 'role_id' => $rwRole->id]
         );
         
         // Buat Warga Utama (Demo)
         $wargaDemo = User::updateOrCreate(
             ['email' => 'warga@rw-smart.test'],
             [
-                'name' => 'Warga RW Smart',
+                'name' => 'Warga Smart RW',
                 'password' => Hash::make('password123'),
                 'role_id' => $wargaRole->id,
                 'jenis_kelamin' => 'L',
@@ -64,7 +70,7 @@ class DemoDataSeeder extends Seeder
         UserProfile::updateOrCreate(
             ['user_id' => $wargaDemo->id],
             [
-                'nama_lengkap' => 'Warga RW Smart',
+                'nama_lengkap' => 'Warga Smart RW',
                 'nik' => '1234567890123400',
                 'no_kk' => '9876543210987600',
                 'no_hp' => '081234567800',

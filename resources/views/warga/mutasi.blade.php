@@ -539,7 +539,7 @@
             </div>
 
             @if($mutasiRiwayatList->hasPages())
-                <div class="p-3 border-top bg-white">
+                <div class="p-3 border-top bg-transparent d-flex justify-content-center">
                     {{ $mutasiRiwayatList->links() }}
                 </div>
             @endif
