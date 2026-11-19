@@ -29,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
+        if (str_starts_with(config('app.url'), 'https://') || config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         Gate::policy(Warga::class, WargaPolicy::class);
         Gate::policy(CctvCamera::class, CctvCameraPolicy::class);
         Gate::policy(CctvRecording::class, CctvRecordingPolicy::class);
