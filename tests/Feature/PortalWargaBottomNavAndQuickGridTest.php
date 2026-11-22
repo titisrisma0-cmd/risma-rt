@@ -339,6 +339,13 @@ class PortalWargaBottomNavAndQuickGridTest extends TestCase
 
         // Validasi sidebar bawaan disembunyikan di HP untuk warga
         $response->assertSee('sidebar hidden md:flex d-none d-md-flex', false);
+
+        // Validasi Header Atas Khusus Mobile: Logo Rumah Smart RW ala WhatsApp Light
+        $response->assertSee('mobile-header-brand md:hidden d-flex d-md-none w-9 h-9 rounded-xl bg-[#DCF8C6] border border-[#BBF7D0] text-[#00A884]', false);
+        $response->assertSee('navbar-page-title topbar-title hidden md:block text-truncate', false);
+
+        // Validasi Widget Chat / Assistant di Mobile diberi jarak aman
+        $response->assertSee('whatsapp-help-container bottom-20 right-3 md:bottom-6 md:right-6', false);
     }
 
     /**
@@ -353,10 +360,16 @@ class PortalWargaBottomNavAndQuickGridTest extends TestCase
 
         $response->assertStatus(200);
 
-        // 1. Grid 2x2 pada 4 Kartu Statistik Atas
-        $response->assertSee('warga-stat-grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4', false);
+        // 1. Grid 2x2 pada 4 Kartu Statistik Atas (Hemat Tempat di Layar HP)
+        $response->assertSee('warga-stat-grid grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full mb-4', false);
+        $response->assertSee('min-w-0', false);
+        $response->assertSee('p-3 sm:p-5', false);
+        $response->assertSee('text-[10px] sm:text-xs font-semibold tracking-wide truncate', false);
+        $response->assertSee('text-xs sm:text-lg font-bold tracking-tight break-all', false);
+        $response->assertSee('text-sm sm:text-xl font-bold tracking-tight truncate', false);
+
         $response->assertSee('Kartu Keluarga', false);
-        $response->assertSee('Iuran Menunggu Verifikasi', false);
+        $response->assertSee('Iuran Menunggu', false);
         $response->assertSee('Total Iuran Telah Lunas', false);
         $response->assertSee('Permohonan Surat Saya', false);
 

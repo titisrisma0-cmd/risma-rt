@@ -32,78 +32,82 @@
     </div>
 
     {{-- 1. Kartu Ringkasan Pribadi Warga (Grid 2x2 di Mobile, 4 Kolom di Desktop) --}}
-    <div class="warga-stat-grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div class="warga-stat-grid grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full mb-4">
         {{-- Kartu Keluarga --}}
-        <div>
-            <div class="stat-card-saas accent-emerald h-100">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Kartu Keluarga</span>
-                    <div class="stat-icon-wrapper stat-icon-green">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-emerald h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Kartu Keluarga</span>
+                    <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-id-card"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark font-monospace" style="font-size: 1.25rem;">
+                <div class="min-w-0">
+                    <div class="stat-value text-dark font-monospace text-xs sm:text-lg font-bold tracking-tight break-all">
                         {{ $kartuKeluarga ? $kartuKeluarga->no_kk : 'Belum Ditautkan' }}
                     </div>
-                    <div class="stat-subtext text-secondary">
-                        <i class="fas fa-users text-primary"></i> {{ $kartuKeluarga ? $kartuKeluarga->anggota->count() . ' Anggota Terdaftar' : 'Hubungi Ketua RT' }}
+                    <div class="stat-subtext text-secondary text-[10px] sm:text-xs truncate mt-1">
+                        <i class="fas fa-users text-primary me-1"></i>{{ $kartuKeluarga ? $kartuKeluarga->anggota->count() . ' Anggota Terdaftar' : 'Hubungi Ketua RT' }}
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Status Iuran --}}
-        <div>
-            <div class="stat-card-saas accent-amber h-100">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Iuran Menunggu Verifikasi</span>
-                    <div class="stat-icon-wrapper stat-icon-amber">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-amber h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Iuran Menunggu</span>
+                    <div class="stat-icon-wrapper stat-icon-amber shrink-0">
                         <i class="fas fa-clock"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-warning">{{ $tagihanPending }} <small class="text-secondary fw-normal fs-6">Transaksi</small></div>
-                    <div class="stat-subtext text-secondary">
-                        <i class="fas fa-hourglass-half text-warning"></i> Sedang diverifikasi RT
+                <div class="min-w-0">
+                    <div class="stat-value text-warning text-sm sm:text-xl font-bold tracking-tight truncate">
+                        {{ $tagihanPending }} <small class="text-secondary fw-normal fs-6">Transaksi</small>
+                    </div>
+                    <div class="stat-subtext text-secondary text-[10px] sm:text-xs truncate mt-1">
+                        <i class="fas fa-hourglass-half text-warning me-1"></i>Sedang diverifikasi RT
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Total Iuran Terbayar --}}
-        <div>
-            <div class="stat-card-saas accent-info h-100">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Total Iuran Telah Lunas</span>
-                    <div class="stat-icon-wrapper stat-icon-blue">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-info h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Total Iuran Telah Lunas</span>
+                    <div class="stat-icon-wrapper stat-icon-blue shrink-0">
                         <i class="fas fa-receipt"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-success font-monospace" style="font-size: 1.35rem;">
+                <div class="min-w-0">
+                    <div class="stat-value text-success font-monospace text-sm sm:text-xl font-bold tracking-tight truncate">
                         Rp {{ number_format($totalBayarLunas, 0, ',', '.') }}
                     </div>
-                    <div class="stat-subtext text-success">
-                        <i class="fas fa-circle-check"></i> Total lunas tercatat
+                    <div class="stat-subtext text-success text-[10px] sm:text-xs truncate mt-1">
+                        <i class="fas fa-circle-check me-1"></i>Tercatat resmi lunas
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Permohonan Surat Saya --}}
-        <div>
-            <div class="stat-card-saas accent-primary h-100">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Permohonan Surat Saya</span>
-                    <div class="stat-icon-wrapper stat-icon-green">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-primary h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Permohonan Surat Saya</span>
+                    <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-envelope-open-text"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ $suratSaya->count() }} <small class="text-secondary fw-normal fs-6">Surat</small></div>
-                    <div class="stat-subtext text-secondary">
-                        <i class="fas fa-clipboard-check text-primary"></i> Pengajuan aktif & riwayat
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-sm sm:text-xl font-bold tracking-tight truncate">
+                        {{ $suratSaya->count() }} <small class="text-secondary fw-normal fs-6">Surat</small>
+                    </div>
+                    <div class="stat-subtext text-secondary text-[10px] sm:text-xs truncate mt-1">
+                        <i class="fas fa-clipboard-check text-primary me-1"></i>Pengajuan aktif & riwayat
                     </div>
                 </div>
             </div>

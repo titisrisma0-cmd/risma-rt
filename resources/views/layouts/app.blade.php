@@ -461,8 +461,14 @@
                 <i class="fas fa-bars"></i>
             </button>
             
-            <div class="navbar-page-indicator d-flex flex-column" style="min-width: 0; flex: 1 1 auto;">
-                <span class="navbar-page-title topbar-title text-truncate">@yield('title', 'Sistem Informasi Smart RW')</span>
+            {{-- Ikon Logo Rumah Smart RW Khusus Mobile (< 768px) ala WhatsApp Light --}}
+            <a href="{{ route('dashboard') }}" class="mobile-header-brand md:hidden d-flex d-md-none w-9 h-9 rounded-xl bg-[#DCF8C6] border border-[#BBF7D0] text-[#00A884] items-center justify-center shrink-0 text-decoration-none shadow-xs" title="Smart RW 01" aria-label="Beranda Smart RW">
+                <i class="fas fa-house" style="font-size: 1.1rem; color: #00A884;"></i>
+            </a>
+
+            {{-- Judul Halaman (Hanya Tampil di Layar Desktop >= 768px agar tidak kepotong di HP) --}}
+            <div class="navbar-page-indicator hidden md:flex d-none d-md-flex flex-column" style="min-width: 0; flex: 1 1 auto;">
+                <span class="navbar-page-title topbar-title hidden md:block text-truncate">@yield('title', 'Sistem Informasi Smart RW')</span>
                 <span class="navbar-page-subtitle topbar-subtitle d-none d-sm-inline text-truncate">Wilayah RW 01 &bull; Kelurahan Digital</span>
             </div>
         </div>

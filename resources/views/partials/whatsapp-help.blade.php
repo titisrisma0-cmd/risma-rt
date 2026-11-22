@@ -16,7 +16,7 @@
 @endphp
 
 @if($whatsappNumber)
-    <div class="whatsapp-help-container"
+    <div class="whatsapp-help-container bottom-20 right-3 md:bottom-6 md:right-6"
          id="waHelpContainer"
          data-current-user-id="{{ auth()->id() ?? 'guest' }}"
          data-is-logged-in="{{ $isLoggedIn ? '1' : '0' }}"
@@ -777,32 +777,39 @@
             /* Responsive HP (320px, 360px, 400px, 576px, 768px) */
             @media (max-width: 767.98px) {
                 .whatsapp-help-container {
-                    right: max(16px, env(safe-area-inset-right, 16px));
-                    bottom: max(82px, calc(76px + env(safe-area-inset-bottom, 0px)));
+                    right: max(12px, env(safe-area-inset-right, 12px)) !important;
+                    bottom: max(80px, calc(74px + env(safe-area-inset-bottom, 0px))) !important;
                 }
                 .whatsapp-help__button {
-                    width: 50px;
-                    height: 50px;
-                    flex-basis: 50px;
-                    font-size: 25px;
+                    width: 48px;
+                    height: 48px;
+                    flex-basis: 48px;
+                    font-size: 24px;
                 }
                 .whatsapp-help__label {
                     display: none !important;
                 }
                 .whatsapp-popover-menu {
-                    width: calc(100vw - 32px);
+                    width: calc(100vw - 28px);
                     max-width: 290px;
                     right: 0;
-                    bottom: calc(100% + 12px);
+                    bottom: calc(100% + 10px);
                 }
                 .ai-chat-window {
-                    right: 12px;
-                    bottom: 144px;
-                    width: calc(100vw - 24px);
+                    right: 10px;
+                    bottom: 138px;
+                    width: calc(100vw - 20px);
                     max-width: 440px;
-                    max-height: calc(100dvh - 160px);
-                    height: min(520px, calc(100dvh - 160px));
+                    max-height: calc(100dvh - 150px);
+                    height: min(520px, calc(100dvh - 150px));
                     border-radius: 18px;
+                }
+            }
+
+            @media (min-width: 768px) {
+                .whatsapp-help-container {
+                    right: 24px !important;
+                    bottom: 24px !important;
                 }
             }
 
