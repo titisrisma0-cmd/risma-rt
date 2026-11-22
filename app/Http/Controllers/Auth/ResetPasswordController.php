@@ -70,11 +70,34 @@ class ResetPasswordController extends Controller
         $pesanSukses = 'Kata sandi berhasil diubah, silakan masuk';
 
         if ($request->wantsJson()) {
-            return new JsonResponse(['message' => $pesanSukses], 200);
+            return new JsonResponse(['success' => true, 'message' => $pesanSukses], 200);
         }
 
         return redirect()->route('login')
             ->with('status', $pesanSukses)
             ->with('success', $pesanSukses);
+    }
+
+    /**
+     * Respon ketika penyetelan ulang kata sandi gagal.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $response
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    protected function sendResetFailedResponse(Request $request, $response)
+    {
+        $message = trans($response);
+
+        if ($request->wantsJson()) {
+            return new JsonResponse([
+                'message' => $message,
+                'errors' => ['email' => [$message]],
+            ], 422);
+        }
+
+        return redirect()->back()
+            ->withInput($request->only('email'))
+            ->withErrors(['email' => $message]);
     }
 }

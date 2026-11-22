@@ -36,8 +36,12 @@ class OtpVerificationController extends Controller
         $email = session('reset_email') ?: strtolower(trim((string) $request->input('email', '')));
 
         if (empty($email)) {
+            $msg = 'Sesi pemulihan telah berakhir. Silakan masukkan email Anda kembali.';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $msg, 'errors' => ['email' => [$msg]]], 422);
+            }
             return redirect()->route('password.request')
-                ->withErrors(['email' => 'Sesi pemulihan telah berakhir. Silakan masukkan email Anda kembali.']);
+                ->withErrors(['email' => $msg]);
         }
 
         $request->validate([
@@ -53,6 +57,12 @@ class OtpVerificationController extends Controller
         $result = OtpService::verifyOtp($email, $inputOtp, $ip);
 
         if (! $result['success']) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => $result['message'],
+                    'errors' => ['otp' => [$result['message']]],
+                ], 422);
+            }
             return back()->withInput()->withErrors([
                 'otp' => $result['message'],
             ]);
@@ -62,12 +72,25 @@ class OtpVerificationController extends Controller
         session([
             'reset_verified_email' => $email,
             'reset_email' => $email,
+            'reset_token' => $result['token'],
         ]);
+
+        $statusMsg = 'Kode OTP berhasil diverifikasi. Silakan buat kata sandi baru Anda.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $statusMsg,
+                'token' => $result['token'],
+                'email' => $email,
+                'step' => 3,
+            ]);
+        }
 
         return redirect()->route('password.reset', [
             'token' => $result['token'],
             'email' => $email,
-        ])->with('status', 'Kode OTP berhasil diverifikasi. Silakan buat kata sandi baru Anda.');
+        ])->with('status', $statusMsg);
     }
 
     /**
@@ -79,16 +102,24 @@ class OtpVerificationController extends Controller
         $email = session('reset_email') ?: strtolower(trim((string) $request->input('email', '')));
 
         if (empty($email)) {
+            $msg = 'Sesi pemulihan telah berakhir. Silakan masukkan email Anda kembali.';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $msg, 'errors' => ['email' => [$msg]]], 422);
+            }
             return redirect()->route('password.request')
-                ->withErrors(['email' => 'Sesi pemulihan telah berakhir. Silakan masukkan email Anda kembali.']);
+                ->withErrors(['email' => $msg]);
         }
 
         $ip = $request->ip();
 
         // 1. Cek pembatasan laju (rate limiting)
         if (OtpService::isRateLimited($email, $ip)) {
+            $msg = OtpService::getRateLimitMessage($email, $ip);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $msg, 'errors' => ['otp' => [$msg]]], 422);
+            }
             return back()->withErrors([
-                'otp' => OtpService::getRateLimitMessage($email, $ip),
+                'otp' => $msg,
             ]);
         }
 
@@ -96,11 +127,24 @@ class OtpVerificationController extends Controller
         $sent = OtpService::generateAndSendOtp($email, $ip);
 
         if ($sent === false) {
+            $msg = 'Gagal mengirimkan email verifikasi baru. Silakan periksa koneksi atau hubungi pengurus RT.';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $msg, 'errors' => ['otp' => [$msg]]], 422);
+            }
             return back()->withErrors([
-                'otp' => 'Gagal mengirimkan email verifikasi baru. Silakan periksa koneksi atau hubungi pengurus RT.',
+                'otp' => $msg,
             ]);
         }
 
-        return back()->with('status', 'Kode verifikasi baru telah dikirimkan ke email terdaftar Anda.');
+        $statusMsg = 'Kode verifikasi baru telah dikirimkan ke email terdaftar Anda.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $statusMsg,
+            ]);
+        }
+
+        return back()->with('status', $statusMsg);
     }
 }

@@ -12,6 +12,14 @@ class LoginController extends Controller
 
     protected $redirectTo = '/dashboard';
 
+    public function redirectTo()
+    {
+        if (auth()->check() && auth()->user()->is_super_admin) {
+            return route('superadmin.dashboard');
+        }
+        return '/dashboard';
+    }
+
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
@@ -80,6 +88,10 @@ class LoginController extends Controller
     
     protected function authenticated($request, $user)
     {
+        if ($user->is_super_admin) {
+            return redirect()->intended(route('superadmin.dashboard'));
+        }
+
         // Redirect berdasarkan role
         if ($user->hasRole('admin') || $user->hasRole('rw') || $user->hasRole('rt')) {
             return redirect()->intended('/dashboard');

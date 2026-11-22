@@ -35,8 +35,12 @@ class ForgotPasswordController extends Controller
 
         // 1. Cek pembatasan laju (rate limiting: max 3 kirim per 10 menit, max 5 salah input)
         if (OtpService::isRateLimited($email, $ip)) {
+            $msg = OtpService::getRateLimitMessage($email, $ip);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $msg, 'errors' => ['email' => [$msg]]], 422);
+            }
             return back()->withInput($request->only('email'))->withErrors([
-                'email' => OtpService::getRateLimitMessage($email, $ip),
+                'email' => $msg,
             ]);
         }
 
@@ -44,16 +48,32 @@ class ForgotPasswordController extends Controller
         $sent = OtpService::generateAndSendOtp($email, $ip);
 
         if ($sent === false) {
+            $msg = 'Gagal mengirimkan email verifikasi. Silakan periksa koneksi atau hubungi pengurus RT.';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $msg, 'errors' => ['email' => [$msg]]], 422);
+            }
             return back()->withInput($request->only('email'))->withErrors([
-                'email' => 'Gagal mengirimkan email verifikasi. Silakan periksa koneksi atau hubungi pengurus RT.',
+                'email' => $msg,
             ]);
         }
 
         // 3. Simpan email di session (TIDAK menyertakan email di query string URL)
         session(['reset_email' => $email]);
 
+        $statusMsg = 'Kode verifikasi telah dikirimkan ke email terdaftar Anda jika akun tersedia.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $statusMsg,
+                'email' => $email,
+                'masked_email' => OtpService::maskEmail($email),
+                'step' => 2,
+            ]);
+        }
+
         // 4. Respons identik baik email terdaftar maupun tidak (mencegah enumerasi akun)
         return redirect()->route('password.otp')
-            ->with('status', 'Kode verifikasi telah dikirimkan ke email terdaftar Anda jika akun tersedia.');
+            ->with('status', $statusMsg);
     }
 }
