@@ -774,17 +774,17 @@
                 pointer-events: none !important;
             }
 
-            /* Responsive HP (320px, 360px, 400px, 576px) */
-            @media (max-width: 576px) {
+            /* Responsive HP (320px, 360px, 400px, 576px, 768px) */
+            @media (max-width: 767.98px) {
                 .whatsapp-help-container {
                     right: max(16px, env(safe-area-inset-right, 16px));
-                    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+                    bottom: max(82px, calc(76px + env(safe-area-inset-bottom, 0px)));
                 }
                 .whatsapp-help__button {
-                    width: 52px;
-                    height: 52px;
-                    flex-basis: 52px;
-                    font-size: 26px;
+                    width: 50px;
+                    height: 50px;
+                    flex-basis: 50px;
+                    font-size: 25px;
                 }
                 .whatsapp-help__label {
                     display: none !important;
@@ -797,11 +797,11 @@
                 }
                 .ai-chat-window {
                     right: 12px;
-                    bottom: 82px;
+                    bottom: 144px;
                     width: calc(100vw - 24px);
                     max-width: 440px;
-                    max-height: calc(100dvh - 96px);
-                    height: min(520px, calc(100dvh - 96px));
+                    max-height: calc(100dvh - 160px);
+                    height: min(520px, calc(100dvh - 160px));
                     border-radius: 18px;
                 }
             }

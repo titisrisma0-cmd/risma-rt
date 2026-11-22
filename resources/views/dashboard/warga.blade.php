@@ -31,11 +31,11 @@
         </div>
     </div>
 
-    {{-- Kartu Ringkasan Pribadi Warga (Donezo SaaS Metric Cards) --}}
-    <div class="row g-3 mb-4">
+    {{-- 1. Kartu Ringkasan Pribadi Warga (Grid 2x2 di Mobile, 4 Kolom di Desktop) --}}
+    <div class="warga-stat-grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {{-- Kartu Keluarga --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas accent-emerald">
+        <div>
+            <div class="stat-card-saas accent-emerald h-100">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Kartu Keluarga</span>
                     <div class="stat-icon-wrapper stat-icon-green">
@@ -54,8 +54,8 @@
         </div>
 
         {{-- Status Iuran --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas accent-amber">
+        <div>
+            <div class="stat-card-saas accent-amber h-100">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Iuran Menunggu Verifikasi</span>
                     <div class="stat-icon-wrapper stat-icon-amber">
@@ -72,8 +72,8 @@
         </div>
 
         {{-- Total Iuran Terbayar --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas accent-info">
+        <div>
+            <div class="stat-card-saas accent-info h-100">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Total Iuran Telah Lunas</span>
                     <div class="stat-icon-wrapper stat-icon-blue">
@@ -85,15 +85,15 @@
                         Rp {{ number_format($totalBayarLunas, 0, ',', '.') }}
                     </div>
                     <div class="stat-subtext text-success">
-                        <i class="fas fa-circle-check"></i> Tercatat resmi lunas
+                        <i class="fas fa-circle-check"></i> Total lunas tercatat
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Permohonan Surat Saya --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="stat-card-saas accent-primary">
+        <div>
+            <div class="stat-card-saas accent-primary h-100">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <span class="stat-label">Permohonan Surat Saya</span>
                     <div class="stat-icon-wrapper stat-icon-green">
@@ -110,81 +110,74 @@
         </div>
     </div>
 
-    {{-- Menu Layanan Cepat Warga (Interactive SaaS Quick Cards) --}}
-    <div class="saas-card p-4 mb-4">
+    {{-- 2. Menu Layanan Mandiri Warga (Interactive E-Wallet Style Quick Grid) --}}
+    <div class="saas-card p-3 p-md-4 mb-4 rounded-2xl shadow-xs border">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <h5 class="card-title-saas">
-                    <i class="fas fa-th-large text-success"></i> Layanan Mandiri Warga
+                <h5 class="card-title-saas mb-0">
+                    <i class="fas fa-th-large text-emerald me-1.5" style="color: #00A884;"></i> Layanan Mandiri Warga
                 </h5>
-                <small class="text-secondary">Pilih layanan cepat yang ingin Anda akses</small>
+                <small class="text-secondary d-none d-sm-inline">Akses cepat seluruh pelayanan masyarakat di lingkungan RT {{ $rtKode }} RW 01</small>
             </div>
-            <span class="badge badge-soft-primary">Akses Cepat</span>
+            <span class="badge badge-soft-primary px-2.5 py-1 rounded-full" style="font-size: 0.72rem;">Akses Cepat</span>
         </div>
-        <div class="row g-3">
-            <div class="col-6 col-md-4 col-xl">
-                <a href="{{ route('layanan.surat.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-primary bg-opacity-10 text-primary">
-                        <i class="fas fa-file-signature"></i>
-                    </div>
-                    <span class="quick-service-title">Surat Pengantar</span>
-                    <span class="quick-service-desc">Ajukan Surat</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl">
-                <a href="{{ route('pembayaran.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-success bg-opacity-10 text-success">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <span class="quick-service-title">Iuran Warga</span>
-                    <span class="quick-service-desc">Tagihan & Bayar</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl">
-                <a href="{{ route('layanan.ronda.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-danger bg-opacity-10 text-danger">
-                        <i class="fas fa-shield-halved"></i>
-                    </div>
-                    <span class="quick-service-title">Ronda Malam</span>
-                    <span class="quick-service-desc">Jadwal & Presensi</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl">
-                <a href="{{ route('bank-sampah.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-success bg-opacity-10 text-success">
-                        <i class="fas fa-recycle"></i>
-                    </div>
-                    <span class="quick-service-title">Bank Sampah</span>
-                    <span class="quick-service-desc">Tabungan Sampah</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl">
-                <a href="{{ route('layanan.umkm.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="fas fa-store"></i>
-                    </div>
-                    <span class="quick-service-title">UMKM Warga</span>
-                    <span class="quick-service-desc">Pasar Tetangga</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl">
-                <a href="{{ route('layanan.posyandu.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-danger bg-opacity-10 text-danger">
-                        <i class="fas fa-baby"></i>
-                    </div>
-                    <span class="quick-service-title">Posyandu</span>
-                    <span class="quick-service-desc">Tumbuh Kembang</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl">
-                <a href="{{ route('aspirasi.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="fas fa-bullhorn"></i>
-                    </div>
-                    <span class="quick-service-title">Aspirasi</span>
-                    <span class="quick-service-desc">Saran & Laporan</span>
-                </a>
-            </div>
+
+        <div class="warga-services-grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-4">
+            {{-- 1. Surat Pengantar --}}
+            <a href="{{ route('layanan.surat.index') }}" class="warga-service-card" title="Ajukan Surat Pengantar">
+                <div class="warga-service-icon-box bg-emerald-soft text-emerald rounded-2xl">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Surat Pengantar</span>
+            </a>
+
+            {{-- 2. Iuran Warga --}}
+            <a href="{{ route('pembayaran.index') }}" class="warga-service-card" title="Tagihan & Bayar Iuran">
+                <div class="warga-service-icon-box bg-blue-soft text-blue rounded-2xl">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Iuran Warga</span>
+            </a>
+
+            {{-- 3. Ronda Malam --}}
+            <a href="{{ route('layanan.ronda.index') }}" class="warga-service-card" title="Jadwal & Presensi Ronda">
+                <div class="warga-service-icon-box bg-rose-soft text-rose rounded-2xl">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Ronda Malam</span>
+            </a>
+
+            {{-- 4. Bank Sampah --}}
+            <a href="{{ route('bank-sampah.index') }}" class="warga-service-card" title="Tabungan Bank Sampah">
+                <div class="warga-service-icon-box bg-green-soft text-green rounded-2xl">
+                    <i class="fas fa-recycle"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Bank Sampah</span>
+            </a>
+
+            {{-- 5. UMKM Warga --}}
+            <a href="{{ route('layanan.umkm.index') }}" class="warga-service-card" title="Pasar & UMKM Tetangga">
+                <div class="warga-service-icon-box bg-amber-soft text-amber rounded-2xl">
+                    <i class="fas fa-store"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">UMKM Warga</span>
+            </a>
+
+            {{-- 6. Posyandu --}}
+            <a href="{{ route('layanan.posyandu.index') }}" class="warga-service-card" title="Tumbuh Kembang & Posyandu">
+                <div class="warga-service-icon-box bg-purple-soft text-purple rounded-2xl">
+                    <i class="fas fa-baby"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Posyandu</span>
+            </a>
+
+            {{-- 7. Aspirasi --}}
+            <a href="{{ route('aspirasi.index') }}" class="warga-service-card" title="Aspirasi & Laporan Warga">
+                <div class="warga-service-icon-box bg-cyan-soft text-cyan rounded-2xl">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Aspirasi</span>
+            </a>
         </div>
     </div>
 

@@ -54,7 +54,7 @@
     <!-- ==========================================================================
        SIDEBAR NAVIGATION (DONEZO CLEAN WHITE STYLE)
        ========================================================================== -->
-    <aside class="sidebar" id="sidebar" data-no-motion="true">
+    <aside class="sidebar {{ (Auth::check() && Auth::user()->isWarga()) ? 'hidden md:flex d-none d-md-flex' : '' }}" id="sidebar" data-no-motion="true">
         @php
             $authUser = Auth::user();
             $roleLabel = 'PENGURUS RW';
@@ -457,7 +457,7 @@
        ========================================================================== -->
     <header class="navbar-saas navbar">
         <div class="topbar-left d-flex align-items-center gap-2 gap-md-3 flex-grow-1" style="min-width: 0;">
-            <button class="toggle-sidebar-btn flex-shrink-0" id="toggleSidebarBtn" title="Buka/Tutup Menu" aria-label="Toggle Sidebar">
+            <button class="toggle-sidebar-btn flex-shrink-0 {{ (Auth::check() && Auth::user()->isWarga()) ? 'hidden md:flex d-none d-md-flex' : '' }}" id="toggleSidebarBtn" title="Buka/Tutup Menu" aria-label="Toggle Sidebar">
                 <i class="fas fa-bars"></i>
             </button>
             
@@ -595,7 +595,7 @@
     <!-- ==========================================================================
        MAIN CONTENT CONTAINER
        ========================================================================== -->
-    <main class="main-content" id="mainContent">
+    <main class="main-content {{ (Auth::check() && Auth::user()->isWarga()) ? 'has-warga-bottom-nav pb-24 md:pb-8' : '' }}" id="mainContent">
         <div class="page-container">
             {{-- Mode Simulasi Super Admin Banner --}}
             @if(session()->has('super_admin_context'))
@@ -633,6 +633,173 @@
             <p class="mb-0">&copy; {{ date('Y') }} <strong>SMART RW</strong> &bull; Sistem Informasi Rukun Warga & Pelayanan Masyarakat Digital</p>
         </footer>
     </main>
+
+    @if(Auth::check() && Auth::user()->isWarga())
+        {{-- ==================================================================
+           BOTTOM NAVIGATION BAR KHUSUS MOBILE (< 768px) PORTAL WARGA
+           ================================================================== --}}
+        <nav class="warga-bottom-nav md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 shadow-[0_-4px_16px_rgba(0,0,0,0.04)] pb-safe" aria-label="Navigasi Bawah Portal Warga">
+            <div class="bottom-nav-inner">
+                {{-- 1. Beranda --}}
+                <a href="{{ route('dashboard') }}" class="bottom-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="bottom-nav-label">Beranda</span>
+                </a>
+
+                {{-- 2. Informasi (Modal Bottom Sheet) --}}
+                <button type="button" class="bottom-nav-item {{ (request()->routeIs('warga.pengumuman*') || request()->routeIs('kegiatan.*')) ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#bottomSheetInformasi">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <span class="bottom-nav-label">Informasi</span>
+                </button>
+
+                {{-- 3. Iuran (Tombol Tengah Menonjol ala E-Wallet) --}}
+                <a href="{{ route('pembayaran.index') }}" class="bottom-nav-item bottom-nav-item--center {{ request()->routeIs('pembayaran.*') ? 'active' : '' }}" title="Tagihan & Pembayaran Iuran">
+                    <div class="bottom-nav-fab -mt-4 shadow-md">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <span class="bottom-nav-label">Iuran</span>
+                </a>
+
+                {{-- 4. Riwayat (Permohonan Warga) --}}
+                <a href="{{ route('layanan.surat.index') }}" class="bottom-nav-item {{ request()->routeIs('layanan.surat.*') ? 'active' : '' }}">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <span class="bottom-nav-label">Riwayat</span>
+                </a>
+
+                {{-- 5. Akun (Modal Bottom Sheet) --}}
+                <button type="button" class="bottom-nav-item {{ (request()->routeIs('kartu-keluarga.*') || request()->routeIs('profile.*')) ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#bottomSheetAkun">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <span class="bottom-nav-label">Akun</span>
+                </button>
+            </div>
+        </nav>
+
+        {{-- ==================================================================
+           BOTTOM SHEET MODAL: INFORMASI (Pengumuman RT, RW & Agenda)
+           ================================================================== --}}
+        <div class="modal fade bottom-sheet-modal" id="bottomSheetInformasi" tabindex="-1" aria-labelledby="bottomSheetInformasiLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-bottom">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg">
+                    <div class="bottom-sheet-drag-handle"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" id="bottomSheetInformasiLabel">
+                                <i class="fas fa-bullhorn text-emerald me-1.5" style="color: #00A884;"></i> Pusat Informasi Lingkungan
+                            </h6>
+                            <small class="text-secondary">Pengumuman RT, RW, dan agenda kegiatan</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    <div class="bottom-sheet-list d-flex flex-column gap-2">
+                        {{-- Pengumuman RT --}}
+                        <a href="{{ route('warga.pengumuman', ['scope' => 'rt']) }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e7fceb; color: #00A884;">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Pengumuman RT</strong>
+                                <span class="text-secondary small d-block">Informasi khusus warga RT {{ optional(Auth::user())->getRtKode() ?? '01' }}</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        {{-- Pengumuman RW --}}
+                        <a href="{{ route('warga.pengumuman', ['scope' => 'rw']) }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Pengumuman RW</strong>
+                                <span class="text-secondary small d-block">Kabar dan surat edaran tingkat RW 01</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        {{-- Agenda Kegiatan --}}
+                        <a href="{{ route('kegiatan.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #fef3c7; color: #d97706;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Agenda Kegiatan</strong>
+                                <span class="text-secondary small d-block">Jadwal kerja bakti, pertemuan, & perayaan warga</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ==================================================================
+           BOTTOM SHEET MODAL: AKUN (Data Keluarga, Profil & Logout)
+           ================================================================== --}}
+        <div class="modal fade bottom-sheet-modal" id="bottomSheetAkun" tabindex="-1" aria-labelledby="bottomSheetAkunLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-bottom">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg">
+                    <div class="bottom-sheet-drag-handle"></div>
+                    <div class="d-flex align-items-center gap-3 p-2.5 mb-3 rounded-3" style="background: var(--surface-2, #e7fceb); border: 1px solid var(--border);">
+                        <img src="{{ $fotoUrl }}" alt="Avatar" class="rounded-circle border" width="46" height="46" style="object-fit: cover;">
+                        <div class="flex-grow-1" style="min-width: 0;">
+                            <strong class="d-block text-dark text-truncate small fw-bold">{{ $defaultName }}</strong>
+                            <span class="badge badge-soft-primary px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Warga RT {{ optional(Auth::user())->getRtKode() ?? '01' }} / RW 01</span>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    <div class="bottom-sheet-list d-flex flex-column gap-2">
+                        {{-- Data Keluarga Saya --}}
+                        <a href="{{ route('kartu-keluarga.saya') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #ecfdf5; color: #047857;">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Data Keluarga Saya</strong>
+                                <span class="text-secondary small d-block">Informasi Nomor Kartu Keluarga & anggota keluarga</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        {{-- Profil Saya --}}
+                        <a href="{{ route('profile.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-user-gear"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Profil Saya</strong>
+                                <span class="text-secondary small d-block">Ubah biodata, nomor HP / WhatsApp, & kata sandi</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        {{-- Keluar (Logout) --}}
+                        <form method="POST" action="{{ route('logout') }}" class="m-0 w-100">
+                            @csrf
+                            <button type="submit" class="bottom-sheet-item border-danger border-opacity-25 w-100 text-start" style="background: #fef2f2; color: #dc2626;">
+                                <div class="bottom-sheet-icon" style="background: #fee2e2; color: #dc2626;">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <strong class="d-block small fw-bold text-danger">Keluar (Logout)</strong>
+                                    <span class="text-danger small opacity-75 d-block">Akhiri sesi portal warga di perangkat ini</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-danger opacity-50 small"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- ==========================================================================
        GLOBAL PANIC BUTTON EMERGENCY MODAL
