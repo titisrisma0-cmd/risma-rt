@@ -16,7 +16,7 @@
 @endphp
 
 @if($whatsappNumber)
-    <div class="whatsapp-help-container bottom-20 right-3 md:bottom-6 md:right-6"
+    <div class="whatsapp-help-container bottom-24 right-3.5 scale-90 md:bottom-6 md:right-6 md:scale-100"
          id="waHelpContainer"
          data-current-user-id="{{ auth()->id() ?? 'guest' }}"
          data-is-logged-in="{{ $isLoggedIn ? '1' : '0' }}"

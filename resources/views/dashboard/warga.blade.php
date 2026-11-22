@@ -35,18 +35,18 @@
     <div class="warga-stat-grid grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full mb-4">
         {{-- Kartu Keluarga --}}
         <div class="min-w-0">
-            <div class="stat-card-saas accent-emerald h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
-                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
-                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Kartu Keluarga</span>
+            <div class="stat-card-saas accent-emerald h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] font-medium uppercase tracking-wider text-slate-500 truncate">NO. KARTU KELUARGA</span>
                     <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-id-card"></i>
                     </div>
                 </div>
                 <div class="min-w-0">
-                    <div class="stat-value text-dark font-monospace text-xs sm:text-lg font-bold tracking-tight break-all">
+                    <div class="stat-value text-[13px] sm:text-base font-semibold tabular-nums tracking-tight text-slate-800 whitespace-nowrap">
                         {{ $kartuKeluarga ? $kartuKeluarga->no_kk : 'Belum Ditautkan' }}
                     </div>
-                    <div class="stat-subtext text-secondary text-[10px] sm:text-xs truncate mt-1">
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-users text-primary me-1"></i>{{ $kartuKeluarga ? $kartuKeluarga->anggota->count() . ' Anggota Terdaftar' : 'Hubungi Ketua RT' }}
                     </div>
                 </div>
@@ -55,18 +55,18 @@
 
         {{-- Status Iuran --}}
         <div class="min-w-0">
-            <div class="stat-card-saas accent-amber h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
-                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
-                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Iuran Menunggu</span>
+            <div class="stat-card-saas accent-amber h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] font-medium uppercase tracking-wider text-slate-500 truncate">IURAN MENUNGGU</span>
                     <div class="stat-icon-wrapper stat-icon-amber shrink-0">
                         <i class="fas fa-clock"></i>
                     </div>
                 </div>
                 <div class="min-w-0">
-                    <div class="stat-value text-warning text-sm sm:text-xl font-bold tracking-tight truncate">
-                        {{ $tagihanPending }} <small class="text-secondary fw-normal fs-6">Transaksi</small>
+                    <div class="stat-value text-warning text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">
+                        {{ $tagihanPending }} <span class="text-xs font-medium text-slate-500">Transaksi</span>
                     </div>
-                    <div class="stat-subtext text-secondary text-[10px] sm:text-xs truncate mt-1">
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-hourglass-half text-warning me-1"></i>Sedang diverifikasi RT
                     </div>
                 </div>
@@ -75,18 +75,18 @@
 
         {{-- Total Iuran Terbayar --}}
         <div class="min-w-0">
-            <div class="stat-card-saas accent-info h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
-                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
-                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Total Iuran Telah Lunas</span>
+            <div class="stat-card-saas accent-info h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] font-medium uppercase tracking-wider text-slate-500 truncate">IURAN LUNAS</span>
                     <div class="stat-icon-wrapper stat-icon-blue shrink-0">
                         <i class="fas fa-receipt"></i>
                     </div>
                 </div>
                 <div class="min-w-0">
-                    <div class="stat-value text-success font-monospace text-sm sm:text-xl font-bold tracking-tight truncate">
+                    <div class="stat-value text-success font-monospace text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">
                         Rp {{ number_format($totalBayarLunas, 0, ',', '.') }}
                     </div>
-                    <div class="stat-subtext text-success text-[10px] sm:text-xs truncate mt-1">
+                    <div class="stat-subtext text-success text-[11px] truncate mt-1">
                         <i class="fas fa-circle-check me-1"></i>Tercatat resmi lunas
                     </div>
                 </div>
@@ -95,18 +95,18 @@
 
         {{-- Permohonan Surat Saya --}}
         <div class="min-w-0">
-            <div class="stat-card-saas accent-primary h-100 p-3 sm:p-5 min-w-0 rounded-2xl">
-                <div class="d-flex justify-content-between align-items-center mb-1.5 min-w-0 gap-1">
-                    <span class="stat-label text-[10px] sm:text-xs font-semibold tracking-wide truncate">Permohonan Surat Saya</span>
+            <div class="stat-card-saas accent-primary h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] font-medium uppercase tracking-wider text-slate-500 truncate">PERMOHONAN SURAT</span>
                     <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-envelope-open-text"></i>
                     </div>
                 </div>
                 <div class="min-w-0">
-                    <div class="stat-value text-dark text-sm sm:text-xl font-bold tracking-tight truncate">
-                        {{ $suratSaya->count() }} <small class="text-secondary fw-normal fs-6">Surat</small>
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">
+                        {{ $suratSaya->count() }} <span class="text-xs font-medium text-slate-500">Surat</span>
                     </div>
-                    <div class="stat-subtext text-secondary text-[10px] sm:text-xs truncate mt-1">
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-clipboard-check text-primary me-1"></i>Pengajuan aktif & riwayat
                     </div>
                 </div>

@@ -345,7 +345,7 @@ class PortalWargaBottomNavAndQuickGridTest extends TestCase
         $response->assertSee('navbar-page-title topbar-title hidden md:block text-truncate', false);
 
         // Validasi Widget Chat / Assistant di Mobile diberi jarak aman
-        $response->assertSee('whatsapp-help-container bottom-20 right-3 md:bottom-6 md:right-6', false);
+        $response->assertSee('whatsapp-help-container bottom-24 right-3.5 scale-90 md:bottom-6 md:right-6 md:scale-100', false);
     }
 
     /**
@@ -363,15 +363,16 @@ class PortalWargaBottomNavAndQuickGridTest extends TestCase
         // 1. Grid 2x2 pada 4 Kartu Statistik Atas (Hemat Tempat di Layar HP)
         $response->assertSee('warga-stat-grid grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full mb-4', false);
         $response->assertSee('min-w-0', false);
-        $response->assertSee('p-3 sm:p-5', false);
-        $response->assertSee('text-[10px] sm:text-xs font-semibold tracking-wide truncate', false);
-        $response->assertSee('text-xs sm:text-lg font-bold tracking-tight break-all', false);
-        $response->assertSee('text-sm sm:text-xl font-bold tracking-tight truncate', false);
+        $response->assertSee('p-3.5 sm:p-5 space-y-1.5', false);
+        $response->assertSee('text-[10px] font-medium uppercase tracking-wider text-slate-500', false);
+        $response->assertSee('text-[13px] sm:text-base font-semibold tabular-nums tracking-tight text-slate-800 whitespace-nowrap', false);
+        $response->assertSee('text-base sm:text-xl font-bold tracking-tight whitespace-nowrap', false);
+        $response->assertSee('text-[11px] truncate mt-1', false);
 
-        $response->assertSee('Kartu Keluarga', false);
-        $response->assertSee('Iuran Menunggu', false);
-        $response->assertSee('Total Iuran Telah Lunas', false);
-        $response->assertSee('Permohonan Surat Saya', false);
+        $response->assertSee('NO. KARTU KELUARGA', false);
+        $response->assertSee('IURAN MENUNGGU', false);
+        $response->assertSee('IURAN LUNAS', false);
+        $response->assertSee('PERMOHONAN SURAT', false);
 
         // 2. Grid 4 Kolom Layanan Mandiri Warga ala Menu Utama E-Wallet
         $response->assertSee('warga-services-grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-4', false);

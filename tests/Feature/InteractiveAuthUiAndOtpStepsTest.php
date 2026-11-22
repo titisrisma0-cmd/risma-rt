@@ -189,6 +189,14 @@ class InteractiveAuthUiAndOtpStepsTest extends TestCase
         $response->assertSee('Kirim Kode OTP');
         $response->assertSee('Verifikasi OTP');
         $response->assertSee('Simpan Kata Sandi Baru');
+
+        // Mobile Compact Motion Graphic Banner & Tab Glider
+        $response->assertSee('mobile-compact-banner md:hidden', false);
+        $response->assertSee('Portal Digital RW 01', false);
+        $response->assertSee('Surat RT', false);
+        $response->assertSee('Kas Warga', false);
+        $response->assertSee('mobile-tabs-glider', false);
+        $response->assertSee('forms-slider-container overflow-hidden', false);
     }
 
     /**

@@ -131,24 +131,26 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
-            padding: 0 4px;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 0 2px;
         }
 
         .btn-back-home {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: var(--wa-card);
             color: var(--wa-muted);
             border: 1px solid var(--wa-border);
-            padding: 8px 16px;
+            padding: 7px 14px;
             border-radius: 999px;
-            font-size: 0.86rem;
+            font-size: 0.82rem;
             font-weight: 600;
             text-decoration: none;
             box-shadow: 0 2px 6px rgba(11, 20, 26, 0.04);
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .btn-back-home:hover {
@@ -160,14 +162,36 @@
         .top-tag {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.82rem;
+            gap: 7px;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--wa-muted);
             background: var(--wa-card);
             border: 1px solid var(--wa-border);
-            padding: 6px 14px;
+            padding: 6px 12px;
             border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .topbar-theme-pill {
+            background: var(--wa-card);
+            border: 1px solid var(--wa-border);
+            color: var(--wa-muted);
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(11, 20, 26, 0.04);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .topbar-theme-pill:hover {
+            color: var(--wa-teal);
+            border-color: var(--wa-teal);
         }
 
         .status-dot-pulse {
@@ -948,6 +972,45 @@
             color: var(--wa-teal);
         }
 
+        /* Compact Mobile Banner & Mini Badges Animations */
+        .mobile-compact-banner {
+            width: 100%;
+        }
+
+        .mobile-banner-inner {
+            min-height: 74px;
+        }
+
+        .mobile-banner-glow {
+            position: absolute;
+            right: -15px;
+            bottom: -15px;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: rgba(0, 168, 132, 0.16);
+            filter: blur(16px);
+            pointer-events: none;
+        }
+
+        @keyframes floatMini1 {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes floatMini2 {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(3px); }
+        }
+
+        .animate-float-mini-1 {
+            animation: floatMini1 3.2s ease-in-out infinite;
+        }
+
+        .animate-float-mini-2 {
+            animation: floatMini2 3.8s ease-in-out infinite 0.6s;
+        }
+
         /* ==================== MOBILE LAYOUT (< 768px) ==================== */
         @media (max-width: 767.98px) {
             body {
@@ -969,89 +1032,85 @@
                 flex-direction: column;
             }
 
-            .forms-col, .showcase-col {
+            .forms-col {
                 width: 100% !important;
                 transform: none !important;
-                padding: 0 !important;
+                padding: 14px 14px 24px 14px !important;
             }
 
-            /* Mobile Showcase Banner */
+            /* Hide full desktop showcase column on mobile (< 768px) */
             .showcase-col {
-                order: -1; /* Banner sits at top */
+                display: none !important;
             }
 
-            .showcase-box {
-                border-radius: 20px 20px 0 0;
-                padding: 18px 16px 14px 16px;
-                min-height: auto;
-            }
-
-            .hub-container {
-                height: 180px;
-                margin: 10px 0;
-            }
-
-            .hub-center-node {
-                width: 54px;
-                height: 54px;
-                font-size: 1.25rem;
-            }
-
-            .floating-hub-card {
-                padding: 6px 10px;
-                max-width: 145px;
-            }
-
-            .fhc-title {
-                font-size: 0.74rem;
-            }
-
-            .fhc-sub {
-                font-size: 0.66rem;
-            }
-
-            .showcase-cta-wrap {
-                display: none; /* In mobile, CTA is handled by the tab switcher below */
-            }
-
-            /* Mobile Quick Tab Switcher */
+            /* Mobile Quick Tab Switcher with Glider */
             .mobile-tabs-bar {
                 display: flex !important;
+                position: relative;
                 background: var(--wa-bg);
-                padding: 6px;
-                margin: 14px 14px 0 14px;
-                border-radius: 12px;
+                padding: 4px;
+                margin: 6px 0 16px 0;
+                border-radius: 14px;
                 border: 1px solid var(--wa-border);
-                gap: 4px;
+            }
+
+            .mobile-tabs-glider {
+                position: absolute;
+                top: 4px;
+                left: 4px;
+                width: calc(50% - 4px);
+                height: calc(100% - 8px);
+                background: var(--wa-card);
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(11, 20, 26, 0.08);
+                transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease;
+                pointer-events: none;
+                z-index: 1;
             }
 
             .mobile-tab-btn {
                 flex: 1;
                 border: none;
-                background: transparent;
-                padding: 9px;
-                border-radius: 9px;
-                font-size: 0.86rem;
+                background: transparent !important;
+                padding: 8px 10px;
+                border-radius: 10px;
+                font-size: 0.85rem;
                 font-weight: 700;
                 color: var(--wa-muted);
                 cursor: pointer;
-                transition: all 0.2s ease;
+                transition: color 0.25s ease;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 6px;
+                position: relative;
+                z-index: 2;
             }
 
             .mobile-tab-btn.active {
-                background: var(--wa-card);
-                color: var(--wa-teal);
-                box-shadow: 0 2px 6px rgba(11, 20, 26, 0.08);
+                color: var(--wa-teal) !important;
+                background: transparent !important;
+                box-shadow: none !important;
             }
 
-            /* Mobile 1-Column Horizontal Slider */
-            .forms-col {
-                padding: 16px 14px 28px 14px !important;
+            /* Mobile Form Sliding Container */
+            .forms-slider-container {
+                position: relative;
+                width: 100%;
                 overflow: hidden;
+            }
+
+            .form-stage {
+                display: none;
+                opacity: 0;
+                transform: translateX(16px);
+                transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            }
+
+            .form-stage.active {
+                display: block;
+                opacity: 1;
+                transform: translateX(0);
             }
 
             .input-group-wa input,
@@ -1083,14 +1142,21 @@
 <body>
     <div class="auth-container">
         <!-- Top Bar Above Card -->
-        <div class="auth-topbar">
-            <a href="{{ url('/') }}" class="btn-back-home">
+        <div class="auth-topbar flex items-center justify-between gap-2 mb-3">
+            <a href="{{ url('/') }}" class="btn-back-home text-xs px-3 py-1.5 whitespace-nowrap">
                 <i class="fas fa-arrow-left"></i>
-                <span>Kembali ke Beranda</span>
+                <span class="d-none d-sm-inline">Kembali ke Beranda</span>
+                <span class="d-inline d-sm-none">← Beranda</span>
             </a>
-            <div class="top-tag">
-                <span class="status-dot-pulse"></span>
-                <span>SMART RW 01 • Layanan Warga Terpadu</span>
+            <div class="d-flex align-items-center gap-1.5 shrink-0">
+                <div class="top-tag text-xs px-3 py-1.5 whitespace-nowrap">
+                    <span class="status-dot-pulse"></span>
+                    <span class="d-none d-sm-inline">SMART RW 01 • Layanan Warga Terpadu</span>
+                    <span class="d-inline d-sm-none">SMART RW 01</span>
+                </div>
+                <button type="button" id="themeToggleBtn" class="topbar-theme-pill text-xs px-2.5 py-1.5 whitespace-nowrap" title="Ganti Mode Terang/Gelap" aria-label="Toggle Theme">
+                    <i class="fas fa-sun" id="themeToggleIcon"></i>
+                </button>
             </div>
         </div>
 
@@ -1101,8 +1167,39 @@
                 <!-- ==================== FORMS COLUMN ==================== -->
                 <div class="forms-col" id="formsCol">
                     
+                    <!-- Compact Mobile Motion Graphic Banner (< 768px) -->
+                    <div class="mobile-compact-banner md:hidden mb-3">
+                        <div class="mobile-banner-inner p-3 rounded-2xl bg-[#E7FCEB] border border-[#C4EDCF] relative overflow-hidden flex items-center justify-between gap-2.5 shadow-xs">
+                            <div class="mobile-banner-glow"></div>
+                            <div class="flex items-center gap-2.5 min-w-0 z-10">
+                                <div class="w-10 h-10 rounded-xl bg-white border border-[#BBF7D0] shadow-xs flex items-center justify-center shrink-0 relative">
+                                    <i class="fas fa-house-chimney text-[#00A884] text-base animate-pulse"></i>
+                                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00A884] rounded-full border-2 border-white"></span>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#0e6c43] flex items-center gap-1">
+                                        <span class="status-dot-pulse" style="width:6px;height:6px;"></span>
+                                        Portal Digital RW 01
+                                    </div>
+                                    <h3 class="text-xs font-bold text-slate-800 tracking-tight truncate mb-0">Layanan Warga Terpadu</h3>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0 z-10">
+                                <div class="mini-pill-badge bg-white/90 border border-[#00A884]/20 text-[#0e6c43] text-[10px] font-semibold px-2 py-1 rounded-full shadow-xs flex items-center gap-1 animate-float-mini-1">
+                                    <i class="fas fa-file-signature text-[#00A884] text-[10px]"></i>
+                                    <span>Surat RT</span>
+                                </div>
+                                <div class="mini-pill-badge bg-white/90 border border-[#00A884]/20 text-[#0e6c43] text-[10px] font-semibold px-2 py-1 rounded-full shadow-xs flex items-center gap-1 animate-float-mini-2">
+                                    <i class="fas fa-wallet text-[#00A884] text-[10px]"></i>
+                                    <span>Kas Warga</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Mobile Tab Switcher (< 768px) -->
                     <div class="mobile-tabs-bar" id="mobileTabsBar">
+                        <div class="mobile-tabs-glider" id="mobileTabsGlider"></div>
                         <button type="button" class="mobile-tab-btn active" id="mobBtnLogin" onclick="switchMode('login')">
                             <i class="fas fa-right-to-bracket"></i> Masuk Akun
                         </button>
@@ -1111,7 +1208,9 @@
                         </button>
                     </div>
 
-                    <!-- ==================== FORM 1: MASUK KE AKUN ==================== -->
+                    <!-- Forms Slider Container -->
+                    <div class="forms-slider-container overflow-hidden">
+                        <!-- ==================== FORM 1: MASUK KE AKUN ==================== -->
                     <div class="form-stage active" id="panelLogin">
                         <div class="form-badge-icon-wrap">
                             <i class="fas fa-house-chimney"></i>
@@ -1505,10 +1604,11 @@
                             </a>
                         </div>
                     </div>
+                    </div> <!-- /forms-slider-container -->
                 </div>
 
                 <!-- ==================== SHOWCASE COLUMN (MINT GREEN PANEL) ==================== -->
-                <div class="showcase-col">
+                <div class="showcase-col hidden md:flex">
                     <div class="showcase-box">
                         <div class="showcase-doodle-bg"></div>
 
@@ -1621,11 +1721,6 @@
         </div>
     </div>
 
-    <!-- Floating Theme Toggle -->
-    <button type="button" id="themeToggleBtn" class="btn btn-sm rounded-circle position-fixed top-0 end-0 m-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: var(--wa-card); border: 1.5px solid var(--wa-border); color: var(--wa-dark); z-index: 1050;" title="Ganti mode terang/gelap" aria-label="Toggle Theme">
-        <i class="fas fa-sun" id="themeToggleIcon"></i>
-    </button>
-
     <script>
         // State variables
         let currentMode = 'login'; // 'login', 'register', 'forgot'
@@ -1644,6 +1739,7 @@
 
         const mobBtnLogin = document.getElementById('mobBtnLogin');
         const mobBtnRegister = document.getElementById('mobBtnRegister');
+        const mobGlider = document.getElementById('mobileTabsGlider');
 
         function switchMode(mode) {
             currentMode = mode;
@@ -1668,21 +1764,32 @@
                 panelLogin.classList.add('active');
                 ctaSceneLogin.classList.add('active');
                 mobBtnLogin.classList.add('active');
+                if (mobGlider) {
+                    mobGlider.style.opacity = '1';
+                    mobGlider.style.transform = 'translateX(0%)';
+                }
                 window.location.hash = '';
             } else if (mode === 'register') {
                 panelRegister.classList.add('active');
                 ctaSceneRegister.classList.add('active');
                 mobBtnRegister.classList.add('active');
+                if (mobGlider) {
+                    mobGlider.style.opacity = '1';
+                    mobGlider.style.transform = 'translateX(100%)';
+                }
                 window.location.hash = 'register';
             } else if (mode === 'forgot') {
                 panelForgot.classList.add('active');
                 ctaSceneForgot.classList.add('active');
+                if (mobGlider) {
+                    mobGlider.style.opacity = '0';
+                }
                 window.location.hash = 'forgot';
                 goToForgotStep(1);
             }
 
-            // Scroll card into view on mobile
-            if (window.innerWidth < 768) {
+            // Scroll card into view on mobile if needed
+            if (window.innerWidth < 768 && mode !== 'login') {
                 mainAuthCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }

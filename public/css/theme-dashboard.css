@@ -3922,10 +3922,12 @@ nav[role="navigation"] svg,
         color: #00A884 !important;
     }
 
-    /* Floating WhatsApp / Assistant Repositioned above Bottom Nav Bar (bottom-20 right-3) */
+    /* Floating WhatsApp / Assistant Repositioned above Bottom Nav Bar (bottom-24 right-3.5) */
     .whatsapp-help-container {
-        bottom: max(80px, calc(74px + env(safe-area-inset-bottom, 0px))) !important;
-        right: max(12px, env(safe-area-inset-right, 12px)) !important;
+        bottom: max(96px, calc(88px + env(safe-area-inset-bottom, 0px))) !important;
+        right: max(14px, env(safe-area-inset-right, 14px)) !important;
+        transform: scale(0.9);
+        transform-origin: bottom right;
     }
 }
 
