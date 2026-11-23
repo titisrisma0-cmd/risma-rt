@@ -3758,7 +3758,8 @@ nav[role="navigation"] svg,
         display: none !important;
     }
 
-    .warga-bottom-nav {
+    .warga-bottom-nav,
+    .superadmin-bottom-nav {
         display: block !important;
         position: fixed !important;
         bottom: 0 !important;
@@ -3773,7 +3774,8 @@ nav[role="navigation"] svg,
         padding-bottom: max(6px, env(safe-area-inset-bottom, 6px)) !important;
     }
 
-    [data-bs-theme="dark"] .warga-bottom-nav {
+    [data-bs-theme="dark"] .warga-bottom-nav,
+    [data-bs-theme="dark"] .superadmin-bottom-nav {
         background: rgba(17, 27, 33, 0.96) !important;
         border-top-color: #222e35 !important;
         box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4) !important;
@@ -3892,6 +3894,7 @@ nav[role="navigation"] svg,
 
     /* Main Content Padding on Mobile */
     .has-warga-bottom-nav,
+    .has-superadmin-bottom-nav,
     .main-content.pb-24 {
         padding-bottom: max(96px, calc(88px + env(safe-area-inset-bottom, 0px))) !important;
     }
@@ -4100,6 +4103,9 @@ nav[role="navigation"] svg,
 @media (min-width: 992px) {
     .warga-services-grid {
         grid-template-columns: repeat(7, 1fr);
+    }
+    .warga-services-grid.lg\:grid-cols-8 {
+        grid-template-columns: repeat(8, 1fr) !important;
     }
 }
 

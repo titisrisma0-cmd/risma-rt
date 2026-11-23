@@ -54,7 +54,7 @@
     <!-- ==========================================================================
        SIDEBAR NAVIGATION (DONEZO CLEAN WHITE STYLE)
        ========================================================================== -->
-    <aside class="sidebar {{ (Auth::check() && Auth::user()->isWarga()) ? 'hidden md:flex d-none d-md-flex' : '' }}" id="sidebar" data-no-motion="true">
+    <aside class="sidebar {{ (Auth::check() && (Auth::user()->isWarga() || (Auth::user()->isSuperAdmin() && !Auth::user()->isSimulatingRole()))) ? 'hidden md:flex d-none d-md-flex' : '' }}" id="sidebar" data-no-motion="true">
         @php
             $authUser = Auth::user();
             $roleLabel = 'PENGURUS RW';
@@ -457,12 +457,12 @@
        ========================================================================== -->
     <header class="navbar-saas navbar">
         <div class="topbar-left d-flex align-items-center gap-2 gap-md-3 flex-grow-1" style="min-width: 0;">
-            <button class="toggle-sidebar-btn flex-shrink-0 {{ (Auth::check() && Auth::user()->isWarga()) ? 'hidden md:flex d-none d-md-flex' : '' }}" id="toggleSidebarBtn" title="Buka/Tutup Menu" aria-label="Toggle Sidebar">
+            <button class="toggle-sidebar-btn flex-shrink-0 {{ (Auth::check() && (Auth::user()->isWarga() || (Auth::user()->isSuperAdmin() && !Auth::user()->isSimulatingRole()))) ? 'hidden md:flex d-none d-md-flex' : '' }}" id="toggleSidebarBtn" title="Buka/Tutup Menu" aria-label="Toggle Sidebar">
                 <i class="fas fa-bars"></i>
             </button>
             
             {{-- Ikon Logo Rumah Smart RW Khusus Mobile (< 768px) ala WhatsApp Light --}}
-            <a href="{{ route('dashboard') }}" class="mobile-header-brand md:hidden d-flex d-md-none w-9 h-9 rounded-xl bg-[#DCF8C6] border border-[#BBF7D0] text-[#00A884] items-center justify-center shrink-0 text-decoration-none shadow-xs" title="Smart RW 01" aria-label="Beranda Smart RW">
+            <a href="{{ (Auth::check() && Auth::user()->isSuperAdmin()) ? route('superadmin.dashboard') : route('dashboard') }}" class="mobile-header-brand md:hidden d-flex d-md-none w-9 h-9 rounded-xl bg-[#DCF8C6] border border-[#BBF7D0] text-[#00A884] items-center justify-center shrink-0 text-decoration-none shadow-xs" title="Smart RW 01" aria-label="Beranda Smart RW">
                 <i class="fas fa-house" style="font-size: 1.1rem; color: #00A884;"></i>
             </a>
 
@@ -601,7 +601,7 @@
     <!-- ==========================================================================
        MAIN CONTENT CONTAINER
        ========================================================================== -->
-    <main class="main-content {{ (Auth::check() && Auth::user()->isWarga()) ? 'has-warga-bottom-nav pb-24 md:pb-8' : '' }}" id="mainContent">
+    <main class="main-content {{ (Auth::check() && Auth::user()->isWarga()) ? 'has-warga-bottom-nav pb-24 md:pb-8' : '' }} {{ (Auth::check() && Auth::user()->isSuperAdmin() && !Auth::user()->isSimulatingRole()) ? 'has-superadmin-bottom-nav pb-24 md:pb-8' : '' }}" id="mainContent">
         <div class="page-container">
             {{-- Mode Simulasi Super Admin Banner --}}
             @if(session()->has('super_admin_context'))
@@ -797,6 +797,420 @@
                                 <div class="flex-grow-1">
                                     <strong class="d-block small fw-bold text-danger">Keluar (Logout)</strong>
                                     <span class="text-danger small opacity-75 d-block">Akhiri sesi portal warga di perangkat ini</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-danger opacity-50 small"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif(Auth::check() && Auth::user()->isSuperAdmin() && !Auth::user()->isSimulatingRole())
+        {{-- ==================================================================
+           BOTTOM NAVIGATION BAR KHUSUS MOBILE (< 768px) SUPER ADMIN
+           ================================================================== --}}
+        <nav class="superadmin-bottom-nav md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 shadow-[0_-4px_16px_rgba(0,0,0,0.04)] pb-safe" aria-label="Navigasi Bawah Super Admin">
+            <div class="bottom-nav-inner">
+                {{-- 1. Beranda --}}
+                <a href="{{ route('superadmin.dashboard') }}" class="bottom-nav-item {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="bottom-nav-label">Beranda</span>
+                </a>
+
+                {{-- 2. Wilayah (Modal Bottom Sheet) --}}
+                <button type="button" class="bottom-nav-item {{ (request()->routeIs('rts.*') || request()->routeIs('warga.*') || request()->routeIs('rw.monitoring.*') || request()->routeIs('rw.audit.*') || request()->routeIs('rw.metode-pembayaran.*')) ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#bottomSheetSuperAdminWilayah">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <span class="bottom-nav-label">Wilayah</span>
+                </button>
+
+                {{-- 3. Sistem (Tombol Tengah Menonjol ala E-Wallet) --}}
+                <button type="button" class="bottom-nav-item bottom-nav-item--center {{ (request()->routeIs('superadmin.rfid-devices.*') || request()->routeIs('rfid.history*') || request()->routeIs('superadmin.api-settings.*') || request()->routeIs('superadmin.audit-logs') || request()->routeIs('assistant.faqs.*')) ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#bottomSheetSuperAdminSistem" title="Pusat Kontrol Sistem">
+                    <div class="bottom-nav-fab -mt-4 shadow-md ring-4 ring-white">
+                        <i class="fas fa-sliders"></i>
+                    </div>
+                    <span class="bottom-nav-label">Sistem</span>
+                </button>
+
+                {{-- 4. Monitor (Modal Bottom Sheet) --}}
+                <button type="button" class="bottom-nav-item {{ (request()->routeIs('dashboard') || request()->routeIs('kegiatan.*') || request()->routeIs('rw.monitoring.layanan') || request()->routeIs('pengumuman.*') || request()->routeIs('rw.pengawasan.persetujuan') || request()->routeIs('laporan.*')) ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#bottomSheetSuperAdminMonitor">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="bottom-nav-label">Monitor</span>
+                </button>
+
+                {{-- 5. Akun (Modal Bottom Sheet) --}}
+                <button type="button" class="bottom-nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}" data-bs-toggle="modal" data-bs-target="#bottomSheetSuperAdminAkun">
+                    <div class="bottom-nav-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <span class="bottom-nav-label">Akun</span>
+                </button>
+            </div>
+        </nav>
+
+        {{-- ==================================================================
+           BOTTOM SHEET MODAL: WILAYAH (Manajemen RT, Warga, Monitoring, Keuangan)
+           ================================================================== --}}
+        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminWilayah" tabindex="-1" aria-labelledby="bottomSheetSuperAdminWilayahLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-bottom">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                    <div class="bottom-sheet-drag-handle"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" id="bottomSheetSuperAdminWilayahLabel">
+                                <i class="fas fa-sitemap text-emerald me-1.5" style="color: #00A884;"></i> Wilayah & Keuangan
+                            </h6>
+                            <small class="text-secondary">Manajemen RT, data kependudukan & keuangan wilayah</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    {{-- Grup Wilayah & Kependudukan --}}
+                    <div class="mb-2 px-1">
+                        <span class="text-xs uppercase fw-bold tracking-wider text-secondary">Wilayah & Kependudukan</span>
+                    </div>
+                    <div class="bottom-sheet-list d-flex flex-column gap-2 mb-3">
+                        <a href="{{ route('rts.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e7fceb; color: #00A884;">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Manajemen RT</strong>
+                                <span class="text-secondary small d-block">Kelola unit RT dinamis & struktur pengurus</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('warga.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Data Kependudukan (Warga)</strong>
+                                <span class="text-secondary small d-block">Data warga seluruh RT, mutasi, & KK</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('warga.verifikasi.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #fef3c7; color: #d97706;">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Monitoring Verifikasi</strong>
+                                <span class="text-secondary small d-block">Persetujuan & validasi pendaftaran warga baru</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('rw.monitoring.warga') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #f3e8ff; color: #9333ea;">
+                                <i class="fas fa-users-viewfinder"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Monitoring Wilayah</strong>
+                                <span class="text-secondary small d-block">Peta sebaran & statistik kependudukan RT</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+
+                    {{-- Grup Keuangan --}}
+                    <div class="mb-2 px-1">
+                        <span class="text-xs uppercase fw-bold tracking-wider text-secondary">Keuangan</span>
+                    </div>
+                    <div class="bottom-sheet-list d-flex flex-column gap-2">
+                        <a href="{{ route('rw.audit.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #ecfdf5; color: #047857;">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Keuangan & Audit RT</strong>
+                                <span class="text-secondary small d-block">Laporan kas masuk/keluar & audit bulanan</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('rw.metode-pembayaran.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Metode Pembayaran</strong>
+                                <span class="text-secondary small d-block">Kelola QRIS, transfer bank, & e-wallet</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ==================================================================
+           BOTTOM SHEET MODAL: SISTEM (Beralih Peran, RFID, API, Log Audit, FAQ)
+           ================================================================== --}}
+        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminSistem" tabindex="-1" aria-labelledby="bottomSheetSuperAdminSistemLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-bottom">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                    <div class="bottom-sheet-drag-handle"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" id="bottomSheetSuperAdminSistemLabel">
+                                <i class="fas fa-sliders text-emerald me-1.5" style="color: #00A884;"></i> Pusat Kontrol Sistem
+                            </h6>
+                            <small class="text-secondary">Simulasi peran, integrasi hardware, & pengaturan API</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    <div class="bottom-sheet-list d-flex flex-column gap-2">
+                        <a href="javascript:void(0)" class="bottom-sheet-item" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#modalSwitchRole">
+                            <div class="bottom-sheet-icon" style="background: #fef3c7; color: #d97706;">
+                                <i class="fas fa-arrows-rotate"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Beralih Peran (Ganti Role)</strong>
+                                <span class="text-secondary small d-block">Simulasikan peran RW, RT, atau Warga tanpa logout</span>
+                            </div>
+                            <span class="badge bg-warning text-dark px-2 py-0.5 rounded-full" style="font-size: 0.7rem;">Simulasi</span>
+                        </a>
+
+                        <a href="{{ route('superadmin.rfid-devices.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Perangkat RFID</strong>
+                                <span class="text-secondary small d-block">Registrasi & status konektivitas scanner portal</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('rfid.history') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e7fceb; color: #00A884;">
+                                <i class="fas fa-id-card-clip"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Riwayat Scan RFID</strong>
+                                <span class="text-secondary small d-block">Log akses gerbang, tap kartu e-KTP warga</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('superadmin.api-settings.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #f3e8ff; color: #9333ea;">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Pengaturan Token API</strong>
+                                <span class="text-secondary small d-block">Kredensial webhook & token integrasi IoT</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('superadmin.audit-logs') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #fee2e2; color: #dc2626;">
+                                <i class="fas fa-shield-halved"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Log Audit Sistem</strong>
+                                <span class="text-secondary small d-block">Jejak aktivitas super admin & keamanan data</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('assistant.faqs.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #fef3c7; color: #b45309;">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Kelola FAQ Asisten</strong>
+                                <span class="text-secondary small d-block">Basis pengetahuan AI Assistant WhatsApp RW</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ==================================================================
+           BOTTOM SHEET MODAL: MONITOR (Dashboard RW, Kegiatan, Layanan, Koordinasi, Laporan)
+           ================================================================== --}}
+        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminMonitor" tabindex="-1" aria-labelledby="bottomSheetSuperAdminMonitorLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-bottom">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                    <div class="bottom-sheet-drag-handle"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" id="bottomSheetSuperAdminMonitorLabel">
+                                <i class="fas fa-chart-line text-emerald me-1.5" style="color: #00A884;"></i> Monitoring & Pengawasan RW
+                            </h6>
+                            <small class="text-secondary">Pusat pantauan kegiatan, layanan, & laporan wilayah</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    {{-- Dashboard RW --}}
+                    <div class="bottom-sheet-list d-flex flex-column gap-2 mb-3">
+                        <a href="{{ route('dashboard') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e7fceb; color: #00A884;">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Dashboard RW</strong>
+                                <span class="text-secondary small d-block">Tinjauan umum koordinasi rukun warga</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+
+                    {{-- Grup Kegiatan --}}
+                    <div class="mb-2 px-1">
+                        <span class="text-xs uppercase fw-bold tracking-wider text-secondary">Kegiatan</span>
+                    </div>
+                    <div class="bottom-sheet-list d-flex flex-column gap-2 mb-3">
+                        <a href="{{ route('kegiatan.index', ['cakupan' => 'rw']) }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Kegiatan RW</strong>
+                                <span class="text-secondary small d-block">Agenda & perayaan tingkat rukun warga</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('rw.monitoring.kegiatan') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #fef3c7; color: #d97706;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Monitoring Kegiatan RT</strong>
+                                <span class="text-secondary small d-block">Pantauan acara & gotong royong seluruh RT</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+
+                    {{-- Grup Layanan --}}
+                    <div class="mb-2 px-1">
+                        <span class="text-xs uppercase fw-bold tracking-wider text-secondary">Layanan</span>
+                    </div>
+                    <div class="bottom-sheet-list d-flex flex-column gap-2 mb-3">
+                        <a href="{{ route('rw.monitoring.layanan') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #ecfdf5; color: #047857;">
+                                <i class="fas fa-handshake-angle"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Monitoring Layanan RT</strong>
+                                <span class="text-secondary small d-block">Kinerja posyandu, bank sampah, & surat</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+
+                    {{-- Grup Koordinasi & Pengawasan --}}
+                    <div class="mb-2 px-1">
+                        <span class="text-xs uppercase fw-bold tracking-wider text-secondary">Koordinasi & Pengawasan</span>
+                    </div>
+                    <div class="bottom-sheet-list d-flex flex-column gap-2 mb-3">
+                        <a href="{{ route('pengumuman.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Pengumuman RW</strong>
+                                <span class="text-secondary small d-block">Publikasi siaran kabar untuk seluruh warga</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('rw.pengawasan.persetujuan') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #fef3c7; color: #b45309;">
+                                <i class="fas fa-stamp"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Persetujuan RW</strong>
+                                <span class="text-secondary small d-block">Validasi berkas & persetujuan tindak lanjut</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <a href="{{ route('rw.audit.riwayat') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #f3e8ff; color: #9333ea;">
+                                <i class="fas fa-list-check"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Log & Audit Trail</strong>
+                                <span class="text-secondary small d-block">Riwayat verifikasi keuangan dan perubahan data</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+
+                    {{-- Grup Laporan --}}
+                    <div class="mb-2 px-1">
+                        <span class="text-xs uppercase fw-bold tracking-wider text-secondary">Laporan</span>
+                    </div>
+                    <div class="bottom-sheet-list d-flex flex-column gap-2">
+                        <a href="{{ route('laporan.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Laporan RW</strong>
+                                <span class="text-secondary small d-block">Rekapitulasi berkas & ekspor laporan kependudukan</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ==================================================================
+           BOTTOM SHEET MODAL: AKUN (Profil & Logout)
+           ================================================================== --}}
+        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminAkun" tabindex="-1" aria-labelledby="bottomSheetSuperAdminAkunLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-bottom">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                    <div class="bottom-sheet-drag-handle"></div>
+                    <div class="d-flex align-items-center gap-3 p-2.5 mb-3 rounded-3" style="background: var(--surface-2, #e7fceb); border: 1px solid var(--border);">
+                        <img src="{{ $fotoUrl }}" alt="Avatar" class="rounded-circle border" width="46" height="46" style="object-fit: cover;">
+                        <div class="flex-grow-1" style="min-width: 0;">
+                            <strong class="d-block text-dark text-truncate small fw-bold">{{ $defaultName }}</strong>
+                            <span class="badge bg-warning text-dark px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Super Admin & Developer</span>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    <div class="bottom-sheet-list d-flex flex-column gap-2">
+                        <a href="{{ route('profile.index') }}" class="bottom-sheet-item">
+                            <div class="bottom-sheet-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-user-gear"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block text-dark small fw-bold">Profil & Pengaturan</strong>
+                                <span class="text-secondary small d-block">Ubah informasi akun, email, & kata sandi</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted small"></i>
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}" class="m-0 w-100">
+                            @csrf
+                            <button type="submit" class="bottom-sheet-item border-danger border-opacity-25 w-100 text-start" style="background: #fef2f2; color: #dc2626;">
+                                <div class="bottom-sheet-icon" style="background: #fee2e2; color: #dc2626;">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <strong class="d-block small fw-bold text-danger">Keluar (Logout)</strong>
+                                    <span class="text-danger small opacity-75 d-block">Akhiri sesi Super Admin di perangkat ini</span>
                                 </div>
                                 <i class="fas fa-chevron-right text-danger opacity-50 small"></i>
                             </button>

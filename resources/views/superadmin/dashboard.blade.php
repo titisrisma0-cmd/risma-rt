@@ -58,117 +58,196 @@
         </div>
     </div>
 
-    {{-- ==================== SYSTEM KEY STATS (8 METRICS) ==================== --}}
-    <div class="row g-3 mb-4">
+    {{-- ==================== AKSEK CEPAT SUPER ADMIN & RW (E-WALLET STYLE QUICK GRID) ==================== --}}
+    <div class="saas-card p-3 p-md-4 mb-4 rounded-2xl shadow-xs border">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="card-title-saas mb-0">
+                    <i class="fas fa-th-large text-emerald me-1.5" style="color: #00A884;"></i> Akses Cepat Super Admin & RW
+                </h5>
+                <small class="text-secondary d-none d-sm-inline">Pusat kendali dan pintasan operasional utama sistem Smart RW</small>
+            </div>
+            <span class="badge badge-soft-primary px-2.5 py-1 rounded-full" style="font-size: 0.72rem;">Akses Cepat</span>
+        </div>
+
+        <div class="warga-services-grid grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-4">
+            {{-- 1. Ganti Role --}}
+            <a href="javascript:void(0)" class="warga-service-card" data-bs-toggle="modal" data-bs-target="#modalSwitchRole" title="Beralih Peran (Ganti Role)">
+                <div class="warga-service-icon-box bg-amber-soft text-amber rounded-2xl">
+                    <i class="fas fa-arrows-rotate"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Ganti Role</span>
+            </a>
+
+            {{-- 2. Perangkat RFID --}}
+            <a href="{{ route('superadmin.rfid-devices.index') }}" class="warga-service-card" title="Manajemen Perangkat RFID">
+                <div class="warga-service-icon-box bg-blue-soft text-blue rounded-2xl">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Perangkat RFID</span>
+            </a>
+
+            {{-- 3. Scan RFID --}}
+            <a href="{{ route('rfid.history') }}" class="warga-service-card" title="Riwayat Scan RFID">
+                <div class="warga-service-icon-box bg-emerald-soft text-emerald rounded-2xl">
+                    <i class="fas fa-id-card-clip"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Scan RFID</span>
+            </a>
+
+            {{-- 4. Manajemen RT --}}
+            <a href="{{ route('rts.index') }}" class="warga-service-card" title="Manajemen Unit RT">
+                <div class="warga-service-icon-box bg-cyan-soft text-cyan rounded-2xl">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Manajemen RT</span>
+            </a>
+
+            {{-- 5. Data Warga --}}
+            <a href="{{ route('warga.index') }}" class="warga-service-card" title="Data Kependudukan (Warga)">
+                <div class="warga-service-icon-box bg-purple-soft text-purple rounded-2xl">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Data Warga</span>
+            </a>
+
+            {{-- 6. Verifikasi --}}
+            <a href="{{ route('warga.verifikasi.index') }}" class="warga-service-card" title="Monitoring Verifikasi Warga">
+                <div class="warga-service-icon-box bg-rose-soft text-rose rounded-2xl">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Verifikasi</span>
+            </a>
+
+            {{-- 7. Keuangan RT --}}
+            <a href="{{ route('rw.audit.index') }}" class="warga-service-card" title="Keuangan & Audit RT">
+                <div class="warga-service-icon-box bg-green-soft text-green rounded-2xl">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Keuangan RT</span>
+            </a>
+
+            {{-- 8. Persetujuan RW --}}
+            <a href="{{ route('rw.pengawasan.persetujuan') }}" class="warga-service-card" title="Persetujuan Dokumen & Surat RW">
+                <div class="warga-service-icon-box bg-amber-soft text-amber rounded-2xl">
+                    <i class="fas fa-stamp"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Persetujuan RW</span>
+            </a>
+        </div>
+    </div>
+
+    {{-- ==================== SYSTEM KEY STATS (8 METRICS - 2x2 ON MOBILE, 4 COLS ON DESKTOP) ==================== --}}
+    <div class="warga-stat-grid grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full mb-4">
         {{-- Metric 1: RW --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Total RW</span>
-                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Total RW</span>
+                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-building fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statRw) }}</h3>
-                <span class="small" style="color: var(--ink-mute);">Wilayah RW Terdaftar</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statRw) }}</h3>
+                <span class="stat-subtext small text-[11px] truncate d-block" style="color: var(--ink-mute);">Wilayah RW Terdaftar</span>
             </div>
         </div>
 
         {{-- Metric 2: RT --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Total RT</span>
-                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Total RT</span>
+                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-sitemap fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statRt) }}</h3>
-                <span class="small" style="color: var(--ink-mute);">Unit RT Dinamis Aktif</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statRt) }}</h3>
+                <span class="stat-subtext small text-[11px] truncate d-block" style="color: var(--ink-mute);">Unit RT Dinamis Aktif</span>
             </div>
         </div>
 
         {{-- Metric 3: Warga --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Total Warga Aktif</span>
-                    <div class="p-2 rounded-3 icon-box-info d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Total Warga Aktif</span>
+                    <div class="p-2 rounded-3 icon-box-info d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-users fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statWarga) }}</h3>
-                <span class="small" style="color: var(--ink-mute);">Jiwa Kependudukan</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statWarga) }}</h3>
+                <span class="stat-subtext small text-[11px] truncate d-block" style="color: var(--ink-mute);">Jiwa Kependudukan</span>
             </div>
         </div>
 
         {{-- Metric 4: Kartu Keluarga --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Kartu Keluarga (KK)</span>
-                    <div class="p-2 rounded-3 icon-box-accent d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Kartu Keluarga (KK)</span>
+                    <div class="p-2 rounded-3 icon-box-accent d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-id-card fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statKk) }}</h3>
-                <span class="small" style="color: var(--ink-mute);">Kepala & Berkas Keluarga</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statKk) }}</h3>
+                <span class="stat-subtext small text-[11px] truncate d-block" style="color: var(--ink-mute);">Kepala & Berkas Keluarga</span>
             </div>
         </div>
 
         {{-- Metric 5: Akun Pengguna --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Akun Terdaftar</span>
-                    <div class="p-2 rounded-3 icon-box-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Akun Terdaftar</span>
+                    <div class="p-2 rounded-3 icon-box-secondary d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-user-lock fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statPengguna) }}</h3>
-                <span class="small" style="color: var(--ink-mute);">Pengguna Login Sistem</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statPengguna) }}</h3>
+                <span class="stat-subtext small text-[11px] truncate d-block" style="color: var(--ink-mute);">Pengguna Login Sistem</span>
             </div>
         </div>
 
         {{-- Metric 6: Pengurus --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Pengurus Wilayah</span>
-                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Pengurus Wilayah</span>
+                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-user-tie fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statPengurus) }}</h3>
-                <span class="small" style="color: var(--ink-mute);">RW, RT & Pengurus</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statPengurus) }}</h3>
+                <span class="stat-subtext small text-[11px] truncate d-block" style="color: var(--ink-mute);">RW, RT & Pengurus</span>
             </div>
         </div>
 
         {{-- Metric 7: Aspirasi --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Aspirasi & Laporan</span>
-                    <div class="p-2 rounded-3 icon-box-danger d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Aspirasi & Laporan</span>
+                    <div class="p-2 rounded-3 icon-box-danger d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-comment-dots fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statAspirasi) }}</h3>
-                <span class="badge rounded-pill small" style="background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(229,72,58,0.25);">{{ $statAspirasiPending }} Menunggu</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statAspirasi) }}</h3>
+                <span class="stat-subtext badge rounded-pill small d-inline-block text-truncate" style="background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(229,72,58,0.25);">{{ $statAspirasiPending }} Menunggu</span>
             </div>
         </div>
 
         {{-- Metric 8: Kegiatan --}}
-        <div class="col-6 col-md-3">
-            <div class="card border-0 rounded-4 shadow-xs h-100 p-3 hover-lift">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small fw-semibold" style="color: var(--ink-soft);">Kegiatan & Agenda</span>
-                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+        <div class="min-w-0">
+            <div class="card border-0 rounded-4 shadow-xs h-100 p-3.5 sm:p-5 hover-lift min-w-0 rounded-2xl">
+                <div class="d-flex align-items-center justify-content-between mb-2 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate" style="color: var(--ink-soft);">Kegiatan & Agenda</span>
+                    <div class="p-2 rounded-3 icon-box-primary d-flex align-items-center justify-content-center shrink-0" style="width: 36px; height: 36px;">
                         <i class="fas fa-calendar-check fa-lg"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ number_format($statKegiatan) }}</h3>
-                <span class="small" style="color: var(--ink-mute);">Agenda RW & RT</span>
+                <h3 class="stat-value fw-bold mb-1 text-base sm:text-2xl tracking-tight whitespace-nowrap" style="color: var(--ink);">{{ number_format($statKegiatan) }}</h3>
+                <span class="stat-subtext small text-[11px] truncate d-block" style="color: var(--ink-mute);">Agenda RW & RT</span>
             </div>
         </div>
     </div>
