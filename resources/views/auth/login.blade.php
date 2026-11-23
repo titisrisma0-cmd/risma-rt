@@ -63,7 +63,7 @@
             --radius-panel: 22px;
             --shadow-card: 0 16px 44px rgba(11, 20, 26, 0.07);
             --shadow-float: 0 8px 24px rgba(11, 20, 26, 0.08);
-            --transition-smooth: 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+            --transition-smooth: 420ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         [data-bs-theme="dark"],
@@ -132,8 +132,8 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            margin-bottom: 14px;
-            padding: 0 2px;
+            padding: 16px 16px 12px 16px;
+            margin-bottom: 12px;
         }
 
         .btn-back-home {
@@ -560,18 +560,91 @@
             box-shadow: 0 8px 20px rgba(0, 168, 132, 0.25);
         }
 
-        /* ==================== FORMS SECTION ==================== */
+        /* ==================== FORMS SECTION (420MS SMOOTH TRANSITION) ==================== */
+        .forms-slider-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            min-height: 440px;
+        }
+
         .form-stage {
             display: none;
+            width: 100%;
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.35s ease, transform 0.35s ease;
+            will-change: transform, opacity;
         }
 
         .form-stage.active {
             display: block;
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(0);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Leaving to Left */
+        .form-stage.anim-exit-left {
+            display: block !important;
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            z-index: 1;
+            pointer-events: none;
+            transform: translateX(0);
+            opacity: 1;
+            transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+        .form-stage.anim-exit-left.anim-run {
+            transform: translateX(-36px);
+            opacity: 0;
+        }
+
+        /* Leaving to Right */
+        .form-stage.anim-exit-right {
+            display: block !important;
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            z-index: 1;
+            pointer-events: none;
+            transform: translateX(0);
+            opacity: 1;
+            transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+        .form-stage.anim-exit-right.anim-run {
+            transform: translateX(36px);
+            opacity: 0;
+        }
+
+        /* Entering from Right */
+        .form-stage.anim-enter-right {
+            display: block !important;
+            position: relative !important;
+            z-index: 2;
+            transform: translateX(36px);
+            opacity: 0;
+            transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+        .form-stage.anim-enter-right.anim-run {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        /* Entering from Left */
+        .form-stage.anim-enter-left {
+            display: block !important;
+            position: relative !important;
+            z-index: 2;
+            transform: translateX(-36px);
+            opacity: 0;
+            transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+        }
+        .form-stage.anim-enter-left.anim-run {
+            transform: translateX(0);
+            opacity: 1;
         }
 
         /* Form Header Icons & Badges */
@@ -581,12 +654,20 @@
             justify-content: center;
             width: 44px;
             height: 44px;
-            background: var(--wa-mint);
-            border-radius: 12px;
-            color: var(--wa-teal);
-            font-size: 1.25rem;
-            margin-bottom: 12px;
-            border: 1px solid var(--wa-mint-border);
+            background: #DCF8C6;
+            border-radius: 16px;
+            color: #00A884;
+            font-size: 1.3rem;
+            margin-bottom: 14px;
+            border: 1px solid #BBF7D0;
+            box-shadow: 0 2px 8px rgba(0, 168, 132, 0.08);
+        }
+
+        [data-bs-theme="dark"] .form-badge-icon-wrap,
+        [data-theme="dark"] .form-badge-icon-wrap {
+            background: #18372B;
+            border-color: #1F4535;
+            color: #00A884;
         }
 
         .badge-brand-subtle {
@@ -972,54 +1053,21 @@
             color: var(--wa-teal);
         }
 
-        /* Compact Mobile Banner & Mini Badges Animations */
-        .mobile-compact-banner {
-            width: 100%;
-        }
-
-        .mobile-banner-inner {
-            min-height: 74px;
-        }
-
-        .mobile-banner-glow {
-            position: absolute;
-            right: -15px;
-            bottom: -15px;
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: rgba(0, 168, 132, 0.16);
-            filter: blur(16px);
-            pointer-events: none;
-        }
-
-        @keyframes floatMini1 {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
-        }
-
-        @keyframes floatMini2 {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(3px); }
-        }
-
-        .animate-float-mini-1 {
-            animation: floatMini1 3.2s ease-in-out infinite;
-        }
-
-        .animate-float-mini-2 {
-            animation: floatMini2 3.8s ease-in-out infinite 0.6s;
-        }
-
         /* ==================== MOBILE LAYOUT (< 768px) ==================== */
         @media (max-width: 767.98px) {
             body {
-                padding: 12px 10px 70px 10px;
+                padding: 0 10px 70px 10px;
                 align-items: flex-start;
             }
 
             .auth-container {
                 max-width: 100%;
+                padding-top: max(8px, env(safe-area-inset-top, 8px));
+            }
+
+            .auth-topbar {
+                padding: 16px 16px 12px 16px !important;
+                margin-bottom: 8px !important;
             }
 
             .auth-card {
@@ -1035,7 +1083,7 @@
             .forms-col {
                 width: 100% !important;
                 transform: none !important;
-                padding: 14px 14px 24px 14px !important;
+                padding: 16px 14px 28px 14px !important;
             }
 
             /* Hide full desktop showcase column on mobile (< 768px) */
@@ -1049,7 +1097,7 @@
                 position: relative;
                 background: var(--wa-bg);
                 padding: 4px;
-                margin: 6px 0 16px 0;
+                margin: 4px 0 16px 0;
                 border-radius: 14px;
                 border: 1px solid var(--wa-border);
             }
@@ -1060,25 +1108,31 @@
                 left: 4px;
                 width: calc(50% - 4px);
                 height: calc(100% - 8px);
-                background: var(--wa-card);
+                background: #FFFFFF;
                 border-radius: 10px;
                 box-shadow: 0 2px 8px rgba(11, 20, 26, 0.08);
-                transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease;
+                transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
                 pointer-events: none;
                 z-index: 1;
+            }
+
+            [data-bs-theme="dark"] .mobile-tabs-glider,
+            [data-theme="dark"] .mobile-tabs-glider {
+                background: var(--wa-card);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
             }
 
             .mobile-tab-btn {
                 flex: 1;
                 border: none;
                 background: transparent !important;
-                padding: 8px 10px;
+                padding: 8px 12px;
                 border-radius: 10px;
                 font-size: 0.85rem;
                 font-weight: 700;
                 color: var(--wa-muted);
                 cursor: pointer;
-                transition: color 0.25s ease;
+                transition: color 300ms ease;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -1091,26 +1145,6 @@
                 color: var(--wa-teal) !important;
                 background: transparent !important;
                 box-shadow: none !important;
-            }
-
-            /* Mobile Form Sliding Container */
-            .forms-slider-container {
-                position: relative;
-                width: 100%;
-                overflow: hidden;
-            }
-
-            .form-stage {
-                display: none;
-                opacity: 0;
-                transform: translateX(16px);
-                transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-            }
-
-            .form-stage.active {
-                display: block;
-                opacity: 1;
-                transform: translateX(0);
             }
 
             .input-group-wa input,
@@ -1142,7 +1176,7 @@
 <body>
     <div class="auth-container">
         <!-- Top Bar Above Card -->
-        <div class="auth-topbar flex items-center justify-between gap-2 mb-3">
+        <div class="auth-topbar pt-4 pb-3 px-4 flex items-center justify-between gap-2 mb-3">
             <a href="{{ url('/') }}" class="btn-back-home text-xs px-3 py-1.5 whitespace-nowrap">
                 <i class="fas fa-arrow-left"></i>
                 <span class="d-none d-sm-inline">Kembali ke Beranda</span>
@@ -1167,36 +1201,6 @@
                 <!-- ==================== FORMS COLUMN ==================== -->
                 <div class="forms-col" id="formsCol">
                     
-                    <!-- Compact Mobile Motion Graphic Banner (< 768px) -->
-                    <div class="mobile-compact-banner md:hidden mb-3">
-                        <div class="mobile-banner-inner p-3 rounded-2xl bg-[#E7FCEB] border border-[#C4EDCF] relative overflow-hidden flex items-center justify-between gap-2.5 shadow-xs">
-                            <div class="mobile-banner-glow"></div>
-                            <div class="flex items-center gap-2.5 min-w-0 z-10">
-                                <div class="w-10 h-10 rounded-xl bg-white border border-[#BBF7D0] shadow-xs flex items-center justify-center shrink-0 relative">
-                                    <i class="fas fa-house-chimney text-[#00A884] text-base animate-pulse"></i>
-                                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00A884] rounded-full border-2 border-white"></span>
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="text-[10px] font-bold uppercase tracking-wider text-[#0e6c43] flex items-center gap-1">
-                                        <span class="status-dot-pulse" style="width:6px;height:6px;"></span>
-                                        Portal Digital RW 01
-                                    </div>
-                                    <h3 class="text-xs font-bold text-slate-800 tracking-tight truncate mb-0">Layanan Warga Terpadu</h3>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-1.5 shrink-0 z-10">
-                                <div class="mini-pill-badge bg-white/90 border border-[#00A884]/20 text-[#0e6c43] text-[10px] font-semibold px-2 py-1 rounded-full shadow-xs flex items-center gap-1 animate-float-mini-1">
-                                    <i class="fas fa-file-signature text-[#00A884] text-[10px]"></i>
-                                    <span>Surat RT</span>
-                                </div>
-                                <div class="mini-pill-badge bg-white/90 border border-[#00A884]/20 text-[#0e6c43] text-[10px] font-semibold px-2 py-1 rounded-full shadow-xs flex items-center gap-1 animate-float-mini-2">
-                                    <i class="fas fa-wallet text-[#00A884] text-[10px]"></i>
-                                    <span>Kas Warga</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Mobile Tab Switcher (< 768px) -->
                     <div class="mobile-tabs-bar" id="mobileTabsBar">
                         <div class="mobile-tabs-glider" id="mobileTabsGlider"></div>
@@ -1211,16 +1215,16 @@
                     <!-- Forms Slider Container -->
                     <div class="forms-slider-container overflow-hidden">
                         <!-- ==================== FORM 1: MASUK KE AKUN ==================== -->
-                    <div class="form-stage active" id="panelLogin">
-                        <div class="form-badge-icon-wrap">
-                            <i class="fas fa-house-chimney"></i>
-                        </div>
-                        <h1 class="form-main-title">
-                            Masuk ke Akun <span class="badge-brand-subtle">SMART RW 01</span>
-                        </h1>
-                        <p class="form-main-desc">
-                            Silakan masuk menggunakan email terdaftar untuk mengakses layanan surat, iuran kas, dan informasi warga.
-                        </p>
+                        <div class="form-stage active" id="panelLogin">
+                            <div class="form-badge-icon-wrap w-11 h-11 rounded-2xl bg-[#DCF8C6] text-[#00A884] flex items-center justify-center mb-3">
+                                <i class="fas fa-house-chimney"></i>
+                            </div>
+                            <h1 class="form-main-title">
+                                Masuk ke Akun <span class="badge-brand-subtle">SMART RW 01</span>
+                            </h1>
+                            <p class="form-main-desc">
+                                Silakan masuk menggunakan email terdaftar untuk mengakses layanan surat, iuran kas, dan informasi warga.
+                            </p>
 
                         <!-- Alerts -->
                         @if($errors->any() && !old('name') && !session('from_forgot'))
@@ -1289,6 +1293,9 @@
 
                     <!-- ==================== FORM 2: PENDAFTARAN WARGA ==================== -->
                     <div class="form-stage" id="panelRegister">
+                        <div class="form-badge-icon-wrap w-11 h-11 rounded-2xl bg-[#DCF8C6] text-[#00A884] flex items-center justify-center mb-3">
+                            <i class="fas fa-house-chimney"></i>
+                        </div>
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <h2 class="form-main-title mb-0">Pendaftaran Warga</h2>
                             <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">RW 01</span>
@@ -1456,7 +1463,7 @@
 
                     <!-- ==================== FORM 3: LUPA KATA SANDI (3 TAHAP) ==================== -->
                     <div class="form-stage" id="panelForgot">
-                        <div class="form-badge-icon-wrap">
+                        <div class="form-badge-icon-wrap w-11 h-11 rounded-2xl bg-[#DCF8C6] text-[#00A884] flex items-center justify-center mb-3">
                             <i class="fas fa-key"></i>
                         </div>
                         <h2 class="form-main-title">
@@ -1740,58 +1747,114 @@
         const mobBtnLogin = document.getElementById('mobBtnLogin');
         const mobBtnRegister = document.getElementById('mobBtnRegister');
         const mobGlider = document.getElementById('mobileTabsGlider');
+        let isTransitioning = false;
 
-        function switchMode(mode) {
-            currentMode = mode;
+        function switchMode(newMode, animate = true) {
+            if (newMode === currentMode && document.querySelector('.form-stage.active')) return;
+            if (isTransitioning) return;
+
+            const oldMode = currentMode;
+            currentMode = newMode;
+
+            // Desktop layout card classes
             mainAuthCard.classList.remove('mode-login', 'mode-register', 'mode-forgot');
-            mainAuthCard.classList.add('mode-' + mode);
+            mainAuthCard.classList.add('mode-' + newMode);
 
-            // Hide all panels
-            panelLogin.classList.remove('active');
-            panelRegister.classList.remove('active');
-            panelForgot.classList.remove('active');
+            // Desktop showcase CTA scenes
+            [ctaSceneLogin, ctaSceneRegister, ctaSceneForgot].forEach(el => el && el.classList.remove('active'));
+            if (newMode === 'login' && ctaSceneLogin) ctaSceneLogin.classList.add('active');
+            if (newMode === 'register' && ctaSceneRegister) ctaSceneRegister.classList.add('active');
+            if (newMode === 'forgot' && ctaSceneForgot) ctaSceneForgot.classList.add('active');
 
-            // Hide all CTA scenes
-            ctaSceneLogin.classList.remove('active');
-            ctaSceneRegister.classList.remove('active');
-            ctaSceneForgot.classList.remove('active');
+            // Mobile switcher buttons
+            if (mobBtnLogin) mobBtnLogin.classList.toggle('active', newMode === 'login');
+            if (mobBtnRegister) mobBtnRegister.classList.toggle('active', newMode === 'register');
 
-            // Mobile tab button states
-            mobBtnLogin.classList.remove('active');
-            mobBtnRegister.classList.remove('active');
-
-            if (mode === 'login') {
-                panelLogin.classList.add('active');
-                ctaSceneLogin.classList.add('active');
-                mobBtnLogin.classList.add('active');
-                if (mobGlider) {
+            // Mobile glider slide
+            if (mobGlider) {
+                if (newMode === 'login') {
                     mobGlider.style.opacity = '1';
                     mobGlider.style.transform = 'translateX(0%)';
-                }
-                window.location.hash = '';
-            } else if (mode === 'register') {
-                panelRegister.classList.add('active');
-                ctaSceneRegister.classList.add('active');
-                mobBtnRegister.classList.add('active');
-                if (mobGlider) {
+                } else if (newMode === 'register') {
                     mobGlider.style.opacity = '1';
                     mobGlider.style.transform = 'translateX(100%)';
-                }
-                window.location.hash = 'register';
-            } else if (mode === 'forgot') {
-                panelForgot.classList.add('active');
-                ctaSceneForgot.classList.add('active');
-                if (mobGlider) {
+                } else {
                     mobGlider.style.opacity = '0';
                 }
+            }
+
+            // Update URL hash
+            if (newMode === 'login') {
+                if (window.location.hash) {
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                }
+            } else if (newMode === 'register') {
+                window.location.hash = 'register';
+            } else if (newMode === 'forgot') {
                 window.location.hash = 'forgot';
                 goToForgotStep(1);
             }
 
-            // Scroll card into view on mobile if needed
-            if (window.innerWidth < 768 && mode !== 'login') {
-                mainAuthCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const panels = {
+                login: panelLogin,
+                register: panelRegister,
+                forgot: panelForgot
+            };
+            const oldPanel = panels[oldMode];
+            const newPanel = panels[newMode];
+
+            if (!oldPanel || !newPanel || !animate) {
+                Object.values(panels).forEach(p => {
+                    if (p) {
+                        p.className = 'form-stage';
+                        p.style.display = 'none';
+                    }
+                });
+                if (newPanel) {
+                    newPanel.classList.add('active');
+                    newPanel.style.display = 'block';
+                }
+                return;
             }
+
+            isTransitioning = true;
+
+            const goingRight = (oldMode === 'login' && (newMode === 'register' || newMode === 'forgot')) ||
+                               (oldMode === 'forgot' && newMode === 'register');
+
+            const exitClass = goingRight ? 'anim-exit-left' : 'anim-exit-right';
+            const enterClass = goingRight ? 'anim-enter-right' : 'anim-enter-left';
+
+            const animClasses = ['anim-exit-left', 'anim-exit-right', 'anim-enter-right', 'anim-enter-left', 'anim-run', 'active'];
+
+            // Prepare old panel exit
+            oldPanel.classList.remove('active');
+            oldPanel.classList.add(exitClass);
+
+            // Prepare new panel enter
+            newPanel.className = 'form-stage ' + enterClass;
+
+            // Trigger reflow for CSS transition
+            void newPanel.offsetWidth;
+
+            // Trigger 420ms transitions
+            oldPanel.classList.add('anim-run');
+            newPanel.classList.add('anim-run');
+
+            setTimeout(() => {
+                animClasses.forEach(c => oldPanel.classList.remove(c));
+                oldPanel.style.display = 'none';
+
+                animClasses.forEach(c => newPanel.classList.remove(c));
+                newPanel.classList.add('active');
+                newPanel.style.display = 'block';
+
+                isTransitioning = false;
+
+                if (window.innerWidth < 768 && newMode !== 'login') {
+                    mainAuthCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 420);
         }
 
         // ==================== LUPA KATA SANDI (3 TAHAP) ====================
@@ -2183,11 +2246,11 @@
             const hasRegErrors = @json($errors->has('name') || $errors->has('nik') || $errors->has('no_kk') || $errors->has('rt_id') || $errors->has('no_hp') || $errors->has('jenis_kelamin') || old('name'));
             
             if (hasRegErrors || window.location.hash === '#register') {
-                switchMode('register');
+                switchMode('register', false);
             } else if (window.location.hash === '#forgot') {
-                switchMode('forgot');
+                switchMode('forgot', false);
             } else {
-                switchMode('login');
+                switchMode('login', false);
             }
         });
     </script>

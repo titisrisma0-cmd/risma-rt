@@ -190,13 +190,14 @@ class InteractiveAuthUiAndOtpStepsTest extends TestCase
         $response->assertSee('Verifikasi OTP');
         $response->assertSee('Simpan Kata Sandi Baru');
 
-        // Mobile Compact Motion Graphic Banner & Tab Glider
-        $response->assertSee('mobile-compact-banner md:hidden', false);
-        $response->assertSee('Portal Digital RW 01', false);
-        $response->assertSee('Surat RT', false);
-        $response->assertSee('Kas Warga', false);
+        // Mobile Tab Glider & Clean Form Stage Elements
         $response->assertSee('mobile-tabs-glider', false);
         $response->assertSee('forms-slider-container overflow-hidden', false);
+        $response->assertSee('form-badge-icon-wrap', false);
+
+        // Pastikan Banner Wireframe Tambahan Telah Dihapus Total Sesuai Permintaan
+        $response->assertDontSee('mobile-compact-banner', false);
+        $response->assertDontSee('Portal Digital RW 01', false);
     }
 
     /**
