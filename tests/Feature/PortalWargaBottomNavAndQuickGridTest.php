@@ -334,6 +334,12 @@ class PortalWargaBottomNavAndQuickGridTest extends TestCase
         $response->assertSee(route('profile.index'), false);
         $response->assertSee(route('logout'), false);
 
+        // Validasi styling drawer bottom sheet dan avatar bulat 1:1
+        $response->assertSee('bottom-sheet-modal z-50', false);
+        $response->assertSee('max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24', false);
+        $response->assertSee('w-11 h-11 min-w-[44px] min-h-[44px] aspect-square rounded-full object-cover shrink-0', false);
+        $response->assertSee('min-w-0 flex-1', false);
+
         // Validasi main content padding di mobile
         $response->assertSee('has-warga-bottom-nav pb-24 md:pb-8', false);
 

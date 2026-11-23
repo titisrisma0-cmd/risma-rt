@@ -564,7 +564,7 @@
             <!-- User Profile Dropdown -->
             <div class="dropdown">
                 <button type="button" class="topbar-profile-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{{ $fotoUrl }}" alt="Avatar" class="topbar-avatar">
+                    <img src="{{ $fotoUrl }}" alt="Avatar" class="topbar-avatar aspect-square rounded-full object-cover shrink-0">
                     <div class="topbar-user-info d-none d-sm-flex">
                         <span class="topbar-user-name">{{ $defaultName }}</span>
                         <span class="topbar-user-role">{{ $roleLabel }}</span>
@@ -699,9 +699,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: INFORMASI (Pengumuman RT, RW & Agenda)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetInformasi" tabindex="-1" aria-labelledby="bottomSheetInformasiLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetInformasi" tabindex="-1" aria-labelledby="bottomSheetInformasiLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -757,17 +757,17 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: AKUN (Data Keluarga, Profil & Logout)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetAkun" tabindex="-1" aria-labelledby="bottomSheetAkunLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetAkun" tabindex="-1" aria-labelledby="bottomSheetAkunLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex align-items-center gap-3 p-2.5 mb-3 rounded-3" style="background: var(--surface-2, #e7fceb); border: 1px solid var(--border);">
-                        <img src="{{ $fotoUrl }}" alt="Avatar" class="rounded-circle border" width="46" height="46" style="object-fit: cover;">
-                        <div class="flex-grow-1" style="min-width: 0;">
+                        <img src="{{ $fotoUrl }}" alt="Avatar" class="w-11 h-11 min-w-[44px] min-h-[44px] aspect-square rounded-full object-cover shrink-0 border border-emerald-200" width="44" height="44">
+                        <div class="min-w-0 flex-1">
                             <strong class="d-block text-dark text-truncate small fw-bold">{{ $defaultName }}</strong>
                             <span class="badge badge-soft-primary px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Warga RT {{ optional(Auth::user())->getRtKode() ?? '01' }} / RW 01</span>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
 
                     <div class="bottom-sheet-list d-flex flex-column gap-2">
@@ -864,9 +864,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: WILAYAH (Manajemen RT, Warga, Monitoring, Keuangan)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminWilayah" tabindex="-1" aria-labelledby="bottomSheetSuperAdminWilayahLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetSuperAdminWilayah" tabindex="-1" aria-labelledby="bottomSheetSuperAdminWilayahLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -962,9 +962,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: SISTEM (Beralih Peran, RFID, API, Log Audit, FAQ)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminSistem" tabindex="-1" aria-labelledby="bottomSheetSuperAdminSistemLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetSuperAdminSistem" tabindex="-1" aria-labelledby="bottomSheetSuperAdminSistemLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1050,9 +1050,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: MONITOR (Dashboard RW, Kegiatan, Layanan, Koordinasi, Laporan)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminMonitor" tabindex="-1" aria-labelledby="bottomSheetSuperAdminMonitorLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetSuperAdminMonitor" tabindex="-1" aria-labelledby="bottomSheetSuperAdminMonitorLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1185,17 +1185,17 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: AKUN (Profil & Logout)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetSuperAdminAkun" tabindex="-1" aria-labelledby="bottomSheetSuperAdminAkunLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetSuperAdminAkun" tabindex="-1" aria-labelledby="bottomSheetSuperAdminAkunLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex align-items-center gap-3 p-2.5 mb-3 rounded-3" style="background: var(--surface-2, #e7fceb); border: 1px solid var(--border);">
-                        <img src="{{ $fotoUrl }}" alt="Avatar" class="rounded-circle border" width="46" height="46" style="object-fit: cover;">
-                        <div class="flex-grow-1" style="min-width: 0;">
+                        <img src="{{ $fotoUrl }}" alt="Avatar" class="w-11 h-11 min-w-[44px] min-h-[44px] aspect-square rounded-full object-cover shrink-0 border border-emerald-200" width="44" height="44">
+                        <div class="min-w-0 flex-1">
                             <strong class="d-block text-dark text-truncate small fw-bold">{{ $defaultName }}</strong>
                             <span class="badge bg-warning text-dark px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Super Admin & Developer</span>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
 
                     <div class="bottom-sheet-list d-flex flex-column gap-2">
@@ -1278,9 +1278,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: WILAYAH (Manajemen RT, Warga, Verifikasi, Monitoring)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRwWilayah" tabindex="-1" aria-labelledby="bottomSheetRwWilayahLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRwWilayah" tabindex="-1" aria-labelledby="bottomSheetRwWilayahLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1344,9 +1344,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: PENGAWASAN (Persetujuan, Pengumuman, Audit Trail, RFID, FAQ)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRwPengawasan" tabindex="-1" aria-labelledby="bottomSheetRwPengawasanLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRwPengawasan" tabindex="-1" aria-labelledby="bottomSheetRwPengawasanLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1421,9 +1421,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: MONITOR (Keuangan, Kegiatan, Layanan, Laporan)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRwMonitor" tabindex="-1" aria-labelledby="bottomSheetRwMonitorLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRwMonitor" tabindex="-1" aria-labelledby="bottomSheetRwMonitorLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1531,13 +1531,13 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: AKUN (Profil, Beralih Simulasi, Logout)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRwAkun" tabindex="-1" aria-labelledby="bottomSheetRwAkunLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRwAkun" tabindex="-1" aria-labelledby="bottomSheetRwAkunLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex align-items-center gap-3 p-2.5 mb-3 rounded-3" style="background: var(--surface-2, #e7fceb); border: 1px solid var(--border);">
-                        <img src="{{ $fotoUrl }}" alt="Avatar" class="rounded-circle border" width="46" height="46" style="object-fit: cover;">
-                        <div class="flex-grow-1" style="min-width: 0;">
+                        <img src="{{ $fotoUrl }}" alt="Avatar" class="w-11 h-11 min-w-[44px] min-h-[44px] aspect-square rounded-full object-cover shrink-0 border border-emerald-200" width="44" height="44">
+                        <div class="min-w-0 flex-1">
                             <strong class="d-block text-dark text-truncate small fw-bold">{{ $defaultName }}</strong>
                             @if(session()->has('super_admin_context'))
                                 <span class="badge bg-warning text-dark px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Simulasi: Ketua RW</span>
@@ -1545,7 +1545,7 @@
                                 <span class="badge badge-soft-primary px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Pengurus RW 01</span>
                             @endif
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
 
                     <div class="bottom-sheet-list d-flex flex-column gap-2">
@@ -1647,9 +1647,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: WARGA (Administrasi Warga)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRtWarga" tabindex="-1" aria-labelledby="bottomSheetRtWargaLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRtWarga" tabindex="-1" aria-labelledby="bottomSheetRtWargaLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1723,9 +1723,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: LAYANAN (Pelayanan Masyarakat RT)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRtLayanan" tabindex="-1" aria-labelledby="bottomSheetRtLayananLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRtLayanan" tabindex="-1" aria-labelledby="bottomSheetRtLayananLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1835,9 +1835,9 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: KEUANGAN (Keuangan RT & Informasi)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRtKeuangan" tabindex="-1" aria-labelledby="bottomSheetRtKeuanganLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRtKeuangan" tabindex="-1" aria-labelledby="bottomSheetRtKeuanganLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <div>
@@ -1933,13 +1933,13 @@
         {{-- ==================================================================
            BOTTOM SHEET MODAL: AKUN (Profil Ketua RT, Beralih Simulasi, Logout)
            ================================================================== --}}
-        <div class="modal fade bottom-sheet-modal" id="bottomSheetRtAkun" tabindex="-1" aria-labelledby="bottomSheetRtAkunLabel" aria-hidden="true">
+        <div class="modal fade bottom-sheet-modal z-50" id="bottomSheetRtAkun" tabindex="-1" aria-labelledby="bottomSheetRtAkunLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-bottom">
-                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl">
+                <div class="modal-content border-0 p-3 p-sm-4 shadow-lg max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24">
                     <div class="bottom-sheet-drag-handle"></div>
                     <div class="d-flex align-items-center gap-3 p-2.5 mb-3 rounded-3" style="background: var(--surface-2, #e7fceb); border: 1px solid var(--border);">
-                        <img src="{{ $fotoUrl }}" alt="Avatar" class="rounded-circle border" width="46" height="46" style="object-fit: cover;">
-                        <div class="flex-grow-1" style="min-width: 0;">
+                        <img src="{{ $fotoUrl }}" alt="Avatar" class="w-11 h-11 min-w-[44px] min-h-[44px] aspect-square rounded-full object-cover shrink-0 border border-emerald-200" width="44" height="44">
+                        <div class="min-w-0 flex-1">
                             <strong class="d-block text-dark text-truncate small fw-bold">{{ $defaultName }}</strong>
                             @if(session()->has('super_admin_context'))
                                 <span class="badge bg-warning text-dark px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Simulasi: Ketua RT {{ $authUser->getRtKode() ?? '' }}</span>
@@ -1947,7 +1947,7 @@
                                 <span class="badge badge-soft-primary px-2 py-0.5 rounded-full" style="font-size: 0.72rem;">Ketua RT {{ $authUser->getRtKode() ?? '01' }}</span>
                             @endif
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        <button type="button" class="btn-close shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
 
                     <div class="bottom-sheet-list d-flex flex-column gap-2">

@@ -604,6 +604,9 @@ textarea:focus-visible {
 .topbar-avatar {
     width: 34px;
     height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     object-fit: cover;
     background: var(--primary-soft);
@@ -711,6 +714,10 @@ textarea:focus-visible {
     .topbar-avatar {
         width: 32px !important;
         height: 32px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+        aspect-ratio: 1 / 1 !important;
+        flex-shrink: 0 !important;
     }
 }
 
@@ -744,6 +751,10 @@ textarea:focus-visible {
     .topbar-avatar {
         width: 28px !important;
         height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        aspect-ratio: 1 / 1 !important;
+        flex-shrink: 0 !important;
     }
 }
 
@@ -3942,6 +3953,10 @@ nav[role="navigation"] svg,
 
 /* Bottom Sheet Modal Styling */
 @media (max-width: 767.98px) {
+    .bottom-sheet-modal {
+        z-index: 1060 !important;
+    }
+
     .bottom-sheet-modal .modal-dialog {
         position: fixed !important;
         bottom: 0 !important;
@@ -3949,6 +3964,7 @@ nav[role="navigation"] svg,
         right: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
+        z-index: 1065 !important;
         transform: translateY(100%);
         transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
     }
@@ -3962,7 +3978,7 @@ nav[role="navigation"] svg,
         border: none !important;
         border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
         box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12) !important;
-        padding-bottom: max(20px, env(safe-area-inset-bottom, 20px)) !important;
+        padding-bottom: max(96px, calc(88px + env(safe-area-inset-bottom, 24px))) !important;
         background: #ffffff !important;
     }
 

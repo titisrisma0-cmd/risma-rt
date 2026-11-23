@@ -306,9 +306,14 @@ class RwMobileBottomNavTest extends TestCase
         $response->assertSee(route('profile.index'), false);
         $response->assertSee(route('logout'), false);
 
-        // 11. Modal styling: max-h-[75vh] overflow-y-auto rounded-t-3xl dan drag handle
-        $response->assertSee('max-h-[75vh] overflow-y-auto rounded-t-3xl', false);
+        // 11. Modal styling: max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24, z-50, dan drag handle
+        $response->assertSee('max-h-[75vh] overflow-y-auto rounded-t-3xl pb-24', false);
+        $response->assertSee('bottom-sheet-modal z-50', false);
         $response->assertSee('bottom-sheet-drag-handle', false);
+
+        // Verifikasi Avatar Drawer Akun 1:1 Aspect-Square dan tidak gepeng
+        $response->assertSee('w-11 h-11 min-w-[44px] min-h-[44px] aspect-square rounded-full object-cover shrink-0', false);
+        $response->assertSee('min-w-0 flex-1', false);
     }
 
     /**
