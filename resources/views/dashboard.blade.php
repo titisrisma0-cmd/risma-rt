@@ -71,77 +71,156 @@
         </div>
     @endif
 
-    {{-- 1. STATISTIK UTAMA WILAYAH RW (DONEZO METRIC CARDS) --}}
-    <div class="row g-3 mb-4">
+    {{-- ==================== AKSES CEPAT KETUA RW (E-WALLET STYLE QUICK GRID) ==================== --}}
+    <div class="saas-card p-3 p-md-4 mb-4 rounded-2xl shadow-xs border">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="card-title-saas mb-0">
+                    <i class="fas fa-th-large text-emerald me-1.5" style="color: #00A884;"></i> Akses Cepat Ketua RW
+                </h5>
+                <small class="text-secondary d-none d-sm-inline">Pusat kendali dan pintasan operasional utama rukun warga</small>
+            </div>
+            <span class="badge badge-soft-primary px-2.5 py-1 rounded-full" style="font-size: 0.72rem;">Akses Cepat</span>
+        </div>
+
+        <div class="warga-services-grid grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-4">
+            {{-- 1. Persetujuan RW --}}
+            <a href="{{ route('rw.pengawasan.persetujuan') }}" class="warga-service-card" title="Persetujuan Dokumen & Surat RW">
+                <div class="warga-service-icon-box bg-amber-soft text-amber rounded-2xl">
+                    <i class="fas fa-stamp"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Persetujuan RW</span>
+            </a>
+
+            {{-- 2. Manajemen RT --}}
+            <a href="{{ route('rts.index') }}" class="warga-service-card" title="Manajemen Unit RT">
+                <div class="warga-service-icon-box bg-cyan-soft text-cyan rounded-2xl">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Manajemen RT</span>
+            </a>
+
+            {{-- 3. Data Warga --}}
+            <a href="{{ route('warga.index') }}" class="warga-service-card" title="Data Kependudukan (Warga)">
+                <div class="warga-service-icon-box bg-purple-soft text-purple rounded-2xl">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Data Warga</span>
+            </a>
+
+            {{-- 4. Verifikasi --}}
+            <a href="{{ route('warga.verifikasi.index') }}" class="warga-service-card" title="Monitoring Verifikasi Warga">
+                <div class="warga-service-icon-box bg-rose-soft text-rose rounded-2xl">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Verifikasi</span>
+            </a>
+
+            {{-- 5. Keuangan RT --}}
+            <a href="{{ route('rw.audit.index') }}" class="warga-service-card" title="Keuangan & Audit RT">
+                <div class="warga-service-icon-box bg-green-soft text-green rounded-2xl">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Keuangan RT</span>
+            </a>
+
+            {{-- 6. Pengumuman RW --}}
+            <a href="{{ route('pengumuman.index') }}" class="warga-service-card" title="Pengumuman & Siaran RW">
+                <div class="warga-service-icon-box bg-blue-soft text-blue rounded-2xl">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Pengumuman RW</span>
+            </a>
+
+            {{-- 7. Scan RFID --}}
+            <a href="{{ route('rfid.history') }}" class="warga-service-card" title="Riwayat Scan RFID">
+                <div class="warga-service-icon-box bg-emerald-soft text-emerald rounded-2xl">
+                    <i class="fas fa-id-card-clip"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Scan RFID</span>
+            </a>
+
+            {{-- 8. Laporan RW --}}
+            <a href="{{ route('laporan.index') }}" class="warga-service-card" title="Laporan Wilayah RW">
+                <div class="warga-service-icon-box bg-purple-soft text-purple rounded-2xl">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Laporan RW</span>
+            </a>
+        </div>
+    </div>
+
+    {{-- 1. STATISTIK UTAMA WILAYAH RW (2x2 ON MOBILE, 4 COLS ON DESKTOP) --}}
+    <div class="warga-stat-grid grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full mb-4">
         {{-- Total RT --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas accent-emerald">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Wilayah RT Aktif</span>
-                    <div class="stat-icon-wrapper stat-icon-green">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-emerald h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Wilayah RT Aktif</span>
+                    <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-landmark"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ $totalRtAktif }} <small class="text-secondary fw-normal fs-6">RT</small></div>
-                    <div class="stat-subtext text-success">
-                        <i class="fas fa-circle-check"></i> RT 01 sampai RT 08 terkoordinasi
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ $totalRtAktif }} <small class="text-secondary fw-normal fs-6">RT</small></div>
+                    <div class="stat-subtext text-success text-[11px] truncate mt-1">
+                        <i class="fas fa-circle-check me-1"></i>RT 01 sampai RT 08 terkoordinasi
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Total KK --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas accent-info">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Total Kepala Keluarga</span>
-                    <div class="stat-icon-wrapper stat-icon-blue">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-info h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Total Kepala Keluarga</span>
+                    <div class="stat-icon-wrapper stat-icon-blue shrink-0">
                         <i class="fas fa-house-user"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ number_format($totalKk) }} <small class="text-secondary fw-normal fs-6">KK</small></div>
-                    <div class="stat-subtext text-secondary">
-                        <i class="fas fa-database"></i> Terdata di seluruh wilayah RT
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ number_format($totalKk) }} <small class="text-secondary fw-normal fs-6">KK</small></div>
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
+                        <i class="fas fa-database me-1"></i>Terdata di seluruh wilayah RT
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Total Warga --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas accent-amber">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Total Warga Terdaftar</span>
-                    <div class="stat-icon-wrapper stat-icon-amber">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-amber h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Total Warga Terdaftar</span>
+                    <div class="stat-icon-wrapper stat-icon-amber shrink-0">
                         <i class="fas fa-users"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ number_format($totalWarga) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
-                    <div class="stat-subtext text-secondary">
-                        <i class="fas fa-id-card"></i> Penduduk aktif berdomisili
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ number_format($totalWarga) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
+                        <i class="fas fa-id-card me-1"></i>Penduduk aktif berdomisili
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Saldo Kas Gabungan --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card-saas accent-primary">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Saldo Kas Gabungan</span>
-                    <div class="stat-icon-wrapper stat-icon-green">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-primary h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Saldo Kas Gabungan</span>
+                    <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-wallet"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-success font-monospace" style="font-size: 1.5rem;">
+                <div class="min-w-0">
+                    <div class="stat-value text-success font-monospace text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">
                         Rp {{ number_format($saldoKas, 0, ',', '.') }}
                     </div>
-                    <div class="stat-subtext text-secondary">
-                        <i class="fas fa-vault"></i> Akumulasi kas RT & RW
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
+                        <i class="fas fa-vault me-1"></i>Akumulasi kas RT & RW
                     </div>
                 </div>
             </div>

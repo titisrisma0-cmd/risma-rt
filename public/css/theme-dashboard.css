@@ -3759,7 +3759,8 @@ nav[role="navigation"] svg,
     }
 
     .warga-bottom-nav,
-    .superadmin-bottom-nav {
+    .superadmin-bottom-nav,
+    .rw-bottom-nav {
         display: block !important;
         position: fixed !important;
         bottom: 0 !important;
@@ -3775,7 +3776,8 @@ nav[role="navigation"] svg,
     }
 
     [data-bs-theme="dark"] .warga-bottom-nav,
-    [data-bs-theme="dark"] .superadmin-bottom-nav {
+    [data-bs-theme="dark"] .superadmin-bottom-nav,
+    [data-bs-theme="dark"] .rw-bottom-nav {
         background: rgba(17, 27, 33, 0.96) !important;
         border-top-color: #222e35 !important;
         box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4) !important;
@@ -3895,6 +3897,7 @@ nav[role="navigation"] svg,
     /* Main Content Padding on Mobile */
     .has-warga-bottom-nav,
     .has-superadmin-bottom-nav,
+    .has-rw-bottom-nav,
     .main-content.pb-24 {
         padding-bottom: max(96px, calc(88px + env(safe-area-inset-bottom, 0px))) !important;
     }
