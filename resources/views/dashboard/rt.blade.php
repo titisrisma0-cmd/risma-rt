@@ -35,20 +35,105 @@
         </div>
     </div>
 
-    <!-- 8 Kartu Statistik Utama RT (Donezo SaaS Metric Style) -->
-    <div class="row g-3 mb-4">
+    {{-- ==================== AKSES CEPAT KETUA RT (E-WALLET STYLE QUICK GRID) ==================== --}}
+    <div class="saas-card p-3 p-md-4 mb-4 rounded-2xl shadow-xs border">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="card-title-saas mb-0">
+                    <i class="fas fa-th-large text-emerald me-1.5" style="color: #00A884;"></i> Akses Cepat Ketua RT
+                </h5>
+                <small class="text-secondary d-none d-sm-inline">Pusat kendali dan pintasan operasional utama rukun tetangga</small>
+            </div>
+            <span class="badge badge-soft-primary px-2.5 py-1 rounded-full" style="font-size: 0.72rem;">Akses Cepat</span>
+        </div>
+
+        <div class="warga-services-grid grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-4">
+            {{-- 1. Permohonan Surat --}}
+            <a href="{{ route('rt.verifikasi.permohonan') }}" class="warga-service-card" title="Manajemen Permohonan Surat Warga">
+                <div class="warga-service-icon-box bg-amber-soft text-amber rounded-2xl">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Permohonan Surat</span>
+            </a>
+
+            {{-- 2. Pembayaran Iuran --}}
+            <a href="{{ route('pembayaran.index') }}" class="warga-service-card" title="Kelola Pembayaran Iuran Warga">
+                <div class="warga-service-icon-box bg-green-soft text-green rounded-2xl">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Pembayaran Iuran</span>
+            </a>
+
+            {{-- 3. Verifikasi Warga --}}
+            <a href="{{ route('warga.verifikasi.index') }}" class="warga-service-card position-relative" title="Verifikasi Registrasi Warga Baru">
+                @php
+                    $pendingCountRt = \App\Models\UserProfile::where('status', 'pending')->where('rt_id', $rtId)->count();
+                @endphp
+                @if($pendingCountRt > 0)
+                    <span class="position-absolute top-1 end-1 badge bg-danger rounded-pill" style="font-size: 0.65rem;">{{ $pendingCountRt }}</span>
+                @endif
+                <div class="warga-service-icon-box bg-rose-soft text-rose rounded-2xl">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Verifikasi Warga</span>
+            </a>
+
+            {{-- 4. Data Warga --}}
+            <a href="{{ route('warga.index') }}" class="warga-service-card" title="Data Kependudukan Warga RT">
+                <div class="warga-service-icon-box bg-purple-soft text-purple rounded-2xl">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Data Warga</span>
+            </a>
+
+            {{-- 5. Kas RT --}}
+            <a href="{{ route('kas.index') }}" class="warga-service-card" title="Kas & Keuangan RT">
+                <div class="warga-service-icon-box bg-cyan-soft text-cyan rounded-2xl">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Kas RT</span>
+            </a>
+
+            {{-- 6. Bank Sampah --}}
+            <a href="{{ route('bank-sampah.index') }}" class="warga-service-card" title="Layanan Bank Sampah">
+                <div class="warga-service-icon-box bg-emerald-soft text-emerald rounded-2xl">
+                    <i class="fas fa-recycle"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Bank Sampah</span>
+            </a>
+
+            {{-- 7. Ronda & RFID --}}
+            <a href="{{ route('layanan.ronda.index') }}" class="warga-service-card" title="Jadwal Ronda & Riwayat RFID">
+                <div class="warga-service-icon-box bg-blue-soft text-blue rounded-2xl">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Ronda & RFID</span>
+            </a>
+
+            {{-- 8. Posyandu --}}
+            <a href="{{ route('layanan.posyandu.index') }}" class="warga-service-card" title="Layanan Posyandu">
+                <div class="warga-service-icon-box bg-pink-soft text-pink rounded-2xl" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e;">
+                    <i class="fas fa-baby"></i>
+                </div>
+                <span class="warga-service-title text-[11px] sm:text-sm font-semibold text-center leading-tight">Posyandu</span>
+            </a>
+        </div>
+    </div>
+
+    {{-- 8 Kartu Statistik Utama RT (2x4 on Desktop, 2x2 on Mobile Grid) --}}
+    <div class="warga-stat-grid grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full mb-4">
         <!-- 1. Total Kepala Keluarga -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-info">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Kepala Keluarga</span>
-                    <div class="stat-icon-wrapper stat-icon-blue">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-info h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Kepala Keluarga</span>
+                    <div class="stat-icon-wrapper stat-icon-blue shrink-0">
                         <i class="fas fa-id-card"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ number_format($totalKk) }} <small class="text-secondary fw-normal fs-6">KK</small></div>
-                    <div class="stat-subtext text-secondary">
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ number_format($totalKk) }} <small class="text-secondary fw-normal fs-6">KK</small></div>
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-check-circle text-success"></i> Terdata resmi
                     </div>
                 </div>
@@ -56,17 +141,17 @@
         </div>
 
         <!-- 2. Total Warga -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-emerald">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Total Penduduk</span>
-                    <div class="stat-icon-wrapper stat-icon-green">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-emerald h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Total Penduduk</span>
+                    <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-users"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ number_format($totalWarga) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
-                    <div class="stat-subtext text-secondary">
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ number_format($totalWarga) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-user-check text-success"></i> Warga RT {{ $rtKode }}
                     </div>
                 </div>
@@ -74,17 +159,17 @@
         </div>
 
         <!-- 3. Total Laki-laki -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-info">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Laki-laki</span>
-                    <div class="stat-icon-wrapper stat-icon-blue">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-info h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Laki-laki</span>
+                    <div class="stat-icon-wrapper stat-icon-blue shrink-0">
                         <i class="fas fa-male"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ number_format($totalLakiLaki) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
-                    <div class="stat-subtext text-secondary">
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ number_format($totalLakiLaki) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-venus-mars"></i> Gender L
                     </div>
                 </div>
@@ -92,17 +177,17 @@
         </div>
 
         <!-- 4. Total Perempuan -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-danger">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Perempuan</span>
-                    <div class="stat-icon-wrapper stat-icon-red">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-danger h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Perempuan</span>
+                    <div class="stat-icon-wrapper stat-icon-red shrink-0">
                         <i class="fas fa-female"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ number_format($totalPerempuan) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
-                    <div class="stat-subtext text-secondary">
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ number_format($totalPerempuan) }} <small class="text-secondary fw-normal fs-6">Jiwa</small></div>
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-venus-mars"></i> Gender P
                     </div>
                 </div>
@@ -110,19 +195,19 @@
         </div>
 
         <!-- 5. Total Iuran Terkumpul -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-emerald">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Iuran Terkumpul</span>
-                    <div class="stat-icon-wrapper stat-icon-green">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-emerald h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Iuran Terkumpul</span>
+                    <div class="stat-icon-wrapper stat-icon-green shrink-0">
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-success font-monospace" style="font-size: 1.4rem;">
+                <div class="min-w-0">
+                    <div class="stat-value text-success font-monospace text-xs sm:text-lg font-bold tracking-tight whitespace-nowrap">
                         Rp {{ number_format($totalIuranTerkumpul, 0, ',', '.') }}
                     </div>
-                    <div class="stat-subtext text-success">
+                    <div class="stat-subtext text-success text-[11px] truncate mt-1">
                         <i class="fas fa-check-circle"></i> Pembayaran lunas
                     </div>
                 </div>
@@ -130,19 +215,19 @@
         </div>
 
         <!-- 6. Total Tunggakan Iuran -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-amber">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Tunggakan / Pending</span>
-                    <div class="stat-icon-wrapper stat-icon-amber">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-amber h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Tunggakan / Pending</span>
+                    <div class="stat-icon-wrapper stat-icon-amber shrink-0">
                         <i class="fas fa-clock"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-warning font-monospace" style="font-size: 1.4rem;">
+                <div class="min-w-0">
+                    <div class="stat-value text-warning font-monospace text-xs sm:text-lg font-bold tracking-tight whitespace-nowrap">
                         Rp {{ number_format($totalTunggakan, 0, ',', '.') }}
                     </div>
-                    <div class="stat-subtext text-secondary">
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-exclamation-circle text-warning"></i> Menunggu verifikasi
                     </div>
                 </div>
@@ -150,19 +235,19 @@
         </div>
 
         <!-- 7. Saldo Kas RT -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-primary">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Saldo Kas RT {{ $rtKode }}</span>
-                    <div class="stat-icon-wrapper stat-icon-blue">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-primary h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Saldo Kas RT {{ $rtKode }}</span>
+                    <div class="stat-icon-wrapper stat-icon-blue shrink-0">
                         <i class="fas fa-wallet"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark font-monospace" style="font-size: 1.4rem;">
+                <div class="min-w-0">
+                    <div class="stat-value text-dark font-monospace text-xs sm:text-lg font-bold tracking-tight whitespace-nowrap">
                         Rp {{ number_format($saldoKasRt, 0, ',', '.') }}
                     </div>
-                    <div class="stat-subtext text-secondary">
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-arrow-down text-success"></i> Masuk: Rp {{ number_format($kasMasukRt, 0, ',', '.') }}
                     </div>
                 </div>
@@ -170,17 +255,17 @@
         </div>
 
         <!-- 8. Pengumuman RW -->
-        <div class="col-6 col-md-3">
-            <div class="stat-card-saas accent-amber">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="stat-label">Pengumuman RW</span>
-                    <div class="stat-icon-wrapper stat-icon-amber">
+        <div class="min-w-0">
+            <div class="stat-card-saas accent-amber h-100 p-3.5 sm:p-5 space-y-1.5 min-w-0 rounded-2xl">
+                <div class="d-flex justify-content-between align-items-center mb-1 min-w-0 gap-1">
+                    <span class="stat-label text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Pengumuman RW</span>
+                    <div class="stat-icon-wrapper stat-icon-amber shrink-0">
                         <i class="fas fa-bullhorn"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="stat-value text-dark">{{ $pengumumanRw->count() }} <small class="text-secondary fw-normal fs-6">Info</small></div>
-                    <div class="stat-subtext text-secondary">
+                <div class="min-w-0">
+                    <div class="stat-value text-dark text-base sm:text-xl font-bold tracking-tight whitespace-nowrap">{{ $pengumumanRw->count() }} <small class="text-secondary fw-normal fs-6">Info</small></div>
+                    <div class="stat-subtext text-secondary text-[11px] truncate mt-1">
                         <i class="fas fa-tower-broadcast text-primary"></i> Warta resmi pusat
                     </div>
                 </div>
@@ -207,98 +292,6 @@
         </div>
     </div>
 
-    <!-- Quick Access Layanan Masyarakat RT (Clean SaaS Interactive Cards) -->
-    <div class="saas-card p-4 mb-4" id="layanan-masyarakat">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h5 class="card-title-saas">
-                    <i class="fas fa-th-large text-success"></i> Modul Pelayanan Masyarakat RT {{ $rtKode }}
-                </h5>
-                <small class="text-secondary">Akses cepat menu operasional dan pelayanan warga</small>
-            </div>
-            <span class="badge badge-soft-primary">7 Layanan Aktif</span>
-        </div>
-        <div class="row g-3">
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('warga.verifikasi.index') }}" class="quick-service-card position-relative">
-                    @php
-                        $pendingCountRt = \App\Models\UserProfile::where('status', 'pending')->where('rt_id', $rtId)->count();
-                    @endphp
-                    @if($pendingCountRt > 0)
-                        <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-pill">{{ $pendingCountRt }}</span>
-                    @endif
-                    <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <span class="quick-service-title">Verifikasi Warga</span>
-                    <span class="quick-service-desc">{{ $pendingCountRt }} Menunggu</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('bank-sampah.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-success bg-opacity-10 text-success">
-                        <i class="fas fa-recycle"></i>
-                    </div>
-                    <span class="quick-service-title">Bank Sampah</span>
-                    <span class="quick-service-desc">Setoran & Saldo</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('layanan.umkm.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="fas fa-store"></i>
-                    </div>
-                    <span class="quick-service-title">UMKM RT</span>
-                    <span class="quick-service-desc">Etalase Warga</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('rt.verifikasi.permohonan') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-primary bg-opacity-10 text-primary">
-                        <i class="fas fa-file-signature"></i>
-                    </div>
-                    <span class="quick-service-title">Permohonan</span>
-                    <span class="quick-service-desc">Verifikasi Surat</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('layanan.posyandu.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-info bg-opacity-10 text-info">
-                        <i class="fas fa-baby"></i>
-                    </div>
-                    <span class="quick-service-title">Posyandu</span>
-                    <span class="quick-service-desc">Gizi & Balita</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('layanan.ronda.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-danger bg-opacity-10 text-danger">
-                        <i class="fas fa-shield-halved"></i>
-                    </div>
-                    <span class="quick-service-title">Ronda Malam</span>
-                    <span class="quick-service-desc">Jadwal & Patroli</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('kegiatan.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-success bg-opacity-10 text-success">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <span class="quick-service-title">Kegiatan RT</span>
-                    <span class="quick-service-desc">Agenda & Acara</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-xl">
-                <a href="{{ route('aspirasi.index') }}" class="quick-service-card">
-                    <div class="quick-service-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="fas fa-comment-dots"></i>
-                    </div>
-                    <span class="quick-service-title">Aspirasi</span>
-                    <span class="quick-service-desc">Keluhan Warga</span>
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- Bagian 1 & 2: Pembayaran Terbaru & Pengumuman RW -->
     <div class="row g-4 mb-4">
