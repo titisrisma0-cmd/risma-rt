@@ -129,6 +129,28 @@ class RfidDeviceController extends Controller
         return back()->with('success', "Perangkat RFID '{$device->device_id}' berhasil {$statusStr}.");
     }
 
+    /**
+     * Atur cepat fungsi perangkat menjadi Palang Pos / Gerbang dan langsung aktifkan
+     */
+    public function setGerbang(RfidDevice $device)
+    {
+        $this->authorizeSuperAdmin();
+
+        $oldFungsi = $device->fungsi;
+        $device->fungsi = RfidDevice::FUNGSI_GERBANG;
+        $device->is_active = true;
+        $device->save();
+
+        AuditLog::record(
+            action: 'update_rfid_device',
+            entityType: 'RfidDevice',
+            entityId: $device->id,
+            deskripsi: "Super Admin mengatur cepat perangkat RFID {$device->device_id} menjadi Palang Pos / Gerbang (aktif) dari {$oldFungsi}"
+        );
+
+        return back()->with('success', "Perangkat '{$device->device_id}' berhasil diatur sebagai Palang Pos / Gerbang dan diaktifkan.");
+    }
+
     public function destroy(RfidDevice $device)
     {
         $this->authorizeSuperAdmin();

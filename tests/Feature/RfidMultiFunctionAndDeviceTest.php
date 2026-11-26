@@ -914,4 +914,75 @@ class RfidMultiFunctionAndDeviceTest extends TestCase
                 'duplicate_message' => "Kartu ini sudah terdaftar atas nama {$this->wargaProfile->nama_lengkap}",
             ]);
     }
+
+    public function test_modal_latest_scan_returns_unconfigured_or_denied_scan_from_rfid_scans_table(): void
+    {
+        $since = now()->subSeconds(5)->timestamp;
+
+        // Simulasikan tap dari perangkat yang belum dikonfigurasi (tersimpan sebagai ditolak)
+        $this->withHeaders([
+            'X-Device-Token' => $this->plainToken,
+        ])->postJson('/api/rfid/scan', [
+            'uid' => 'A9:16:37:07',
+            'device_id' => 'ESP32 Gerbang',
+        ])->assertStatus(200)
+          ->assertJson([
+              'status' => 'unconfigured',
+              'access_granted' => false,
+          ]);
+
+        // Polling modal tetap wajib menangkap UID dari rfid_scans setelah since
+        $poll = $this->actingAs($this->adminRt)->getJson("/warga/rfid/latest?since={$since}");
+        $poll->assertStatus(200)
+            ->assertJson([
+                'status' => 'detected',
+                'data' => [
+                    'uid' => 'A9163707',
+                    'formatted_uid' => 'A9:16:37:07',
+                    'device_id' => 'ESP32 Gerbang',
+                ],
+            ]);
+    }
+
+    public function test_superadmin_can_quick_set_gerbang_and_normalized_uid_opens_gate(): void
+    {
+        $device = RfidDevice::create([
+            'device_id' => 'ESP32 Gerbang',
+            'nama_lokasi' => 'Perangkat Baru (ESP32 Gerbang)',
+            'fungsi' => RfidDevice::FUNGSI_BELUM_DIKONFIGURASI,
+            'is_active' => false,
+        ]);
+
+        // Superadmin klik cepat "Set Gerbang"
+        $this->actingAs($this->superAdmin)
+            ->patch("/superadmin/rfid-devices/{$device->id}/set-gerbang")
+            ->assertRedirect();
+
+        $device->refresh();
+        $this->assertEquals(RfidDevice::FUNGSI_GERBANG, $device->fungsi);
+        $this->assertTrue((bool) $device->is_active);
+
+        // Admin mendaftarkan kartu dengan format huruf kecil + titik dua
+        $this->actingAs($this->adminRt)->postJson("/warga/{$this->wargaProfile->id}/rfid/save", [
+            'rfid_uid' => 'a9:16:37:07',
+            'jenis_kartu' => 'E-Money / Kartu Bank',
+        ])->assertStatus(200);
+
+        // ESP32 Gerbang tap kartu dengan format uppercase tanpa titik dua
+        $resTap = $this->withHeaders([
+            'X-Device-Token' => $this->plainToken,
+        ])->postJson('/api/rfid/scan', [
+            'uid' => 'A9163707',
+            'device_id' => 'ESP32 Gerbang',
+        ]);
+
+        $resTap->assertStatus(200)
+            ->assertJson([
+                'status' => 'success',
+                'fungsi' => 'gerbang',
+                'gate_open' => true,
+                'access_granted' => true,
+                'buzzer_signal' => 'GRANTED',
+            ]);
+    }
 }

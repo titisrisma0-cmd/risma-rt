@@ -57,7 +57,7 @@
                     <!-- Preview UID & Info Kartu Terdeteksi -->
                     <div id="detectedUidWrapper" class="d-none">
                         <div class="small text-secondary mb-1 fw-medium">UID Kartu Terbaca:</div>
-                        <span class="badge bg-dark text-white px-3 py-2 fs-5 font-monospace shadow-sm" id="detectedUidBadge">
+                        <span class="badge bg-success text-white px-3 py-2 fs-5 font-monospace shadow-sm" id="detectedUidBadge">
                             --:--:--:--
                         </span>
 
@@ -265,9 +265,11 @@
 
         // Event saat modal terbuka
         modalEl.addEventListener('shown.bs.modal', function () {
-            rfidListenStartTime = Math.floor(Date.now() / 1000) - 3;
+            rfidListenStartTime = Math.floor(Date.now() / 1000) - 5;
 
-            // Tandai sesi perekaman aktif di server
+            if (rfidPollTimer) clearInterval(rfidPollTimer);
+
+            // Tandai sesi perekaman aktif di server & sinkronkan server_time
             fetch('{{ route("warga.rfid.session.start") }}', {
                 method: 'POST',
                 headers: {
@@ -276,11 +278,20 @@
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
-            }).catch(e => console.log('Gagal mengaktifkan sesi perekaman:', e));
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.server_time) {
+                    rfidListenStartTime = Number(data.server_time) - 3;
+                }
+                pollLatestScan();
+            })
+            .catch(e => {
+                console.log('Gagal mengaktifkan sesi perekaman:', e);
+                pollLatestScan();
+            });
 
-            if (rfidPollTimer) clearInterval(rfidPollTimer);
-            rfidPollTimer = setInterval(pollLatestScan, 1200);
-            pollLatestScan();
+            rfidPollTimer = setInterval(pollLatestScan, 1500);
         });
 
         // Event saat modal ditutup
@@ -315,8 +326,8 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'detected' && data.data && data.data.uid) {
-                    const detectedUid = data.data.uid;
-                    const formattedUid = data.data.formatted_uid || detectedUid;
+                    const detectedUid = String(data.data.uid).toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    const formattedUid = data.data.formatted_uid || (detectedUid.match(/.{1,2}/g)?.join(':') || detectedUid);
                     const cardType = data.data.card_type || 'Smart Card / RFID';
                     const sak = data.data.sak || '-';
                     const atqa = data.data.atqa || '-';
@@ -330,11 +341,12 @@
                         lastBeepUid = detectedUid;
                     }
 
+                    document.getElementById('detectedUidBadge').className = 'badge bg-success text-white px-3 py-2 fs-5 font-monospace shadow-sm';
                     document.getElementById('detectedUidBadge').textContent = formattedUid;
                     document.getElementById('inputManualUid').value = detectedUid;
                     document.getElementById('cardTypeBadge').textContent = 'Tipe: ' + cardType;
-                    document.getElementById('cardSakBadge').textContent = 'SAK: 0x' + sak;
-                    document.getElementById('cardAtqaBadge').textContent = 'ATQA: 0x' + atqa;
+                    document.getElementById('cardSakBadge').textContent = sak !== '-' ? ('SAK: 0x' + sak) : 'SAK: -';
+                    document.getElementById('cardAtqaBadge').textContent = atqa !== '-' ? ('ATQA: 0x' + atqa) : 'ATQA: -';
                     document.getElementById('cardSizeBadge').textContent = 'Size: ' + uidSize;
 
                     document.getElementById('detectedUidWrapper').classList.remove('d-none');
@@ -342,8 +354,8 @@
 
                     document.getElementById('scannerIconPulse').className = 'rounded-circle d-flex align-items-center justify-content-center text-white bg-emerald mx-auto';
                     document.getElementById('scannerIcon').className = 'fas fa-check fa-2x text-white';
-                    document.getElementById('scannerTitle').textContent = 'Kartu terdeteksi';
-                    document.getElementById('scannerSubtitle').textContent = cardType + ' • UID: ' + formattedUid + ' • ' + scanTimeStr;
+                    document.getElementById('scannerTitle').innerHTML = 'UID Terdeteksi: <span class="badge bg-success font-monospace ms-1">' + formattedUid + '</span>';
+                    document.getElementById('scannerSubtitle').textContent = cardType + ' • Perangkat: ' + (data.data.device_id || 'RC522') + ' • ' + scanTimeStr;
 
                     const alertEl = document.getElementById('modalAlert');
                     const successEl = document.getElementById('modalSuccessAlert');
@@ -368,14 +380,15 @@
             });
         }
 
-        // Input manual UID fallback
+        // Input manual UID fallback (menerima format A9:16:37:07 maupun A9163707)
         document.getElementById('inputManualUid').addEventListener('input', function () {
-            const val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            this.value = val;
+            const cleanVal = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
             const btnSimpan = document.getElementById('btnSimpanKtp');
 
-            if (val.length >= 4) {
-                document.getElementById('detectedUidBadge').textContent = val.match(/.{1,2}/g)?.join(':') || val;
+            if (cleanVal.length >= 4) {
+                const formatted = cleanVal.match(/.{1,2}/g)?.join(':') || cleanVal;
+                document.getElementById('detectedUidBadge').className = 'badge bg-success text-white px-3 py-2 fs-5 font-monospace shadow-sm';
+                document.getElementById('detectedUidBadge').textContent = formatted;
                 document.getElementById('detectedUidWrapper').classList.remove('d-none');
                 document.getElementById('modalAlert').classList.add('d-none');
                 document.getElementById('modalSuccessAlert').classList.remove('d-none');
@@ -387,7 +400,7 @@
 
         // Simpan Kartu RFID ke Warga
         document.getElementById('btnSimpanKtp').addEventListener('click', function () {
-            const uid = document.getElementById('inputManualUid').value.trim();
+            const uid = document.getElementById('inputManualUid').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
             const jenisKartu = document.getElementById('inputJenisKartu')?.value || 'Kartu RFID';
             if (!uid || !currentWargaId) return;
 

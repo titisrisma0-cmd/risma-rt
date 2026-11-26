@@ -45,6 +45,15 @@
         </div>
     @endif
 
+    @if(($stats['unconfigured'] ?? 0) > 0)
+        <div class="alert alert-warning border-0 rounded-4 shadow-sm mb-4 d-flex align-items-center gap-3" role="alert">
+            <i class="fas fa-triangle-exclamation fs-4 text-warning flex-shrink-0"></i>
+            <div class="small">
+                <strong>Perhatian:</strong> Terdapat <strong>{{ $stats['unconfigured'] }}</strong> perangkat RFID baru yang berstatus <em>Belum Dikonfigurasi</em> (Nonaktif). Klik tombol <span class="badge bg-primary">Set Gerbang</span> pada baris perangkat di bawah untuk mengaktifkannya sebagai reader palang pos depan, atau klik ikon Edit untuk memilih fungsi lainnya.
+            </div>
+        </div>
+    @endif
+
     {{-- Ringkasan Statistik Kartu Fungsi --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-4 col-xl-2">
@@ -248,6 +257,17 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="d-inline-flex gap-1">
+                                    {{-- Quick Set Gerbang & Aktifkan --}}
+                                    @if($device->fungsi !== 'gerbang' || ! $device->is_active)
+                                        <form method="POST" action="{{ route('superadmin.rfid-devices.set-gerbang', $device) }}" class="d-inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-sm btn-primary" title="Atur sebagai Palang Pos / Gerbang dan Aktifkan">
+                                                <i class="fas fa-torii-gate me-1"></i> Set Gerbang
+                                            </button>
+                                        </form>
+                                    @endif
+
                                     {{-- Toggle Status --}}
                                     <form method="POST" action="{{ route('superadmin.rfid-devices.toggle', $device) }}" class="d-inline">
                                         @csrf
@@ -298,10 +318,10 @@
                                                     <div class="mb-3">
                                                         <label class="form-label small fw-semibold text-secondary">Fungsi Kerja Operasional</label>
                                                         <select name="fungsi" class="form-select" required>
-                                                            <option value="gerbang" {{ $device->fungsi === 'gerbang' ? 'selected' : '' }}>Portal Gerbang (Buka Gerbang jika Warga Aktif)</option>
+                                                            <option value="gerbang" {{ $device->fungsi === 'gerbang' ? 'selected' : '' }}>Palang Pos / Gerbang (Buka Palang jika Warga Aktif)</option>
                                                             <option value="bank_sampah" {{ $device->fungsi === 'bank_sampah' ? 'selected' : '' }}>Bank Sampah (Deteksi Warga & Setoran Sampah)</option>
                                                             <option value="presensi" {{ $device->fungsi === 'presensi' ? 'selected' : '' }}>Presensi Kehadiran / Ronda Malam</option>
-                                                            <option value="perekaman" {{ $device->fungsi === 'perekaman' ? 'selected' : '' }}>Perekaman E-KTP / Kartu Baru</option>
+                                                            <option value="perekaman" {{ $device->fungsi === 'perekaman' ? 'selected' : '' }}>Perekaman Kartu RFID Baru</option>
                                                             <option value="belum_dikonfigurasi" {{ $device->fungsi === 'belum_dikonfigurasi' ? 'selected' : '' }}>Belum Dikonfigurasi (Tidak Jalankan Aksi)</option>
                                                         </select>
                                                     </div>

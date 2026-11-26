@@ -103,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/rfid-devices', [RfidDeviceController::class, 'store'])->name('rfid-devices.store');
         Route::put('/rfid-devices/{device}', [RfidDeviceController::class, 'update'])->name('rfid-devices.update');
         Route::patch('/rfid-devices/{device}/toggle', [RfidDeviceController::class, 'toggle'])->name('rfid-devices.toggle');
+        Route::patch('/rfid-devices/{device}/set-gerbang', [RfidDeviceController::class, 'setGerbang'])->name('rfid-devices.set-gerbang');
         Route::delete('/rfid-devices/{device}', [RfidDeviceController::class, 'destroy'])->name('rfid-devices.destroy');
     });
 
