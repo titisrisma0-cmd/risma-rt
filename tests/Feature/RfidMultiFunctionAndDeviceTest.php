@@ -97,6 +97,7 @@ class RfidMultiFunctionAndDeviceTest extends TestCase
                 $table->foreignId('rt_id')->nullable();
                 $table->string('rfid_uid', 64)->nullable()->unique();
                 $table->string('rfid_card_type', 100)->nullable();
+                $table->string('jenis_kartu', 100)->nullable()->default('Kartu RFID');
                 $table->timestamp('rfid_registered_at')->nullable();
                 $table->string('rfid_registered_by', 100)->nullable();
                 $table->string('nama_lengkap');
@@ -747,46 +748,34 @@ class RfidMultiFunctionAndDeviceTest extends TestCase
             ]);
     }
 
-    public function test_assign_rfid_requires_konfirmasi_nik_matching_citizen(): void
+    public function test_assign_rfid_saves_without_nik_validation_and_stores_jenis_kartu(): void
     {
         $wargaBaru = UserProfile::create([
             'nama_lengkap' => 'Hendra Pratama',
             'nik' => '3201112233445566',
             'rt_id' => $this->rt01->id,
-            'status' => 'pending',
+            'status' => 'aktif',
         ]);
 
-        // 1. Tanpa konfirmasi_nik -> ditolak
-        $resTanpaNik = $this->actingAs($this->adminRt)->postJson("/warga/{$wargaBaru->id}/rfid/save", [
-            'rfid_uid' => '11223344',
+        // Simpan kartu RFID (misalnya e-Money / Kartu Akses) tanpa konfirmasi_nik
+        $resSave = $this->actingAs($this->adminRt)->postJson("/warga/{$wargaBaru->id}/rfid/save", [
+            'rfid_uid' => '11:22:33:44',
+            'jenis_kartu' => 'Kartu Akses / Gantungan RFID',
         ]);
-        $resTanpaNik->assertStatus(422);
-
-        // 2. Konfirmasi NIK salah -> pesan: "NIK tidak sesuai"
-        $resNikSalah = $this->actingAs($this->adminRt)->postJson("/warga/{$wargaBaru->id}/rfid/save", [
-            'rfid_uid' => '11223344',
-            'konfirmasi_nik' => '9999999999999999',
-        ]);
-        $resNikSalah->assertStatus(422)
-            ->assertJson([
-                'status' => 'error',
-                'message' => 'NIK tidak sesuai',
-            ]);
-
-        // 3. Konfirmasi NIK benar -> sukses
-        $resNikCocok = $this->actingAs($this->adminRt)->postJson("/warga/{$wargaBaru->id}/rfid/save", [
-            'rfid_uid' => '11223344',
-            'konfirmasi_nik' => '3201112233445566',
-        ]);
-        $resNikCocok->assertStatus(200)
+        $resSave->assertStatus(200)
             ->assertJson([
                 'status' => 'success',
+                'data' => [
+                    'rfid_uid' => '11223344',
+                    'jenis_kartu' => 'Kartu Akses / Gantungan RFID',
+                ],
             ]);
 
         $wargaBaru->refresh();
         $this->assertEquals('11223344', $wargaBaru->rfid_uid);
-        $this->assertEquals('Terdaftar', $wargaBaru->status);
-        $this->assertEquals('3201112233445566', $wargaBaru->nik); // NIK tidak boleh berubah
+        $this->assertEquals('Kartu Akses / Gantungan RFID', $wargaBaru->jenis_kartu);
+        $this->assertEquals('aktif', $wargaBaru->status);
+        $this->assertEquals('3201112233445566', $wargaBaru->nik);
 
         // Cek dicatat ke AuditLog
         $this->assertDatabaseHas('audit_logs', [

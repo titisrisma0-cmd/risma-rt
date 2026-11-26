@@ -2,37 +2,47 @@
  * ================================================================================================
  * NAMA FILE: ESP32_RFID.ino
  * SISTEM IOT SMART RW: PEMBACA RFID RC522 (E-KTP / SMART CARD) MODEL JSON
- * DENGAN AUTO-FALLBACK HOTSPOT "HotSpot_ESP32S" (TIMEOUT 3 DETIK)
+ * DENGAN AUTO-FALLBACK HOTSPOT "HotSpot_ESP32S" (TIMEOUT 10 DETIK)
  * ================================================================================================
- * 
+ *
  * ATURAN KERJA & SPESIFIKASI:
  * 1. Deteksi E-KTP / Kartu Elektronik (13.56 MHz):
  *    - Membaca kartu E-KTP RI, e-Toll, Flazz, e-Money, kartu akses Mifare/NFC.
  *    - Mengekstrak nomor UID dan tipe kartu.
  *    - Mengirimkan data dalam format model JSON standar ke Server Laravel.
- * 
- * 2. Auto-Fallback HotSpot 3 Detik:
- *    - Saat menyala, ESP32 mencoba mencari sinyal WiFi yang tersimpan selama MAKSIMAL 3 DETIK.
- *    - Jika dalam 3 detik belum terhubung ke WiFi, ESP32 otomatis beralih menjadi Access Point (AP):
+ *
+ * 2. Auto-Fallback HotSpot 10 Detik:
+ *    - Saat menyala, ESP32 mencoba mencari sinyal WiFi yang tersimpan selama MAKSIMAL 10 DETIK.
+ *    - Jika dalam 10 detik belum terhubung ke WiFi, ESP32 otomatis beralih menjadi Access Point (AP):
  *        * Nama HotSpot : HotSpot_ESP32S
  *        * Password     : 12345678
  *        * Alamat IP    : 192.168.4.1
- * 
+ *
  * 3. Konfigurasi Dinamis (Captive Portal Web):
  *    - Pengguna menghubungkan HP/Laptop ke "HotSpot_ESP32S", membuka browser di 192.168.4.1.
  *    - Memilih WiFi/Hotspot terdekat & memasukkan password.
- *    - Mengatur IP / Name Server tujuan pengiriman data JSON (contoh: http://192.168.1.15/api/rfid/scan).
+ *    - Mengatur URL Server tujuan pengiriman data JSON.
  *    - Mengatur Device Security Token anti-hacker dari Dashboard Super Admin.
  *    - Semua data disimpan ke memori Flash NVS (Preferences) dan tidak hilang saat mati listrik.
- * 
+ *
  * 4. Model Data JSON:
  *    - Mengirimkan payload JSON lengkap dengan Header "X-Device-Token".
  *    - Menerima respon JSON dari Laravel (izin masuk, nama warga, buzzer signal).
- * 
+ *
+ * 5. HTTPS Support:
+ *    - Mendukung URL https:// dengan validasi sertifikat TLS penuh (Root CA: ISRG Root X1).
+ *    - Mendukung URL http:// untuk jaringan lokal.
+ *    - NTP time sync otomatis setelah WiFi tersambung (diperlukan untuk validasi sertifikat TLS).
+ *    - ALLOW_INSECURE_TLS = false (setInsecure() TIDAK digunakan secara default).
+ *
  * ================================================================================================
  */
 
+// ---- Opsi Darurat Diagnosa TLS (JANGAN ubah ke true di produksi) ----
+#define ALLOW_INSECURE_TLS false
+
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <WebServer.h>
 #include <DNSServer.h>
 #include <Preferences.h>
@@ -41,6 +51,7 @@
 #define MFRC522_SPICLOCK (1000000u)
 #include <MFRC522.h>
 #include <ArduinoJson.h>
+#include <time.h>
 
 // ================================================================================================
 // 1. PINOUT RANGKAIAN (NODEMCU ESP-32S KE RFID-RC522)
@@ -55,7 +66,7 @@
  * - RC522 MOSI       -> ESP32 GPIO 23
  * - RC522 SCK        -> ESP32 GPIO 18
  * - RC522 SDA (SS)   -> ESP32 GPIO 5
- * 
+ *
  * PIN INDIKATOR OUTPUT:
  * - Buzzer (+)       -> ESP32 GPIO 13 (Kaki (-) ke GND)
  * - LED Hijau (+)    -> ESP32 GPIO 12 (via resistor 220 Ohm ke GND)
@@ -74,8 +85,8 @@
 // 2. KONFIGURASI HOTSPOT & TIMEOUT WIFI
 // ================================================================================================
 const char* AP_SSID_NAME     = "HotSpot_ESP32S";   // Nama HotSpot sesuai permintaan
-const char* AP_PASSWORD_VAL  = "12345678";         // Password default 8 karakter
-const unsigned long WIFI_TIMEOUT_MS = 10000;       // Batas toleransi sinyal WiFi: 10 DETIK (10000 ms)
+const char* AP_PASSWORD_VAL  = "12345678";          // Password default 8 karakter
+const unsigned long WIFI_TIMEOUT_MS = 10000;        // Batas toleransi sinyal WiFi: 10 DETIK
 
 const byte DNS_PORT = 53;
 
@@ -88,11 +99,12 @@ DNSServer dnsServer;
 // Variabel Konfigurasi Dinamis (Disimpan di Memori Flash NVS ESP32)
 String cfg_wifi_ssid       = "";
 String cfg_wifi_pass       = "";
-String cfg_server_url      = "http://192.168.1.6:8000/api/rfid/scan"; // Default IP/Name Server tujuan JSON
-String cfg_device_token    = "";                                   // Token pengaman diisi dari Dashboard Super Admin (tidak hardcode)
+String cfg_server_url      = "https://smartrw.mehape.com/api/rfid/scan"; // Default URL produksi
+String cfg_device_token    = "";   // Token pengaman diisi dari Dashboard Super Admin (tidak hardcode)
 String cfg_device_id       = "ESP32-GATE-RW01";
 
 bool isHotSpotActive = false;
+bool ntpSynced       = false;      // Status sinkronisasi NTP
 String lastScannedUid = "";
 unsigned long lastScanTime = 0;
 const unsigned long SCAN_COOLDOWN_MS = 2500; // Debounce jeda 2.5 detik kartu yang sama
@@ -100,6 +112,135 @@ const unsigned long SCAN_COOLDOWN_MS = 2500; // Debounce jeda 2.5 detik kartu ya
 // Buffer ATQA dari scan terakhir
 byte lastDetectedATQA[2] = {0, 0};
 
+// ================================================================================================
+// ROOT CA CERTIFICATE BUNDLE (Let's Encrypt Root YR + ISRG Root X1/X2 + Google GTS Root R1/R4)
+// Digunakan untuk validasi sertifikat TLS https://smartrw.mehape.com
+// ================================================================================================
+static const char ROOT_CA_BUNDLE[] PROGMEM = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIIF9DCCA9ygAwIBAgIRAPJLbRf52a18scn+p4eCaZ8wDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjYwNTEzMDAwMDAw
+WhcNMzIwOTAyMjM1OTU5WjAuMQswCQYDVQQGEwJVUzENMAsGA1UEChMESVNSRzEQ
+MA4GA1UEAxMHUm9vdCBZUjCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIB
+ANvGJnN78CTJdWL3+eGfsLN5TrNBJs+VH9hRXqRbwxu9sGNiB0BD1fcOxbSUQCJI
+M1xE13Db+5Cw1w0s0EBYsvuIP/6joF0w8cuImbgR1OGgYbSQ4OpzI+DG8SGuTlcE
+873OCS+kh3srlo6vl43M5OJg4Aeo1sfHp6kTJDoIiFBNJAY+OKfX/FUvYKuhjT+n
+o49lmqmupSBI5PkBQiqrEGtWU5uxU/cQWHGu8jSjFBznZqvbNPLMXMLFxCb3WTfr
+JBXXjqvWG+v4bjzxjjeAtOlU7qarRDvNOyAuQYLln904M+faKx8hnLCpJ15ZqaEg
+cNlY+9MMWcC5yvL2A2j3l9+2buggZX+dOE91zYmIdawTvSZuVvlbRrAlLxIB6pwM
+BjneXCjYQ8+3BCCjssbSNpZU3hTcBDdhfAlEDlYr6pEatnMdmDT5BqnKC92bd0Eh
+M1fbLHioLccLCuievT8ZkPhZrq7Mii7gNXAcUEAR8+lzYal+9zTg7C5DALyVOeG/
+CqfRAMn1KSHCR0NSA6P8tn/mGRlnCct5rtVCLnVySVpU6H1qGg3DgTOuskf8eahT
+MiYbI5ezPJmO5ertalskQ1utp74+eDy92PI4ftHKTbq9IWhH4YZKh3WnJEIt+oQv
+lYZbY8tpEroKrFB6PFGzrJIDRyts4HqvuH52RFj2zv/BAgMBAAGjgeswgegwDgYD
+VR0PAQH/BAQDAgEGMBMGA1UdJQQMMAoGCCsGAQUFBwMBMA8GA1UdEwEB/wQFMAMB
+Af8wHQYDVR0OBBYEFN7nW2DQIm1AKH0/DQH+pLVStFGUMB8GA1UdIwQYMBaAFHm0
+WeZ7tuXkAXOACIjIGlj26ZtuMDIGCCsGAQUFBwEBBCYwJDAiBggrBgEFBQcwAoYW
+aHR0cDovL3gxLmkubGVuY3Iub3JnLzATBgNVHSAEDDAKMAgGBmeBDAECATAnBgNV
+HR8EIDAeMBygGqAYhhZodHRwOi8veDEuYy5sZW5jci5vcmcvMA0GCSqGSIb3DQEB
+CwUAA4ICAQA8spSI95KKfn2W6GMmDpHBJSPaLbsS3W93cijJCRCYAc1fsJgL1FIL
+7C0C9ecPOdcwB2fi0Dk2p94j9iTJCxmt5CFSKLRWwnXT2MMSXexVxqoVB79BdWPx
+VXETkVme/qYSAuKVHh5Ps+5BixgmwS1JkjSAc+MfrUbNssVEEnH0aEiAh+rotXAV
+JSP/Ye7LJPEwD9DWG72vVWbhAcuOf5OLjz57Ctk7MgQHynZ7+PlHJtajroCaIbtC
+r6tcZZaAwUQm+jQyeWdV+2hv9deOYFmKeQyjjcSrN5Nadrw+L9DZJLbA1HqeNvLh
+BgqpP0fvJq2N6EtD574N6eMI7uMsJTnji2UDz9el5XLSv9fqJMuDQtYVb2oTNoKp
+oUqhxPVC0aq4eG5MESaIdn8b5ZGSSeAJLMHXljEdlNza+ncfkviXk1POLnnFdvx8
+/gk6M374WbLWFXw8N141B/Rl/tINGfl1TxOIiqtiMYkL02RSGb1kq34BL9NPP27z
+RGMuHGnzS3hFIrRTfKxrzUZ9RzQWzEG3K6fJ3r2nqSltkeytis9DIBoFY9VmVyjL
+M71DMi+y1+TRSJVClEMwvA4yL++7q9XZx5r5wBRWB4kQTKH5qyoZnDw7iiuh1lID
+yDFx8r7i9vIJU5HS3moZLkYWAOilMaV9N56A9Bgb6dNcHkvg3NoaYA==
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
+WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
+ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
+MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
+h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
+0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
+A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
+T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qy
+HB5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+U
+CB5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzU
+vKBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbW
+nOlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynT
+njh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrb
+wqHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53C
+IrU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
+HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
+hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
+ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
+3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
+NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
+ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
+TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
+jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
+oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
+4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
+mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
+emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIICGzCCAaGgAwIBAgIQQdKd0XLq7qeAwSxs6S+HUjAKBggqhkjOPQQDAzBPMQsw
+CQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJuZXQgU2VjdXJpdHkgUmVzZWFyY2gg
+R3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBYMjAeFw0yMDA5MDQwMDAwMDBaFw00
+MDA5MTcxNjAwMDBaME8xCzAJBgNVBAYTAlVTMSkwJwYDVQQKEyBJbnRlcm5ldCBT
+ZWN1cml0eSBSZXNlYXJjaCBHcm91cDEVMBMGA1UEAxMMSVNSRyBSb290IFgyMHYw
+EAYHKoZIzj0CAQYFK4EEACIDYgAEzZvVn4CDCuwJSvMWSj5cz3es3mcFDR0HttwW
++1qLFNvicWDEukWVEYmO6gbf9yoWHKS5xcUy4APgHoIYOIvXRdgKam7mAHf7AlF9
+ItgKbppbd9/w+kHsOdx1ymgHDB/qo0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0T
+AQH/BAUwAwEB/zAdBgNVHQ4EFgQUfEKWrt5LSDv6kviejM9ti6lyN5UwCgYIKoZI
+zj0EAwMDaAAwZQIwe3lORlCEwkSHRhtFcP9Ymd70/aTSVaYgLXTWNLxBo1BfASdW
+tL4ndQavEi51mI38AjEAi/V3bNTIZargCyzuFJ0nN6T5U6VR5CmD1/iQMVtCnwr1
+/q4AaOeMSQ+2b1tbFfLn
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIFVzCCAz+gAwIBAgINAgPlk28xsBNJiGuiFzANBgkqhkiG9w0BAQwFADBHMQsw
+CQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZpY2VzIExMQzEU
+MBIGA1UEAxMLR1RTIFJvb3QgUjEwHhcNMTYwNjIyMDAwMDAwWhcNMzYwNjIyMDAw
+MDAwWjBHMQswCQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZp
+Y2VzIExMQzEUMBIGA1UEAxMLR1RTIFJvb3QgUjEwggIiMA0GCSqGSIb3DQEBAQUA
+A4ICDwAwggIKAoICAQC2EQKLHuOhd5s73L+UPreVp0A8of2C+X0yBoJx9vaMf/vo
+27xqLpeXo4xL+Sv2sfnOhB2x+cWX3u+58qPpvBKJXqeqUqv4IyfLpLGcY9vXmX7w
+Cl7raKb0xlpHDU0QM+NOsROjyBhsS+z8CZDfnWQpJSMHobTSPS5g4M/SCYe7zUjw
+TcLCeoiKu7rPWRnWr4+wB7CeMfGCwcDfLqZtbBkOtdh+JhpFAz2weaSUKK0Pfybl
+qAj+lug8aJRT7oM6iCsVlgmy4HqMLnXWnOunVmSPlk9orj2XwoSPwLxAwAtcvfaH
+szVsrBhQf4TgTM2S0yDpM7xSma8ytSmzJSq0SPly4cpk9+aCEI3oncKKiPo4Zor8
+Y/kB+Xj9e1x3+naH+uzfsQ55lVe0vSbv1gHR6xYKu44LtcXFilWr06zqkUspzBmk
+MiVOKvFlRNACzqrOSbTqn3yDsEB750Orp2yjj32JgfpMpf/VjsPOS+C12LOORc92
+wO1AK/1TD7Cn1TsNsYqiA94xrcx36m97PtbfkSIS5r762DL8EGMUUXLeXdYWk70p
+aDPvOmbsB4om3xPXV2V4J95eSRQAogB/mqghtqmxlbCluQ0WEdrHbEg8QOB+DVrN
+VjzRlwW5y0vtOUucxD/SVRNuJLDWcfr0wbrM7Rv1/oFB2ACYPTrIrnqYNxgFlQID
+AQABo0IwQDAOBgNVHQ8BAf8EBAMCAYYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4E
+FgQU5K8rJnEaK0gnhS9SZizv8IkTcT4wDQYJKoZIhvcNAQEMBQADggIBAJ+qQibb
+C5u+/x6Wki4+omVKapi6Ist9wTrYggoGxval3sBOh2Z5ofmmWJyq+bXmYOfg6LEe
+QkEzCzc9zolwFcq1JKjPa7XSQCGYzyI0zzvFIoTgxQ6KfF2I5DUkzps+GlQebtuy
+h6f88/qBVRRiClmpIgUxPoLW7ttXNLwzldMXG+gnoot7TiYaelpkttGsN/H9oPM4
+7HLwEXWdyzRSjeZ2axfG34arJ45JK3VmgRAhpuo+9K4l/3wV3s6MJT/KYnAK9y8J
+ZgfIPxz88NtFMN9iiMG1D53Dn0reWVlHxYciNuaCp+0KueIHoI17eko8cdLiA6Ef
+MgfdG+RCzgwARWGAtQsgWSl4vflVy2PFPEz0tv/bal8xa5meLMFrUKTX5hgUvYU/
+Z6tGn6D/Qqc6f1zLXbBwHSs09dR2CQzreExZBfMzQsNhFRAbd03OIozUhfJFfbdT
+6u9AWpQKXCBfTkBdYiJ23//OYb2MI3jSNwLgjt7RETeJ9r/tSQdirpLsQBqvFAnZ
+0E6yove+7u7Y/9waLd64NnHi/Hm3lCXRSHNboTXns5lndcEZOitHTtNCjv0xyBZm
+2tIMPNuzjsmhDYAPexZ3FL//2wmUspO8IFgV6dtxQ/PeEMMA3KgqlbbC1j+Qa3bb
+bP6MvPJwNQzcmRk13NfIRmPVNnGuV/u3gm3c
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIICCTCCAY6gAwIBAgINAgPlwGjvYxqccpBQUjAKBggqhkjOPQQDAzBHMQswCQYD
+VQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZpY2VzIExMQzEUMBIG
+A1UEAxMLR1RTIFJvb3QgUjQwHhcNMTYwNjIyMDAwMDAwWhcNMzYwNjIyMDAwMDAw
+WjBHMQswCQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZpY2Vz
+IExMQzEUMBIGA1UEAxMLR1RTIFJvb3QgUjQwdjAQBgcqhkjOPQIBBgUrgQQAIgNi
+AATzdHOnaItgrkO4NcWBMHtLSZ37wWHO5t5GvWvVYRg1rkDdc/eJkTBa6zzuhXyi
+QHY7qca4R9gq55KRanPpsXI5nymfopjTX15YhmUPoYRlBtHci8nHc8iMai/lxKvR
+HYqjQjBAMA4GA1UdDwEB/wQEAwIBhjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQW
+BBSATNbrdP9JNqPV2Py1PsVq8JQdjDAKBggqhkjOPQQDAwNpADBmAjEA6ED/g94D
+9J+uHXqnLrmvT/aDHQ4thQEd0dlq7A/Cr8deVl5c1RxYIigL9zC2L7F8AjEA8GE8
+p/SgguMh1YQdc4acLa/KNJvxn7kjNuK8YAOdgLOaVsjh4rsUecrNIdSUtUlD
+-----END CERTIFICATE-----
+)EOF";
 
 // ================================================================================================
 // 3. INDIKATOR SUARA (BUZZER) & LAMPU (LED)
@@ -148,7 +289,7 @@ void loadStoredConfig() {
     preferences.begin("smart-rfid", true); // Mode baca
     cfg_wifi_ssid    = preferences.getString("ssid", "");
     cfg_wifi_pass    = preferences.getString("pass", "");
-    cfg_server_url   = preferences.getString("url", "http://192.168.1.6:8000/api/rfid/scan");
+    cfg_server_url   = preferences.getString("url", "https://smartrw.mehape.com/api/rfid/scan");
     cfg_device_token = preferences.getString("token", "");
     cfg_device_id    = preferences.getString("devid", "ESP32-GATE-RW01");
     preferences.end();
@@ -173,7 +314,46 @@ void saveStoredConfig(String ssid, String pass, String url, String token, String
 
 
 // ================================================================================================
-// 5. WEB PORTAL KONFIGURASI DINAMIS (HOTSPOT "HotSpot_ESP32S")
+// 5. SINKRONISASI WAKTU NTP (Wajib untuk validasi sertifikat TLS)
+// ================================================================================================
+
+void syncNtpTime() {
+    Serial.println("\n[NTP] Memulai sinkronisasi waktu (Asia/Jakarta UTC+7)...");
+    // Zona waktu Asia/Jakarta: UTC+7, tanpa daylight saving
+    configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+
+    const unsigned long NTP_TIMEOUT_MS = 15000;
+    unsigned long startNtp = millis();
+    time_t now = 0;
+
+    while (millis() - startNtp < NTP_TIMEOUT_MS) {
+        now = time(nullptr);
+        if (now > 1700000000UL) { // Epoch > Nov 2023 -> waktu valid
+            ntpSynced = true;
+            break;
+        }
+        delay(300);
+        Serial.print(".");
+    }
+    Serial.println();
+
+    if (ntpSynced) {
+        struct tm timeinfo;
+        gmtime_r(&now, &timeinfo);
+        char timeBuf[32];
+        strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", &timeinfo);
+        Serial.print("[NTP] Waktu berhasil disinkronkan: ");
+        Serial.print(timeBuf);
+        Serial.println(" UTC");
+    } else {
+        Serial.println("[NTP] PERINGATAN: Gagal sinkronisasi waktu dalam batas timeout.");
+        Serial.println("[NTP] Validasi sertifikat TLS mungkin gagal karena waktu tidak valid.");
+    }
+}
+
+
+// ================================================================================================
+// 6. WEB PORTAL KONFIGURASI DINAMIS (HOTSPOT "HotSpot_ESP32S")
 // ================================================================================================
 
 String generatePortalHTML(String wifiOptions) {
@@ -198,31 +378,31 @@ String generatePortalHTML(String wifiOptions) {
     html += "<div class='title'>ESP32 RFID <span>SMART RW</span></div>";
     html += "<div class='badge'>HotSpot: HotSpot_ESP32S (192.168.4.1)</div>";
     html += "</div>";
-    
+
     html += "<form method='POST' action='/save'>";
     html += "<label>Pilih WiFi / Hotspot Terdeteksi</label>";
     html += "<select name='ssid' id='ssidSelect'>" + wifiOptions + "<option value=''>-- Ketik Manual di Bawah --</option></select>";
-    
+
     html += "<label>Atau Nama SSID Manual</label>";
     html += "<input type='text' name='manual_ssid' placeholder='Isi jika SSID disembunyikan'>";
-    
+
     html += "<label>Kata Sandi WiFi *</label>";
     html += "<input type='password' name='password' placeholder='Password Hotspot / WiFi'>";
-    
+
     html += "<hr style='border: none; border-top: 1px dashed var(--border); margin: 18px 0;'>";
-    
-    html += "<label>IP / Name Server Tujuan JSON *</label>";
-    html += "<input type='text' name='url' value='" + cfg_server_url + "' placeholder='http://192.168.1.xxx/api/rfid/scan' required>";
-    html += "<div class='note'>Contoh: http://192.168.1.15/api/rfid/scan atau domain https://rw.id/api/rfid/scan</div>";
-    
+
+    html += "<label>URL Server Tujuan JSON *</label>";
+    html += "<input type='text' name='url' value='" + cfg_server_url + "' placeholder='https://smartrw.mehape.com/api/rfid/scan' required>";
+    html += "<div class='note'>Contoh: https://smartrw.mehape.com/api/rfid/scan &nbsp;|&nbsp; http://192.168.1.15/api/rfid/scan</div>";
+
     html += "<label>Device Security Token (Anti-Hacker) *</label>";
-    html += "<input type='text' name='token' value='" + cfg_device_token + "' placeholder='Tempel Token API dari Dashboard Super Admin' required>";
+    html += "<input type='text' name='token' value='' placeholder='Tempel Token API dari Dashboard Super Admin' required>";
     html += "<div class='note'>Dapatkan token dari Dashboard Super Admin &rarr; Menu Pengaturan Token API</div>";
-    
+
     html += "<label>ID Perangkat Scanner</label>";
     html += "<input type='text' name='devid' value='" + cfg_device_id + "' placeholder='ESP32-GATE-RW01'>";
-    
-    html += "<button type='submit'>Simpan & Hubungkan ke WiFi &rarr;</button>";
+
+    html += "<button type='submit'>Simpan &amp; Hubungkan ke WiFi &rarr;</button>";
     html += "</form></div></body></html>";
     return html;
 }
@@ -276,13 +456,13 @@ void activateHotspotPortal() {
 
         if (chosenSsid.length() > 0) {
             saveStoredConfig(chosenSsid, formPass, formUrl, formToken, formDevId);
-            
+
             String resHtml = "<!DOCTYPE html><html><body style='font-family:sans-serif; text-align:center; padding:40px;'>";
             resHtml += "<h2 style='color:#0e7a4b;'>Pengaturan Berhasil Disimpan!</h2>";
             resHtml += "<p>ESP32 sedang merestart untuk menghubungkan ke: <b>" + chosenSsid + "</b></p>";
             resHtml += "<p>Tujuan Data JSON: <code>" + formUrl + "</code></p>";
             resHtml += "<p>Silakan kembalikan koneksi HP Anda ke WiFi semula.</p></body></html>";
-            
+
             server.send(200, "text/html", resHtml);
             delay(1500);
             ESP.restart(); // Restart agar boot dengan setelan WiFi baru
@@ -302,7 +482,7 @@ void activateHotspotPortal() {
 
 
 // ================================================================================================
-// 6. PENGIRIMAN DATA KARTU ELEKTRONIK KE SERVER MODEL JSON
+// 7. PENGIRIMAN DATA KARTU ELEKTRONIK KE SERVER MODEL JSON (HTTP + HTTPS)
 // ================================================================================================
 
 void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, String sakHex, String atqaHex, String cardType) {
@@ -312,13 +492,51 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
         return;
     }
 
+    bool useHttps = cfg_server_url.startsWith("https://");
+
+    // --- Diagnosa NTP jika HTTPS ---
+    if (useHttps && !ntpSynced) {
+        // Coba sinkronisasi ulang sebelum membatalkan
+        time_t now = time(nullptr);
+        if (now > 1700000000UL) {
+            ntpSynced = true;
+        } else {
+            Serial.println("[TLS WARN] NTP belum tersinkron. Waktu sistem tidak valid.");
+            Serial.println("[TLS WARN] Sertifikat TLS mungkin dianggap tidak valid.");
+        }
+    }
+
     HTTPClient http;
-    http.begin(cfg_server_url);
+    http.setTimeout(10000); // Timeout 10 detik
+
+    bool beginOk = false;
+    WiFiClientSecure secureClient;
+    WiFiClient plainClient;
+
+    if (useHttps) {
+        secureClient.setTimeout(10000); // 10000 ms = 10 detik
+#if ALLOW_INSECURE_TLS
+        secureClient.setInsecure();
+        Serial.println("[TLS WARN] ALLOW_INSECURE_TLS aktif: sertifikat TIDAK divalidasi!");
+#else
+        secureClient.setCACert(ROOT_CA_BUNDLE);
+#endif
+        beginOk = http.begin(secureClient, cfg_server_url);
+    } else {
+        plainClient.setTimeout(10000);
+        beginOk = http.begin(plainClient, cfg_server_url);
+    }
+
+    if (!beginOk) {
+        Serial.println("[HTTP ERROR] http.begin() gagal. Periksa URL atau koneksi WiFi.");
+        soundDenied();
+        return;
+    }
 
     // Header HTTP Model JSON & Token Keamanan (tanpa token di body)
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Accept", "application/json");
-    http.addHeader("X-Device-Token", cfg_device_token); // Header Token Otentikasi Anti-Hacker
+    http.addHeader("X-Device-Token", cfg_device_token); // Header Token Otentikasi
 
     // Konstruksi JSON Model Payload Pengiriman
     StaticJsonDocument<512> jsonDoc;
@@ -329,14 +547,16 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
     jsonDoc["atqa"]          = atqaHex;
     jsonDoc["card_type"]     = cardType;
     jsonDoc["device_id"]     = cfg_device_id;
-    jsonDoc["timestamp"]     = millis() / 1000;
+    jsonDoc["timestamp"]     = (uint32_t)(time(nullptr));
 
     String jsonPayload;
     serializeJson(jsonDoc, jsonPayload);
 
     Serial.println("\n--------------------------------------------------");
     Serial.print("[PENGIRIMAN JSON KE SERVER] -> "); Serial.println(cfg_server_url);
-    Serial.print("Model JSON: "); Serial.println(jsonPayload);
+    Serial.print("Protokol    : "); Serial.println(useHttps ? "HTTPS (TLS)" : "HTTP (Plaintext)");
+    Serial.print("NTP Synced  : "); Serial.println(ntpSynced ? "YA" : "TIDAK");
+    Serial.print("Model JSON  : "); Serial.println(jsonPayload);
 
     unsigned long startReq = millis();
     int httpResponseCode = http.POST(jsonPayload);
@@ -366,7 +586,7 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
             Serial.print("Status Masuk    : "); Serial.println(accessGranted ? "DIIZINKAN (GRANTED)" : "DITOLAK (DENIED)");
             Serial.print("Pesan Sistem    : "); Serial.println(accessMsg);
             Serial.print("Status Database : "); Serial.println(isRegistered ? "Kartu Terdaftar Warga" : "Kartu Baru (Mode Rekam Siap)");
-            
+
             if (isRegistered && respDoc.containsKey("registered_to") && !respDoc["registered_to"].isNull()) {
                 const char* nama = respDoc["registered_to"]["nama_lengkap"] | "-";
                 const char* nik  = respDoc["registered_to"]["nik"] | "-";
@@ -381,7 +601,6 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
             }
             Serial.println("==================================================");
 
-            // Buzzer GPIO 13: 2 bip pendek jika server membalas sukses (HTTP 2xx), 1 bip panjang jika gagal
             if (httpResponseCode >= 200 && httpResponseCode < 300) {
                 soundGranted();
             } else {
@@ -394,9 +613,34 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
                 soundDenied();
             }
         }
+
     } else {
-        Serial.print("[HTTP ERROR] Gagal menghubungi Server Laravel. Kode: "); Serial.println(httpResponseCode);
-        Serial.println("Tips: Pastikan URL Server benar dan Laptop berada di jaringan WiFi yang sama.");
+        // Kode negatif: error jaringan / TLS
+        Serial.print("[HTTP ERROR] Gagal menghubungi server. Kode: ");
+        Serial.println(httpResponseCode);
+        Serial.print("[HTTP ERROR] Deskripsi: ");
+        Serial.println(http.errorToString(httpResponseCode).c_str());
+
+        // Diagnosa TLS mendalam via lastError
+        if (useHttps) {
+            char tlsErrBuf[128];
+            int tlsErrCode = secureClient.lastError(tlsErrBuf, sizeof(tlsErrBuf));
+            Serial.print("[TLS ERROR] Kode Error mbedTLS: ");
+            Serial.print(tlsErrCode);
+            Serial.print(" (0x");
+            Serial.print(tlsErrCode, HEX);
+            Serial.println(")");
+            Serial.print("[TLS ERROR] Pesan Detail     : ");
+            Serial.println(tlsErrBuf);
+
+            time_t nowCheck = time(nullptr);
+            Serial.print("[DIAGNOSA TLS] Waktu sistem saat ini (epoch): ");
+            Serial.println((unsigned long)nowCheck);
+            if (nowCheck < 1700000000UL) {
+                Serial.println("[DIAGNOSA TLS] -> PERINGATAN: Waktu NTP belum valid! Sertifikat TLS tidak dapat diverifikasi.");
+            }
+            Serial.println("[DIAGNOSA TLS] Periksa: DNS, koneksi internet, dan validitas sertifikat server.");
+        }
         soundDenied();
     }
 
@@ -405,7 +649,7 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
 
 
 // ================================================================================================
-// 7. SETUP UTAMA
+// 8. SETUP UTAMA
 // ================================================================================================
 
 String wifiStatusToString(wl_status_t st) {
@@ -459,9 +703,7 @@ void setup() {
     byte v = rfid.PCD_ReadRegister(rfid.VersionReg);
     if (regTest1 == 0x55 && regTest2 == 0xAA) {
         Serial.print("SENSOR OK (VersionReg 0x");
-        if (v < 0x10) {
-            Serial.print("0");
-        }
+        if (v < 0x10) Serial.print("0");
         Serial.print(v, HEX);
         Serial.println(")");
     } else {
@@ -526,6 +768,15 @@ void setup() {
         Serial.println(hotspotDimatikan ? "DIMATIKAN (WiFi Mode STA saja)" : "MASIH AKTIF");
         Serial.println("==================================================");
         soundGranted();
+
+        // 4. Sinkronisasi NTP (wajib untuk validasi sertifikat TLS HTTPS)
+        if (cfg_server_url.startsWith("https://")) {
+            syncNtpTime();
+        } else {
+            Serial.println("[NTP] Dilewati (URL server menggunakan HTTP plaintext).");
+            ntpSynced = false;
+        }
+
     } else {
         Serial.println("\n==================================================");
         Serial.println("[WIFI STATUS] Koneksi WiFi GAGAL");
@@ -541,7 +792,7 @@ void setup() {
 
 
 // ================================================================================================
-// 8. DETEKSI KARTU ADAPTIF (MIFARE + E-KTP ISO 14443-A 7-BYTE UID) & LOOP UTAMA
+// 9. DETEKSI KARTU ADAPTIF (MIFARE + E-KTP ISO 14443-A 7-BYTE UID) & LOOP UTAMA
 // ================================================================================================
 
 bool detectAndSelectCard() {

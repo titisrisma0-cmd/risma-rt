@@ -8,8 +8,8 @@
                         <i class="fas fa-id-card fs-5 text-white"></i>
                     </div>
                     <div>
-                        <h5 class="modal-title fw-bold mb-0 text-white" id="modalRekamKtpLabel">Perekaman E-KTP Warga</h5>
-                        <small class="text-white text-opacity-75">Integrasi NodeMCU ESP-32S & RFID RC522</small>
+                        <h5 class="modal-title fw-bold mb-0 text-white" id="modalRekamKtpLabel">Perekaman Kartu Akses RFID</h5>
+                        <small class="text-white text-opacity-75">Integrasi NodeMCU ESP-32S &amp; RFID RC522 (13.56 MHz)</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -32,9 +32,15 @@
                         </div>
                     </div>
                     <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center">
-                        <span class="small text-secondary">Status E-KTP Saat Ini:</span>
+                        <span class="small text-secondary">Status Akses Kartu:</span>
                         <span id="modalCurrentStatus" class="badge bg-white text-secondary border font-monospace">Belum Ada</span>
                     </div>
+                </div>
+
+                <!-- Informasi Kartu RFID -->
+                <div class="alert alert-info py-2 px-3 small mb-3 border-0 rounded-3 text-secondary" style="background: rgba(14, 165, 233, 0.08);">
+                    <i class="fas fa-circle-info text-info me-1"></i>
+                    Tempelkan E-KTP, kartu e-Money/Flazz, atau tag RFID apa saja pada alat reader untuk mendaftarkan akses palang pos
                 </div>
 
                 <!-- Box Scanner Radar & Deteksi -->
@@ -46,7 +52,7 @@
                     </div>
                     
                     <h6 class="fw-bold text-dark mb-1" id="scannerTitle">Menunggu Kartu...</h6>
-                    <p class="small text-muted mb-3" id="scannerSubtitle">Silakan tempelkan fisik kartu pada sensor RFID RC522</p>
+                    <p class="small text-muted mb-3" id="scannerSubtitle">Silakan tempelkan fisik kartu atau tag RFID pada sensor RC522</p>
 
                     <!-- Preview UID & Info Kartu Terdeteksi -->
                     <div id="detectedUidWrapper" class="d-none">
@@ -83,19 +89,17 @@
                     </div>
                 </div>
 
-                <!-- Box Konfirmasi NIK oleh Petugas -->
+                <!-- Pilihan Jenis Kartu RFID -->
                 <div class="card bg-white border p-3 rounded-3 mb-3 shadow-2xs">
-                    <label class="form-label small fw-bold text-dark mb-1">
-                        <i class="fas fa-fingerprint text-primary me-1"></i> Konfirmasi NIK Warga <span class="text-danger">*</span>
+                    <label for="inputJenisKartu" class="form-label small fw-bold text-dark mb-1">
+                        <i class="fas fa-tags text-primary me-1"></i> Jenis Kartu
                     </label>
-                    <div class="input-group mb-2">
-                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-id-card text-muted"></i></span>
-                        <input type="text" class="form-control font-monospace border-start-0" id="inputKonfirmasiNik" placeholder="Ketik ulang 16 digit NIK warga..." maxlength="20">
-                    </div>
-                    <div class="alert alert-info py-2 px-3 small mb-0 border-0 rounded-3 text-secondary" style="background: rgba(14, 165, 233, 0.08);">
-                        <i class="fas fa-circle-info text-info me-1"></i>
-                        <strong>Catatan Petugas:</strong> Pencocokan NIK dilakukan oleh petugas secara visual dengan kartu fisik E-KTP/KTP asli warga, bukan dibaca otomatis dari chip RFID.
-                    </div>
+                    <select class="form-select" id="inputJenisKartu">
+                        <option value="E-KTP">E-KTP</option>
+                        <option value="E-Money / Kartu Bank">E-Money / Kartu Bank (e-Money, Flazz, TapCash, Brizzi)</option>
+                        <option value="Kartu Akses / Gantungan RFID" selected>Kartu Akses / Gantungan RFID</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
                 </div>
 
                 <!-- Accordion Input / Koreksi Manual -->
@@ -123,13 +127,13 @@
             <div class="modal-footer bg-light py-3 px-4 d-flex justify-content-between align-items-center">
                 <div>
                     <button type="button" class="btn btn-outline-danger btn-sm d-none" id="btnLepasKtp">
-                        <i class="fas fa-unlink me-1"></i> Lepas E-KTP
+                        <i class="fas fa-unlink me-1"></i> Lepas Kartu
                     </button>
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Tutup</button>
                     <button type="button" class="btn btn-emerald text-white px-4 fw-semibold" id="btnSimpanKtp" disabled>
-                        <i class="fas fa-save me-1"></i> Simpan E-KTP
+                        <i class="fas fa-save me-1"></i> Simpan Kartu
                     </button>
                 </div>
             </div>
@@ -219,14 +223,19 @@
             document.getElementById('modalRtWarga').textContent = 'RT ' + rt;
             document.getElementById('modalAvatar').textContent = currentWargaNama.charAt(0).toUpperCase();
 
-            // Kolom konfirmasi NIK
-            document.getElementById('inputKonfirmasiNik').value = currentWargaNik !== '-' ? currentWargaNik : '';
+            // Pre-select Jenis Kartu jika sudah pernah terdaftar
+            const jenisSelect = document.getElementById('inputJenisKartu');
+            const existingJenis = button.dataset.jenisKartu || '';
+            if (jenisSelect) {
+                const matchOpt = Array.from(jenisSelect.options).find(opt => opt.value === existingJenis);
+                jenisSelect.value = matchOpt ? existingJenis : 'Kartu Akses / Gantungan RFID';
+            }
 
             const statusEl = document.getElementById('modalCurrentStatus');
             const btnLepas = document.getElementById('btnLepasKtp');
             if (currentRfidUid) {
                 statusEl.className = 'badge bg-light text-primary border font-monospace';
-                statusEl.innerHTML = '<i class="fas fa-check-circle me-1 text-primary"></i> ' + currentRfidUid;
+                statusEl.innerHTML = '<i class="fas fa-check-circle me-1 text-primary"></i> Terdaftar (' + currentRfidUid + ')';
                 btnLepas.classList.remove('d-none');
             } else {
                 statusEl.className = 'badge bg-white text-secondary border font-monospace';
@@ -244,7 +253,7 @@
             document.getElementById('scannerIconPulse').className = 'rounded-circle d-flex align-items-center justify-content-center text-emerald mx-auto pulse-ring';
             document.getElementById('scannerIcon').className = 'fas fa-satellite-dish fa-2x text-emerald';
             document.getElementById('scannerTitle').textContent = 'Menunggu Kartu...';
-            document.getElementById('scannerSubtitle').textContent = 'Silakan tempelkan fisik kartu pada sensor RFID RC522';
+            document.getElementById('scannerSubtitle').textContent = 'Silakan tempelkan fisik kartu atau tag RFID pada sensor RC522';
             document.getElementById('detectedUidWrapper').classList.add('d-none');
             document.getElementById('modalAlert').classList.add('d-none');
             document.getElementById('modalSuccessAlert').classList.add('d-none');
@@ -376,18 +385,11 @@
             }
         });
 
-        // Simpan E-KTP ke Warga
+        // Simpan Kartu RFID ke Warga
         document.getElementById('btnSimpanKtp').addEventListener('click', function () {
             const uid = document.getElementById('inputManualUid').value.trim();
-            const konfirmasiNik = document.getElementById('inputKonfirmasiNik').value.trim();
+            const jenisKartu = document.getElementById('inputJenisKartu')?.value || 'Kartu RFID';
             if (!uid || !currentWargaId) return;
-
-            if (!konfirmasiNik) {
-                const alertEl = document.getElementById('modalAlert');
-                alertEl.classList.remove('d-none');
-                document.getElementById('modalAlertMessage').textContent = 'Kolom Konfirmasi NIK wajib diisi.';
-                return;
-            }
 
             const btn = this;
             const originalHtml = btn.innerHTML;
@@ -404,8 +406,8 @@
                 },
                 body: JSON.stringify({
                     rfid_uid: uid,
-                    card_type: detectedCardType,
-                    konfirmasi_nik: konfirmasiNik
+                    jenis_kartu: jenisKartu,
+                    card_type: detectedCardType
                 })
             })
             .then(res => res.json())
@@ -416,7 +418,7 @@
                 } else {
                     const alertEl = document.getElementById('modalAlert');
                     alertEl.classList.remove('d-none');
-                    document.getElementById('modalAlertMessage').textContent = data.message || 'Gagal menyimpan E-KTP.';
+                    document.getElementById('modalAlertMessage').textContent = data.message || 'Gagal menyimpan kartu RFID.';
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;
                 }
@@ -431,10 +433,10 @@
             });
         });
 
-        // Lepas Tautan E-KTP
+        // Lepas Tautan Kartu RFID
         document.getElementById('btnLepasKtp').addEventListener('click', function () {
             if (!currentWargaId) return;
-            if (!confirm(`Apakah Anda yakin ingin melepas tautan E-KTP dari warga "${currentWargaNama}"?`)) {
+            if (!confirm(`Apakah Anda yakin ingin melepas tautan kartu RFID dari warga "${currentWargaNama}"?`)) {
                 return;
             }
 
@@ -458,7 +460,7 @@
                     modalInstance.hide();
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Gagal melepas E-KTP');
+                    alert(data.message || 'Gagal melepas tautan kartu RFID');
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;
                 }

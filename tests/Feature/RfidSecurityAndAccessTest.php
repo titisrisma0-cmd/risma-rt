@@ -83,6 +83,7 @@ class RfidSecurityAndAccessTest extends TestCase
                 $table->foreignId('rt_id')->nullable();
                 $table->string('rfid_uid', 64)->nullable()->unique();
                 $table->string('rfid_card_type', 100)->nullable();
+                $table->string('jenis_kartu', 100)->nullable()->default('Kartu RFID');
                 $table->timestamp('rfid_registered_at')->nullable();
                 $table->string('rfid_registered_by', 100)->nullable();
                 $table->string('nama_lengkap');
@@ -887,11 +888,11 @@ class RfidSecurityAndAccessTest extends TestCase
             'status' => 'pending',
         ]);
 
-        // Simpan E-KTP / RFID ke warga
+        // Simpan Kartu RFID apa saja ke warga (tanpa validasi NIK)
         $response = $this->actingAs($userRt)->postJson("/warga/{$wargaProfile->id}/rfid/save", [
             'rfid_uid' => 'A1:B2:C3:D4:E5:F6',
+            'jenis_kartu' => 'E-Money / Kartu Bank',
             'card_type' => 'PICC / ISO 14443-4',
-            'konfirmasi_nik' => '3201123456789001',
         ]);
 
         $response->assertStatus(200)
@@ -899,24 +900,22 @@ class RfidSecurityAndAccessTest extends TestCase
                 'status' => 'success',
                 'data' => [
                     'rfid_uid' => 'A1B2C3D4E5F6',
+                    'jenis_kartu' => 'E-Money / Kartu Bank',
                     'card_type' => 'PICC / ISO 14443-4',
-                    'status' => 'Terdaftar',
                     'registered_by' => 'Ketua RT 01 Amanah',
                 ],
             ]);
 
         $wargaProfile->refresh();
 
-        // 1. Status berubah menjadi 'Terdaftar'
-        $this->assertEquals('Terdaftar', $wargaProfile->status);
-
-        // 2. UID, jenis kartu, nama petugas, waktu tersimpan
+        // 1. UID, jenis kartu, nama petugas, waktu tersimpan
         $this->assertEquals('A1B2C3D4E5F6', $wargaProfile->rfid_uid);
+        $this->assertEquals('E-Money / Kartu Bank', $wargaProfile->jenis_kartu);
         $this->assertEquals('PICC / ISO 14443-4', $wargaProfile->rfid_card_type);
         $this->assertEquals('Ketua RT 01 Amanah', $wargaProfile->rfid_registered_by);
         $this->assertNotNull($wargaProfile->rfid_registered_at);
 
-        // 3. NIK warga TIDAK boleh berubah dari hasil scan!
+        // 2. NIK warga TIDAK boleh berubah dari hasil scan!
         $this->assertEquals('3201123456789001', $wargaProfile->nik);
 
         // 4. Audit Log dicatat

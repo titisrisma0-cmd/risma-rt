@@ -233,7 +233,7 @@
             .forms-col {
                 width: 52%;
                 flex-shrink: 0;
-                padding: 44px 40px;
+                padding: 38px 36px;
                 position: relative;
                 z-index: 2;
                 transition: transform var(--transition-smooth);
@@ -241,6 +241,24 @@
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
+                max-height: 88vh;
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(0, 168, 132, 0.25) transparent;
+            }
+
+            .forms-col::-webkit-scrollbar {
+                width: 5px;
+            }
+            .forms-col::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .forms-col::-webkit-scrollbar-thumb {
+                background: rgba(0, 168, 132, 0.25);
+                border-radius: 6px;
+            }
+            .forms-col::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 168, 132, 0.45);
             }
 
             .showcase-col {
@@ -451,6 +469,33 @@
             letter-spacing: -2px;
         }
 
+        .fhc-icon-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #DCF8C6;
+            color: #00A884;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            border: 1px solid #BBF7D0;
+        }
+
+        [data-bs-theme="dark"] .fhc-icon-box,
+        [data-theme="dark"] .fhc-icon-box {
+            background: #18372B;
+            border-color: #1F4535;
+            color: #00A884;
+        }
+
+        .fhc-badge-rp {
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+
         /* Positions and Floating Keyframes */
         .fhc-top-left {
             top: 24px;
@@ -539,23 +584,31 @@
         }
 
         .btn-showcase-action {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background: #FFFFFF;
             color: #111B21;
             border: 1.5px solid #00A884;
-            padding: 10px 28px;
+            padding: 12px 32px;
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
             border-radius: 999px;
             font-size: 0.88rem;
             font-weight: 800;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.04em;
             cursor: pointer;
             box-shadow: 0 4px 14px rgba(0, 168, 132, 0.12);
             transition: all 0.25s ease;
+            text-align: center;
+            text-decoration: none;
         }
 
         .btn-showcase-action:hover {
             background: #00A884;
             color: #FFFFFF;
+            border-color: #00A884;
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 168, 132, 0.25);
         }
@@ -645,6 +698,64 @@
         .form-stage.anim-enter-left.anim-run {
             transform: translateX(0);
             opacity: 1;
+        }
+
+        /* Brand Header for Login (Gemini Canvas Layout) */
+        .brand-header-flex {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .brand-icon-box {
+            width: 48px;
+            height: 48px;
+            background: #DCF8C6;
+            border: 1.5px solid #BBF7D0;
+            border-radius: 16px;
+            color: #00A884;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 168, 132, 0.12);
+        }
+
+        [data-bs-theme="dark"] .brand-icon-box,
+        [data-theme="dark"] .brand-icon-box {
+            background: #18372B;
+            border-color: #1F4535;
+            color: #00A884;
+        }
+
+        .brand-eyebrow {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--wa-teal);
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .pill-badge-rw {
+            background: #DCF8C6;
+            color: #0b6740;
+            border: 1px solid #BBF7D0;
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 3px 12px;
+            border-radius: 999px;
+            letter-spacing: 0.02em;
+        }
+
+        [data-bs-theme="dark"] .pill-badge-rw,
+        [data-theme="dark"] .pill-badge-rw {
+            background: #18372B;
+            color: #00A884;
+            border-color: #1F4535;
         }
 
         /* Form Header Icons & Badges */
@@ -1216,12 +1327,15 @@
                     <div class="forms-slider-container overflow-hidden">
                         <!-- ==================== FORM 1: MASUK KE AKUN ==================== -->
                         <div class="form-stage active" id="panelLogin">
-                            <div class="form-badge-icon-wrap w-11 h-11 rounded-2xl bg-[#DCF8C6] text-[#00A884] flex items-center justify-center mb-3">
-                                <i class="fas fa-house-chimney"></i>
+                            <div class="brand-header-flex">
+                                <div class="brand-icon-box">
+                                    <i class="fas fa-house-chimney"></i>
+                                </div>
+                                <div>
+                                    <div class="brand-eyebrow">SMART RW 01</div>
+                                    <h1 class="form-main-title mb-0">Masuk ke Akun</h1>
+                                </div>
                             </div>
-                            <h1 class="form-main-title">
-                                Masuk ke Akun <span class="badge-brand-subtle">SMART RW 01</span>
-                            </h1>
                             <p class="form-main-desc">
                                 Silakan masuk menggunakan email terdaftar untuk mengakses layanan surat, iuran kas, dan informasi warga.
                             </p>
@@ -1293,15 +1407,12 @@
 
                     <!-- ==================== FORM 2: PENDAFTARAN WARGA ==================== -->
                     <div class="form-stage" id="panelRegister">
-                        <div class="form-badge-icon-wrap w-11 h-11 rounded-2xl bg-[#DCF8C6] text-[#00A884] flex items-center justify-center mb-3">
-                            <i class="fas fa-house-chimney"></i>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
                             <h2 class="form-main-title mb-0">Pendaftaran Warga</h2>
-                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-2.5 py-1 rounded-pill small">RW 01</span>
+                            <span class="pill-badge-rw">RW 01</span>
                         </div>
-                        <p class="form-main-desc">
-                            Lengkapi data kependudukan sesuai KTP & Kartu Keluarga.
+                        <p class="form-main-desc mb-3">
+                            Lengkapi data kependudukan sesuai KTP & Kartu Keluarga
                         </p>
 
                         @if($errors->any() && (old('name') || $errors->has('nik') || $errors->has('no_kk') || $errors->has('rt_id')))
@@ -1650,7 +1761,7 @@
 
                             <!-- Floating Badge 1: Surat Pengantar -->
                             <div class="floating-hub-card fhc-top-left">
-                                <div class="text-success fs-5"><i class="fas fa-file-signature"></i></div>
+                                <div class="fhc-icon-box"><i class="fas fa-check"></i></div>
                                 <div>
                                     <div class="fhc-title">Surat Pengantar</div>
                                     <div class="fhc-sub">Disetujui Ketua RT <span class="fhc-check-double">✓✓</span></div>
@@ -1659,7 +1770,7 @@
 
                             <!-- Floating Badge 2: Kas & Iuran RT -->
                             <div class="floating-hub-card fhc-top-right">
-                                <div class="badge bg-success bg-opacity-20 text-success fw-bold px-1.5 py-1 rounded small">Rp</div>
+                                <div class="fhc-icon-box fhc-badge-rp">Rp</div>
                                 <div>
                                     <div class="fhc-title">Kas & Iuran RT</div>
                                     <div class="fhc-sub">Laporan Real-Time</div>
@@ -1668,7 +1779,7 @@
 
                             <!-- Floating Badge 3: Ronda & CCTV -->
                             <div class="floating-hub-card fhc-bottom-left">
-                                <div class="text-success fs-5"><i class="fas fa-shield-halved"></i></div>
+                                <div class="fhc-icon-box"><i class="fas fa-shield-halved"></i></div>
                                 <div>
                                     <div class="fhc-title">Ronda & CCTV</div>
                                     <div class="fhc-sub">Lingkungan Aman</div>
@@ -1677,7 +1788,7 @@
 
                             <!-- Floating Badge 4: Notifikasi Warga -->
                             <div class="floating-hub-card fhc-bottom-right">
-                                <div class="text-success fs-5"><i class="fas fa-bullhorn"></i></div>
+                                <div class="fhc-icon-box"><i class="fas fa-plus"></i></div>
                                 <div>
                                     <div class="fhc-title">Notifikasi Warga</div>
                                     <div class="fhc-sub">Info & Pengumuman</div>

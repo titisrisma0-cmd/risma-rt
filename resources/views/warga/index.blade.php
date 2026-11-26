@@ -166,12 +166,15 @@
                                         @endif
                                     @endif
                                     @if($item->rfid_uid)
-                                        <span class="badge bg-light text-primary border" title="E-KTP UID: {{ $item->rfid_uid }}">
-                                            <i class="fas fa-id-card text-primary me-1"></i>E-KTP: <span class="font-monospace fw-semibold">{{ $item->rfid_uid }}</span>
+                                        <span class="badge bg-light text-primary border" title="UID: {{ $item->rfid_uid }}{{ $item->jenis_kartu ? ' (' . $item->jenis_kartu . ')' : '' }}">
+                                            <i class="fas fa-id-card text-primary me-1"></i>Akses Kartu: <span class="fw-semibold">Terdaftar</span>
+                                            @if($item->jenis_kartu)
+                                                <span class="text-muted ms-1">({{ $item->jenis_kartu }})</span>
+                                            @endif
                                         </span>
                                     @else
-                                        <span class="badge bg-light text-muted border" title="E-KTP belum direkam">
-                                            <i class="fas fa-id-card text-muted me-1"></i>E-KTP: <span class="text-secondary">Belum Ada</span>
+                                        <span class="badge bg-light text-muted border" title="Akses kartu RFID belum direkam">
+                                            <i class="fas fa-id-card text-muted me-1"></i>Akses Kartu: <span class="text-secondary">Belum Ada</span>
                                         </span>
                                     @endif
                                 </div>
@@ -203,13 +206,14 @@
                                         @endif
                                         <button type="button" 
                                                 class="btn btn-outline-primary btn-rekam-ktp" 
-                                                title="Rekam E-KTP (RFID RC522)"
+                                                title="Rekam Kartu Akses RFID (RC522)"
                                                 data-id="{{ $item->id }}"
                                                 data-nama="{{ $item->nama_lengkap ?? optional($item->user)->name }}"
                                                 data-nik="{{ $item->nik ?? '-' }}"
                                                 data-rt="{{ $item->wilayahRt->kode_rt ?? str_pad($item->rt_id, 2, '0', STR_PAD_LEFT) }}"
-                                                data-rfid="{{ $item->rfid_uid ?? '' }}">
-                                            <i class="fas fa-id-card me-1"></i> Rekam KTP
+                                                data-rfid="{{ $item->rfid_uid ?? '' }}"
+                                                data-jenis-kartu="{{ $item->jenis_kartu ?? '' }}">
+                                            <i class="fas fa-id-card me-1"></i> Rekam Kartu
                                         </button>
                                         <a href="{{ route('warga.edit', $targetId) }}" class="btn btn-outline-warning" title="Edit data warga">
                                             <i class="fas fa-edit"></i>

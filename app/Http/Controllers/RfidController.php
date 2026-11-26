@@ -454,12 +454,19 @@ class RfidController extends Controller
             'verification_token' => $verificationSignature,
         ];
 
+        $recordedCardType = $cardType;
+        if ($registered && ! empty($registered->jenis_kartu)) {
+            $recordedCardType = ($cardType && $cardType !== 'Smart Card / RFID')
+                ? \Illuminate\Support\Str::limit("{$registered->jenis_kartu} ({$cardType})", 100, '')
+                : $registered->jenis_kartu;
+        }
+
         // 7. Simpan riwayat scan ke database untuk halaman Riwayat Scan RFID
         if (Schema::hasTable('rfid_scans')) {
             RfidScan::create([
                 'uid' => $cleanUid,
                 'formatted_uid' => $formattedUid,
-                'card_type' => $cardType,
+                'card_type' => $recordedCardType,
                 'sak' => $sak,
                 'atqa' => $atqa,
                 'uid_size' => $uidSize,
@@ -498,6 +505,7 @@ class RfidController extends Controller
                 'id' => $registered->id,
                 'nama_lengkap' => $registered->nama_lengkap,
                 'nik' => $registered->nik,
+                'jenis_kartu' => $registered->jenis_kartu ?? 'Kartu RFID',
                 'rt' => $rtKode,
                 'status' => $registered->status ?? 'aktif',
             ] : null,
@@ -594,7 +602,7 @@ class RfidController extends Controller
     }
 
     /**
-     * Simpan UID E-KTP ke UserProfile warga terpilih
+     * Simpan UID Kartu RFID (E-KTP, e-Money, Flazz, Kartu Akses, Tag RFID) ke UserProfile warga terpilih
      * Endpoint: POST /warga/{id}/rfid/save
      */
     public function assignToWarga(Request $request, $id)
@@ -617,23 +625,19 @@ class RfidController extends Controller
 
         $request->validate([
             'rfid_uid' => 'required|string|min:4|max:64',
-            'konfirmasi_nik' => 'required|string',
-        ], [
-            'konfirmasi_nik.required' => 'NIK tidak sesuai',
+            'jenis_kartu' => 'nullable|string|max:100',
         ]);
-
-        // Validasi kesesuaian NIK: Konfirmasi NIK harus sama dengan NIK warga yang dipilih
-        $konfirmasiNik = trim((string) $request->input('konfirmasi_nik'));
-        if ($konfirmasiNik !== (string) $profile->nik) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'NIK tidak sesuai',
-            ], 422);
-        }
 
         $cleanUid = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', (string) $request->input('rfid_uid')));
 
-        // Tolak UID yang sudah terikat ke warga lain
+        if (strlen($cleanUid) < 4) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'UID kartu RFID tidak valid (minimal 4 karakter heksadesimal).',
+            ], 422);
+        }
+
+        // Tolak UID yang sudah terikat ke warga lain (unique UID tanpa validasi NIK)
         $duplicate = UserProfile::where('rfid_uid', $cleanUid)
             ->where('id', '!=', $profile->id)
             ->first();
@@ -645,17 +649,19 @@ class RfidController extends Controller
             ], 422);
         }
 
+        $jenisKartu = trim((string) $request->input('jenis_kartu')) ?: 'Kartu RFID';
         $cardType = (string) ($request->input('card_type')
             ?: optional(Cache::get('rfid_latest_scan'))['card_type']
-            ?: 'Smart Card / RFID');
+            ?: $jenisKartu);
 
-        $originalNik = $profile->nik; // NIK warga TIDAK boleh berubah dari hasil scan!
         $profile->rfid_uid = $cleanUid;
+        $profile->jenis_kartu = $jenisKartu;
         $profile->rfid_card_type = $cardType;
         $profile->rfid_registered_at = now();
         $profile->rfid_registered_by = $user->name;
-        $profile->status = 'Terdaftar';
-        $profile->nik = $originalNik; // Memastikan NIK tetap sama
+        if (empty($profile->status)) {
+            $profile->status = 'aktif';
+        }
         $profile->save();
 
         // Catat petugas ke AuditLog sistem
@@ -663,7 +669,7 @@ class RfidController extends Controller
             action: 'update_rfid',
             entityType: 'UserProfile',
             entityId: $profile->id,
-            deskripsi: "Merekam kartu RFID ({$cardType}) UID {$cleanUid} untuk warga {$profile->nama_lengkap} (NIK: {$profile->nik}) oleh petugas {$user->name}. Pencocokan NIK telah dikonfirmasi cocok oleh petugas.",
+            deskripsi: "Mendaftarkan kartu akses RFID ({$jenisKartu} - {$cardType}) UID {$cleanUid} untuk warga {$profile->nama_lengkap} oleh petugas {$user->name}.",
             rtId: $profile->rt_id,
             userId: $user->id
         );
@@ -674,11 +680,12 @@ class RfidController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => "Kartu RFID berhasil direkam untuk warga {$profile->nama_lengkap}",
+            'message' => "Kartu akses RFID ({$jenisKartu}) berhasil direkam untuk warga {$profile->nama_lengkap}",
             'data' => [
                 'id' => $profile->id,
                 'rfid_uid' => $cleanUid,
                 'formatted_uid' => implode(':', str_split($cleanUid, 2)),
+                'jenis_kartu' => $jenisKartu,
                 'card_type' => $cardType,
                 'status' => $profile->status,
                 'registered_at' => $profile->rfid_registered_at?->format('d/m/Y H:i:s'),
@@ -688,7 +695,7 @@ class RfidController extends Controller
     }
 
     /**
-     * Melepas tautan E-KTP dari warga
+     * Melepas tautan kartu RFID dari warga
      * Endpoint: DELETE /warga/{id}/rfid/unlink
      */
     public function unlinkFromWarga(Request $request, $id)
@@ -710,20 +717,22 @@ class RfidController extends Controller
 
         $oldUid = $profile->rfid_uid;
         $profile->rfid_uid = null;
+        $profile->jenis_kartu = null;
+        $profile->rfid_card_type = null;
         $profile->save();
 
         AuditLog::record(
             action: 'unlink_rfid',
             entityType: 'UserProfile',
             entityId: $profile->id,
-            deskripsi: "Melepas tautan E-KTP UID {$oldUid} dari warga {$profile->nama_lengkap}",
+            deskripsi: "Melepas tautan kartu RFID UID {$oldUid} dari warga {$profile->nama_lengkap}",
             rtId: $profile->rt_id,
             userId: $user->id
         );
 
         return response()->json([
             'status' => 'success',
-            'message' => "Tautan E-KTP berhasil dilepas dari warga {$profile->nama_lengkap}",
+            'message' => "Tautan kartu akses RFID berhasil dilepas dari warga {$profile->nama_lengkap}",
         ]);
     }
 
@@ -843,7 +852,7 @@ class RfidController extends Controller
             'gerbang' => 'Gerbang Portal',
             'bank_sampah' => 'Bank Sampah',
             'presensi' => 'Presensi Ronda',
-            'perekaman' => 'Perekaman E-KTP',
+            'perekaman' => 'Perekaman Kartu',
             default => 'Belum Dikonfigurasi',
         };
 
@@ -853,7 +862,7 @@ class RfidController extends Controller
             'waktu_relatif' => $scan->scanned_at ? $scan->scanned_at->diffForHumans() : '',
             'uid' => $scan->formatted_uid ?: $scan->uid,
             'uid_raw' => $scan->uid,
-            'card_type' => $scan->card_type ?: 'Smart Card / RFID',
+            'card_type' => $scan->card_type ?: (optional($scan->userProfile)->jenis_kartu ?: 'Kartu RFID'),
             'sak' => $scan->sak,
             'atqa' => $scan->atqa,
             'uid_size' => $scan->uid_size,

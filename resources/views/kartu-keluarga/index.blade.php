@@ -276,12 +276,12 @@
                                                             <span>{{ $anggota->nik }}</span>
                                                             <div class="mt-1">
                                                                 @if($anggota->rfid_uid)
-                                                                    <span class="badge bg-light text-primary border" title="E-KTP: {{ $anggota->rfid_uid }}">
-                                                                        <i class="fas fa-id-card text-primary me-1"></i><span class="font-monospace">{{ $anggota->rfid_uid }}</span>
+                                                                    <span class="badge bg-light text-primary border" title="UID: {{ $anggota->rfid_uid }}{{ $anggota->jenis_kartu ? ' (' . $anggota->jenis_kartu . ')' : '' }}">
+                                                                        <i class="fas fa-id-card text-primary me-1"></i>Akses Kartu: Terdaftar
                                                                     </span>
                                                                 @else
-                                                                    <span class="badge bg-light text-muted border" title="E-KTP belum direkam">
-                                                                        <i class="fas fa-id-card text-muted me-1"></i><span class="text-secondary">Belum Ada</span>
+                                                                    <span class="badge bg-light text-muted border" title="Akses kartu RFID belum direkam">
+                                                                        <i class="fas fa-id-card text-muted me-1"></i>Akses Kartu: <span class="text-secondary">Belum Ada</span>
                                                                     </span>
                                                                 @endif
                                                             </div>
@@ -317,12 +317,13 @@
                                                             <div class="btn-group btn-group-sm">
                                                                 <button type="button" 
                                                                         class="btn btn-outline-primary btn-sm btn-rekam-ktp" 
-                                                                        title="Rekam E-KTP (RFID RC522)"
+                                                                        title="Rekam Kartu Akses RFID (RC522)"
                                                                         data-id="{{ $anggota->id }}"
                                                                         data-nama="{{ $anggota->nama_lengkap }}"
                                                                         data-nik="{{ $anggota->nik }}"
                                                                         data-rt="{{ $kk->wilayahRt->kode_rt ?? str_pad($anggota->rt_id, 2, '0', STR_PAD_LEFT) }}"
-                                                                        data-rfid="{{ $anggota->rfid_uid ?? '' }}">
+                                                                        data-rfid="{{ $anggota->rfid_uid ?? '' }}"
+                                                                        data-jenis-kartu="{{ $anggota->jenis_kartu ?? '' }}">
                                                                     <i class="fas fa-id-card"></i>
                                                                 </button>
                                                                 <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditAnggota{{ $anggota->id }}" title="Edit Anggota">
