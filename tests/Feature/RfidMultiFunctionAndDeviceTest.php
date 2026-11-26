@@ -126,6 +126,9 @@ class RfidMultiFunctionAndDeviceTest extends TestCase
                 $table->string('nama_lokasi');
                 $table->string('fungsi', 50)->default('belum_dikonfigurasi');
                 $table->boolean('is_active')->default(true);
+                $table->boolean('gate_command')->default(false);
+                $table->timestamp('gate_open_until')->nullable();
+                $table->unsignedSmallInteger('gate_auto_close_seconds')->default(5);
                 $table->foreignId('rt_id')->nullable();
                 $table->text('keterangan')->nullable();
                 $table->timestamp('last_seen_at')->nullable();
@@ -1011,6 +1014,87 @@ class RfidMultiFunctionAndDeviceTest extends TestCase
                 'gate_open' => true,
                 'access_granted' => true,
                 'buzzer_signal' => 'GRANTED',
+            ]);
+    }
+
+    public function test_warga_without_rfid_card_cannot_open_gate_remotely(): void
+    {
+        $roleWarga = Role::firstOrCreate(['nama_role' => 'warga']);
+        $wargaNoCard = User::create([
+            'name' => 'Warga Tanpa Kartu',
+            'email' => 'nocard@test.com',
+            'password' => bcrypt('password'),
+            'role_id' => $roleWarga->id,
+            'rt_id' => $this->rt01->id,
+        ]);
+        UserProfile::create([
+            'user_id' => $wargaNoCard->id,
+            'nama_lengkap' => 'Warga Tanpa Kartu',
+            'rt_id' => $this->rt01->id,
+            'rfid_uid' => null,
+            'status' => 'aktif',
+        ]);
+
+        $res = $this->actingAs($wargaNoCard)->postJson('/warga/gerbang/buka');
+        $res->assertStatus(403)
+            ->assertJson([
+                'status' => 'error',
+            ]);
+    }
+
+    public function test_warga_with_rfid_card_can_open_gate_and_esp32_polls_one_shot_command(): void
+    {
+        RfidDevice::create([
+            'device_id' => 'ESP32 Gerbang',
+            'nama_lokasi' => 'Palang Pos Depan',
+            'fungsi' => RfidDevice::FUNGSI_GERBANG,
+            'is_active' => true,
+        ]);
+
+        // 1. Warga dengan kartu RFID menekan tombol buka gerbang
+        $resOpen = $this->actingAs($this->wargaUser)->postJson('/warga/gerbang/buka');
+        $resOpen->assertStatus(200)
+            ->assertJson([
+                'status' => 'success',
+                'gate_open' => true,
+                'auto_close_seconds' => 5,
+                'cooldown_seconds' => 15,
+            ]);
+
+        // Pastikan tercatat di rfid_scans sebagai Buka via Aplikasi Warga
+        $this->assertDatabaseHas('rfid_scans', [
+            'uid' => $this->wargaProfile->rfid_uid,
+            'device_id' => 'ESP32 Gerbang',
+            'access_granted' => true,
+            'access_message' => "Buka via Aplikasi Warga: {$this->wargaProfile->nama_lengkap}",
+        ]);
+
+        // 2. Spam kedua dalam 15 detik ditolak dengan HTTP 429
+        $resCooldown = $this->actingAs($this->wargaUser)->postJson('/warga/gerbang/buka');
+        $resCooldown->assertStatus(429)
+            ->assertJson([
+                'status' => 'cooldown',
+            ]);
+
+        // 3. ESP32 polling GET /api/rfid/gate-command -> mendapat gate_open: true (read 1)
+        $resPoll1 = $this->withHeaders([
+            'X-Device-Token' => $this->plainToken,
+        ])->getJson('/api/rfid/gate-command?device_id=ESP32%20Gerbang');
+
+        $resPoll1->assertStatus(200)
+            ->assertJson([
+                'gate_open' => true,
+                'auto_close_seconds' => 5,
+            ]);
+
+        // 4. Polling berikutnya otomatis reset menjadi gate_open: false
+        $resPoll2 = $this->withHeaders([
+            'X-Device-Token' => $this->plainToken,
+        ])->getJson('/api/rfid/gate-command?device_id=ESP32%20Gerbang');
+
+        $resPoll2->assertStatus(200)
+            ->assertJson([
+                'gate_open' => false,
             ]);
     }
 }

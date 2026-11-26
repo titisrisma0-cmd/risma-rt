@@ -1002,4 +1002,156 @@ class RfidController extends Controller
             'access_message' => $scan->access_message ?: '',
         ];
     }
+
+    /**
+     * Warga menekan tombol "Buka Gerbang Otomatis" dari Dashboard Portal Warga
+     * Syarat wajib: warga aktif dan memiliki rfid_uid terdaftar.
+     * Endpoint: POST /warga/gerbang/buka
+     */
+    public function openGateFromWarga(Request $request)
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        $profile = UserProfile::where('user_id', $user->id)
+            ->orderByRaw("CASE WHEN rfid_uid IS NOT NULL AND rfid_uid != '' THEN 0 ELSE 1 END")
+            ->orderByDesc('id')
+            ->first();
+        if (! $profile || empty(trim((string) $profile->rfid_uid))) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses Terkunci — Daftarkan kartu RFID / E-KTP Anda ke pengurus RT/RW terlebih dahulu untuk membuka gerbang.',
+            ], 403);
+        }
+
+        $statusWarga = strtolower((string) ($profile->status ?? 'aktif'));
+        if (! in_array($statusWarga, ['aktif', 'terdaftar'], true)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Akses ditolak: Status keanggotaan warga Anda saat ini adalah {$profile->status}.",
+            ], 403);
+        }
+
+        $cooldownKey = "warga_gate_cooldown_{$user->id}";
+        $cooldownUntil = Cache::get($cooldownKey);
+        if ($cooldownUntil && (int) $cooldownUntil > now()->timestamp) {
+            $remaining = (int) $cooldownUntil - now()->timestamp;
+            return response()->json([
+                'status' => 'cooldown',
+                'remaining_seconds' => $remaining,
+                'message' => "Mohon tunggu {$remaining} detik sebelum membuka gerbang kembali.",
+            ], 429);
+        }
+
+        $autoCloseSeconds = 5;
+
+        // Cari perangkat gerbang yang aktif (prioritaskan device_id 'ESP32 Gerbang')
+        $gateDevice = null;
+        if (Schema::hasTable('rfid_devices')) {
+            $gateDevice = RfidDevice::where('fungsi', RfidDevice::FUNGSI_GERBANG)
+                ->where('is_active', true)
+                ->orderByRaw("CASE WHEN device_id = 'ESP32 Gerbang' THEN 0 ELSE 1 END")
+                ->first();
+        }
+
+        if (! $gateDevice) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Perangkat ESP32 Gerbang belum dikonfigurasi atau sedang nonaktif.',
+            ], 422);
+        }
+
+        // Simpan perintah buka gerbang (one-shot selama durasi terbuka + buffer polling 10 detik)
+        $gateDevice->gate_command = true;
+        $gateDevice->gate_open_until = now()->addSeconds($autoCloseSeconds + 10);
+        $gateDevice->gate_auto_close_seconds = $autoCloseSeconds;
+        $gateDevice->save();
+
+        $cleanUid = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', (string) $profile->rfid_uid));
+        $formattedUid = implode(':', str_split($cleanUid, 2));
+
+        // Catat ke riwayat scan RFID
+        if (Schema::hasTable('rfid_scans')) {
+            RfidScan::create([
+                'uid' => $cleanUid,
+                'formatted_uid' => $formattedUid,
+                'card_type' => \Illuminate\Support\Str::limit(($profile->jenis_kartu ?: 'Kartu RFID') . ' (Aplikasi Warga)', 100, ''),
+                'device_id' => $gateDevice->device_id,
+                'fungsi' => RfidDevice::FUNGSI_GERBANG,
+                'user_profile_id' => $profile->id,
+                'rt_id' => $profile->rt_id,
+                'nama_warga' => $profile->nama_lengkap,
+                'access_granted' => true,
+                'buzzer_signal' => 'GRANTED',
+                'access_message' => "Buka via Aplikasi Warga: {$profile->nama_lengkap}",
+                'ip_address' => $request->ip(),
+                'scanned_at' => now(),
+            ]);
+        }
+
+        AuditLog::record(
+            action: 'open_gate_warga',
+            entityType: 'RfidDevice',
+            entityId: $gateDevice->id,
+            deskripsi: "Warga {$profile->nama_lengkap} membuka palang gerbang ({$gateDevice->device_id}) melalui Aplikasi Warga.",
+            rtId: $profile->rt_id,
+            userId: $user->id
+        );
+
+        // Set cooldown 15 detik
+        Cache::put($cooldownKey, now()->addSeconds(15)->timestamp, 15);
+
+        return response()->json([
+            'status' => 'success',
+            'gate_open' => true,
+            'auto_close_seconds' => $autoCloseSeconds,
+            'cooldown_seconds' => 15,
+            'device_id' => $gateDevice->device_id,
+            'message' => "Perintah buka gerbang dikirim ke {$gateDevice->device_id} (menutup otomatis dalam {$autoCloseSeconds} detik).",
+        ]);
+    }
+
+    /**
+     * Endpoint ringan untuk ESP32 memeriksa perintah buka palang dari tombol web warga
+     * Endpoint: GET /api/rfid/gate-command (dilindungi VerifyDeviceToken)
+     */
+    public function gateCommand(Request $request)
+    {
+        $deviceId = trim((string) $request->query('device_id', 'ESP32 Gerbang'));
+        $gateOpen = false;
+        $autoCloseSeconds = 5;
+
+        if (Schema::hasTable('rfid_devices')) {
+            $device = RfidDevice::where('device_id', $deviceId)->first();
+
+            if (! $device) {
+                $device = RfidDevice::where('fungsi', RfidDevice::FUNGSI_GERBANG)
+                    ->where('is_active', true)
+                    ->first();
+            }
+
+            if ($device) {
+                $device->last_seen_at = now();
+
+                if ($device->is_active && $device->fungsi === RfidDevice::FUNGSI_GERBANG && $device->gate_command) {
+                    $autoCloseSeconds = (int) ($device->gate_auto_close_seconds ?: 5);
+                    if ($device->gate_open_until === null || now()->lte($device->gate_open_until)) {
+                        $gateOpen = true;
+                    }
+                    // Reset satu kali baca agar palang menutup otomatis dan tidak terbuka berulang kali
+                    $device->gate_command = false;
+                    $device->gate_open_until = null;
+                }
+
+                $device->save();
+            }
+        }
+
+        return response()->json([
+            'gate_open' => $gateOpen,
+            'auto_close_seconds' => $autoCloseSeconds,
+        ]);
+    }
 }

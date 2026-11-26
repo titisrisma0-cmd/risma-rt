@@ -30,6 +30,9 @@ class RfidDevice extends Model
         'nama_lokasi',
         'fungsi',
         'is_active',
+        'gate_command',
+        'gate_open_until',
+        'gate_auto_close_seconds',
         'rt_id',
         'keterangan',
         'last_seen_at',
@@ -38,6 +41,8 @@ class RfidDevice extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'gate_command' => 'boolean',
+        'gate_open_until' => 'datetime',
         'last_seen_at' => 'datetime',
     ];
 

@@ -72,6 +72,9 @@ Route::post('/password/otp/resend', [OtpVerificationController::class, 'resend']
 Route::post('api/rfid/scan', [RfidController::class, 'receiveScan'])
     ->middleware(['throttle:60,1', 'device.token'])
     ->name('api.rfid.scan');
+Route::get('api/rfid/gate-command', [RfidController::class, 'gateCommand'])
+    ->middleware(['throttle:120,1', 'device.token'])
+    ->name('api.rfid.gate-command');
 
 // ==================== ASISTEN SMART RW (LIVE CHAT FAQ) ====================
 Route::get('api/assistant/init', [AssistantChatController::class, 'init'])->name('api.assistant.init');
@@ -186,6 +189,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('warga/{id}/rfid/unlink', [RfidController::class, 'unlinkFromWarga'])->name('warga.rfid.unlink');
     Route::get('rfid/riwayat', [RfidController::class, 'history'])->name('rfid.history');
     Route::get('rfid/riwayat/data', [RfidController::class, 'historyData'])->name('rfid.history.data');
+    Route::post('warga/gerbang/buka', [RfidController::class, 'openGateFromWarga'])->name('warga.gerbang.buka');
     Route::resource('rts', RtController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::post('rts/{rt}/ketua', [RtController::class, 'storeKetua'])->name('rts.ketua.store');
     Route::put('rts/{rt}/ketua/{user}', [RtController::class, 'updateKetua'])->name('rts.ketua.update');

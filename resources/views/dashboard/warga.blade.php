@@ -114,6 +114,63 @@
         </div>
     </div>
 
+    {{-- 1B. Kartu Akses Palang Pos Gerbang Otomatis --}}
+    @php
+        $wargaProfile = $user->profile;
+        $hasRfidCard = $wargaProfile && ! empty(trim((string) $wargaProfile->rfid_uid));
+    @endphp
+    <div class="saas-card p-3 p-md-4 mb-4 rounded-2xl shadow-xs border" id="widgetPalangGerbang">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-start gap-3">
+                <div class="rounded-2xl d-flex align-items-center justify-content-center shrink-0"
+                     style="width: 48px; height: 48px; background: {{ $hasRfidCard ? '#DCF8C6' : '#f1f5f9' }}; color: {{ $hasRfidCard ? '#00A884' : '#64748b' }}; font-size: 1.25rem;">
+                    <i class="fas {{ $hasRfidCard ? 'fa-torii-gate' : 'fa-lock' }}" id="gateWidgetIcon"></i>
+                </div>
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h5 class="card-title-saas mb-0">Akses Palang Pos Gerbang</h5>
+                        @if($hasRfidCard)
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-2.5 py-1 small fw-semibold" id="gateStatusBadge">
+                                <i class="fas fa-circle me-1" style="font-size: 0.55rem;"></i> Tertutup
+                            </span>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 small">
+                                <i class="fas fa-id-card me-1"></i>{{ $wargaProfile->jenis_kartu ?: 'Kartu RFID' }} Terdaftar
+                            </span>
+                        @else
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 small fw-semibold">
+                                <i class="fas fa-lock me-1"></i> Terkunci
+                            </span>
+                        @endif
+                    </div>
+
+                    @if($hasRfidCard)
+                        <p class="text-secondary small mb-0" id="gateStatusDesc">
+                            Anda dapat membuka palang pos gerbang RW 01 secara otomatis dari aplikasi. Palang akan menutup kembali setelah 5 detik.
+                        </p>
+                    @else
+                        <p class="text-danger small mb-0 fw-medium">
+                            <i class="fas fa-circle-info me-1"></i>
+                            Akses Terkunci — Daftarkan kartu RFID / E-KTP Anda ke pengurus RT/RW terlebih dahulu untuk membuka gerbang.
+                        </p>
+                    @endif
+                </div>
+            </div>
+
+            <div class="shrink-0">
+                @if($hasRfidCard)
+                    <button type="button" id="btnBukaGerbang" class="btn btn-emerald fw-semibold px-3 py-2 w-100 w-md-auto shadow-sm">
+                        <i class="fas fa-door-open me-1.5"></i>
+                        <span id="btnBukaGerbangText">Buka Gerbang (Tutup Otomatis 5 Detik)</span>
+                    </button>
+                @else
+                    <button type="button" class="btn btn-secondary fw-semibold px-3 py-2 w-100 w-md-auto" disabled>
+                        <i class="fas fa-lock me-1.5"></i> Buka Gerbang Terkunci
+                    </button>
+                @endif
+            </div>
+        </div>
+    </div>
+
     {{-- 2. Menu Layanan Mandiri Warga (Interactive E-Wallet Style Quick Grid) --}}
     <div class="saas-card p-3 p-md-4 mb-4 rounded-2xl shadow-xs border">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -489,4 +546,104 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@if($user->profile && ! empty(trim((string) $user->profile->rfid_uid)))
+<script>
+(function () {
+    const btn = document.getElementById('btnBukaGerbang');
+    const btnText = document.getElementById('btnBukaGerbangText');
+    const badge = document.getElementById('gateStatusBadge');
+    const desc = document.getElementById('gateStatusDesc');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    if (!btn) return;
+
+    let cooldownTimer = null;
+    let gateTimer = null;
+
+    function startCooldown(seconds) {
+        if (cooldownTimer) clearInterval(cooldownTimer);
+        let remaining = seconds;
+        btn.disabled = true;
+
+        const updateBtn = () => {
+            if (remaining <= 0) {
+                clearInterval(cooldownTimer);
+                cooldownTimer = null;
+                btn.disabled = false;
+                btnText.textContent = 'Buka Gerbang (Tutup Otomatis 5 Detik)';
+            } else {
+                btnText.textContent = `Tunggu ${remaining} detik...`;
+                remaining--;
+            }
+        };
+        updateBtn();
+        cooldownTimer = setInterval(updateBtn, 1000);
+    }
+
+    function showGateOpenCountdown(autoCloseSec) {
+        if (gateTimer) clearInterval(gateTimer);
+        let sec = autoCloseSec || 5;
+
+        const renderOpen = () => {
+            if (sec > 1) {
+                badge.className = 'badge bg-success text-white rounded-pill px-2.5 py-1 small fw-semibold';
+                badge.innerHTML = `<i class="fas fa-lock-open me-1"></i> Terbuka (${sec}d)`;
+                desc.textContent = `Palang pos gerbang terbuka. Menutup otomatis dalam ${sec} detik...`;
+                sec--;
+            } else if (sec === 1) {
+                badge.className = 'badge bg-warning text-dark rounded-pill px-2.5 py-1 small fw-semibold';
+                badge.innerHTML = '<i class="fas fa-clock me-1"></i> Menutup Otomatis...';
+                desc.textContent = 'Palang pos sedang menutup kembali secara otomatis...';
+                sec--;
+            } else {
+                clearInterval(gateTimer);
+                gateTimer = null;
+                badge.className = 'badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-2.5 py-1 small fw-semibold';
+                badge.innerHTML = '<i class="fas fa-circle me-1" style="font-size: 0.55rem;"></i> Tertutup';
+                desc.textContent = 'Anda dapat membuka palang pos gerbang RW 01 secara otomatis dari aplikasi. Palang akan menutup kembali setelah 5 detik.';
+            }
+        };
+
+        renderOpen();
+        gateTimer = setInterval(renderOpen, 1000);
+    }
+
+    btn.addEventListener('click', async function () {
+        btn.disabled = true;
+        btnText.textContent = 'Mengirim perintah...';
+
+        try {
+            const res = await fetch('{{ route("warga.gerbang.buka") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                showGateOpenCountdown(data.auto_close_seconds || 5);
+                startCooldown(data.cooldown_seconds || 15);
+            } else if (res.status === 429 && data.remaining_seconds) {
+                desc.textContent = data.message;
+                startCooldown(data.remaining_seconds);
+            } else {
+                alert(data.message || 'Gagal membuka gerbang.');
+                btn.disabled = false;
+                btnText.textContent = 'Buka Gerbang (Tutup Otomatis 5 Detik)';
+            }
+        } catch (err) {
+            console.error('Error membuka gerbang:', err);
+            alert('Terjadi gangguan koneksi saat menghubungi server.');
+            btn.disabled = false;
+            btnText.textContent = 'Buka Gerbang (Tutup Otomatis 5 Detik)';
+        }
+    });
+})();
+</script>
+@endif
 @endpush

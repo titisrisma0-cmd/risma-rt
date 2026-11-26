@@ -51,10 +51,11 @@
 #define MFRC522_SPICLOCK (1000000u)
 #include <MFRC522.h>
 #include <ArduinoJson.h>
+#include <ESP32Servo.h>
 #include <time.h>
 
 // ================================================================================================
-// 1. PINOUT RANGKAIAN (NODEMCU ESP-32S KE RFID-RC522)
+// 1. PINOUT RANGKAIAN (NODEMCU ESP-32S KE RFID-RC522 & MOTOR SERVO)
 // ================================================================================================
 /**
  * SAMBUNGAN KABEL JUMPER FEMALE-TO-FEMALE:
@@ -67,8 +68,9 @@
  * - RC522 SCK        -> ESP32 GPIO 18
  * - RC522 SDA (SS)   -> ESP32 GPIO 5
  *
- * PIN INDIKATOR OUTPUT:
+ * PIN INDIKATOR OUTPUT & SERVO PALANG:
  * - Buzzer (+)       -> ESP32 GPIO 13 (Kaki (-) ke GND)
+ * - Motor Servo      -> ESP32 GPIO 27 (Signal Oranye/Kuning; VCC 5V/VIN; GND ke GND)
  * - LED Hijau (+)    -> ESP32 GPIO 12 (via resistor 220 Ohm ke GND)
  * - LED Merah (+)    -> ESP32 GPIO 14 (via resistor 220 Ohm ke GND)
  * - Tombol BOOT      -> ESP32 GPIO 0 (Tombol bawaan board untuk reset manual WiFi)
@@ -77,9 +79,13 @@
 #define SS_PIN            5    // SDA pada RC522 -> GPIO 5
 #define RST_PIN           22   // RST pada RC522 -> GPIO 22
 #define BUZZER_PIN        13   // Buzzer (+)     -> GPIO 13
+#define SERVO_PIN         27   // Servo Signal   -> GPIO 27 (sudut tutup 0°, sudut buka 90°)
 #define LED_GREEN_PIN     12   // LED Hijau (+)  -> GPIO 12
 #define LED_RED_PIN       14   // LED Merah (+)  -> GPIO 14
 #define RESET_BUTTON_PIN  0    // Tombol BOOT bawaan ESP32 -> GPIO 0
+
+#define SERVO_ANGLE_CLOSED  0
+#define SERVO_ANGLE_OPEN    90
 
 // ================================================================================================
 // 2. KONFIGURASI HOTSPOT & TIMEOUT WIFI
@@ -95,6 +101,14 @@ MFRC522 rfid(SS_PIN, RST_PIN);
 Preferences preferences;
 WebServer server(80);
 DNSServer dnsServer;
+Servo gateServo;
+
+// State Kontrol Servo Palang Gerbang (Non-Blocking millis)
+bool isGateOpen = false;
+unsigned long gateOpenStartMs = 0;
+unsigned long gateOpenDurationMs = 5000;
+unsigned long lastGatePollMs = 0;
+const unsigned long GATE_POLL_INTERVAL_MS = 1500; // Polling perintah buka gerbang tiap 1.5 detik
 
 // Variabel Konfigurasi Dinamis (Disimpan di Memori Flash NVS ESP32)
 String cfg_wifi_ssid       = "";
@@ -277,6 +291,35 @@ void soundPending() {
         toneBeep(1200, 70);
         digitalWrite(LED_RED_PIN, LOW);
         delay(70);
+    }
+}
+
+// ================================================================================================
+// 3B. KONTROL MOTOR SERVO PALANG GERBANG (NON-BLOCKING)
+// ================================================================================================
+
+void bukaDanTutupOtomatis(int durasiDetik) {
+    if (durasiDetik <= 0) durasiDetik = 5;
+    gateServo.write(SERVO_ANGLE_OPEN);
+    isGateOpen = true;
+    gateOpenStartMs = millis();
+    gateOpenDurationMs = (unsigned long)durasiDetik * 1000UL;
+    digitalWrite(LED_GREEN_PIN, HIGH);
+    Serial.print("[SERVO] Palang DIBUKA (");
+    Serial.print(SERVO_ANGLE_OPEN);
+    Serial.print(" deg) - menutup otomatis dalam ");
+    Serial.print(durasiDetik);
+    Serial.println(" detik.");
+}
+
+void handleServoAutoClose() {
+    if (isGateOpen && (millis() - gateOpenStartMs >= gateOpenDurationMs)) {
+        gateServo.write(SERVO_ANGLE_CLOSED);
+        isGateOpen = false;
+        digitalWrite(LED_GREEN_PIN, LOW);
+        Serial.print("[SERVO] Timer selesai -> Palang DITUTUP otomatis (");
+        Serial.print(SERVO_ANGLE_CLOSED);
+        Serial.println(" deg).");
     }
 }
 
@@ -576,6 +619,8 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
 
         if (!err) {
             bool accessGranted       = respDoc["access_granted"] | false;
+            bool gateOpen            = respDoc["gate_open"] | false;
+            int autoCloseSec         = respDoc["auto_close_seconds"] | 5;
             const char* accessMsg    = respDoc["access_message"] | "";
             const char* buzzerSignal = respDoc["buzzer_signal"] | "DENIED";
             bool isRegistered        = respDoc["is_registered"] | false;
@@ -584,6 +629,7 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
             Serial.println();
             Serial.println("=========== HASIL VERIFIKASI SERVER ===========");
             Serial.print("Status Masuk    : "); Serial.println(accessGranted ? "DIIZINKAN (GRANTED)" : "DITOLAK (DENIED)");
+            Serial.print("Status Palang   : "); Serial.println(gateOpen ? "BUKA OTOMATIS" : "TETAP TERTUTUP");
             Serial.print("Pesan Sistem    : "); Serial.println(accessMsg);
             Serial.print("Status Database : "); Serial.println(isRegistered ? "Kartu Terdaftar Warga" : "Kartu Baru (Mode Rekam Siap)");
 
@@ -602,6 +648,9 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
             Serial.println("==================================================");
 
             if (httpResponseCode >= 200 && httpResponseCode < 300) {
+                if (gateOpen) {
+                    bukaDanTutupOtomatis(autoCloseSec);
+                }
                 soundGranted();
             } else {
                 soundDenied();
@@ -647,6 +696,78 @@ void sendCardJsonToServer(String uidClean, String uidFormatted, byte uidSize, St
     http.end();
 }
 
+// Bangun URL endpoint GET /api/rfid/gate-command dari cfg_server_url
+String buildGateCommandUrl() {
+    String url = cfg_server_url;
+    int scanIdx = url.indexOf("/api/rfid/scan");
+    if (scanIdx >= 0) {
+        url = url.substring(0, scanIdx) + "/api/rfid/gate-command";
+    } else {
+        int thirdSlash = url.indexOf('/', 8); // setelah https:// atau http://
+        if (thirdSlash >= 0) {
+            url = url.substring(0, thirdSlash) + "/api/rfid/gate-command";
+        } else {
+            url += "/api/rfid/gate-command";
+        }
+    }
+    String encodedDevId = cfg_device_id;
+    encodedDevId.replace(" ", "%20");
+    url += "?device_id=" + encodedDevId;
+    return url;
+}
+
+void pollGateCommand() {
+    if (WiFi.status() != WL_CONNECTED || isHotSpotActive || isGateOpen) {
+        return;
+    }
+
+    String gateUrl = buildGateCommandUrl();
+    bool useHttps = gateUrl.startsWith("https://");
+
+    HTTPClient http;
+    http.setTimeout(5000);
+
+    bool beginOk = false;
+    WiFiClientSecure secureClient;
+    WiFiClient plainClient;
+
+    if (useHttps) {
+        secureClient.setTimeout(5000);
+#if ALLOW_INSECURE_TLS
+        secureClient.setInsecure();
+#else
+        secureClient.setCACert(ROOT_CA_BUNDLE);
+#endif
+        beginOk = http.begin(secureClient, gateUrl);
+    } else {
+        plainClient.setTimeout(5000);
+        beginOk = http.begin(plainClient, gateUrl);
+    }
+
+    if (!beginOk) {
+        return;
+    }
+
+    http.addHeader("Accept", "application/json");
+    http.addHeader("X-Device-Token", cfg_device_token);
+
+    int code = http.GET();
+    if (code == 200) {
+        String body = http.getString();
+        StaticJsonDocument<256> doc;
+        if (!deserializeJson(doc, body)) {
+            bool shouldOpen = doc["gate_open"] | false;
+            int autoClose = doc["auto_close_seconds"] | 5;
+            if (shouldOpen) {
+                Serial.println("\n[REMOTE GATE] Perintah buka gerbang diterima dari Aplikasi Warga!");
+                bukaDanTutupOtomatis(autoClose);
+                soundGranted();
+            }
+        }
+    }
+    http.end();
+}
+
 
 // ================================================================================================
 // 8. SETUP UTAMA
@@ -678,6 +799,12 @@ void setup() {
     digitalWrite(BUZZER_PIN, LOW);
     digitalWrite(LED_GREEN_PIN, LOW);
     digitalWrite(LED_RED_PIN, LOW);
+
+    // Inisialisasi Motor Servo Palang Pos (posisi awal tertutup 0 derajat)
+    ESP32PWM::allocateTimer(0);
+    gateServo.setPeriodHertz(50);
+    gateServo.attach(SERVO_PIN, 500, 2400);
+    gateServo.write(SERVO_ANGLE_CLOSED);
 
     Serial.println("\n");
     Serial.println("==================================================");
@@ -867,6 +994,9 @@ bool detectAndSelectCard() {
 }
 
 void loop() {
+    // Selalu periksa timer non-blocking untuk menutup palang servo otomatis
+    handleServoAutoClose();
+
     // Mode A: Jika sedang dalam Mode HotSpot Portal
     if (isHotSpotActive) {
         dnsServer.processNextRequest();
@@ -879,6 +1009,12 @@ void loop() {
             lastBlink = millis();
         }
         return;
+    }
+
+    // Mode A2: Polling berkala perintah buka gerbang dari Aplikasi Warga (tiap 1.5 detik)
+    if (WiFi.status() == WL_CONNECTED && (millis() - lastGatePollMs >= GATE_POLL_INTERVAL_MS)) {
+        lastGatePollMs = millis();
+        pollGateCommand();
     }
 
     // Mode B: Tombol BOOT (GPIO 0) ditekan 3 detik untuk paksa buka HotSpot
