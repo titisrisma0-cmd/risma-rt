@@ -532,8 +532,8 @@ class RfidController extends Controller
 
     /**
      * Polling endpoint untuk modal admin data warga
-     * Mengambil 1 record terbaru dari rfid_scans (atau cache) setelah timestamp `since`
-     * tanpa memfilter status sukses/konfigurasi perangkat.
+     * Mendukung mode inisialisasi (`init=1`) dan polling berbasis ID (`after_id`)
+     * agar modal hanya menangkap tap kartu BARU setelah modal dibuka (anti selisih jam/timezone).
      * Endpoint: GET /warga/rfid/latest
      */
     public function latestScan(Request $request)
@@ -544,62 +544,121 @@ class RfidController extends Controller
         // Perbarui sesi perekaman aktif tiap polling modal (kedaluwarsa 2 menit)
         self::refreshRecordingSession($user->id);
 
-        $since = $request->filled('since') ? (int) $request->input('since') : null;
-        $scan = null;
+        $latestDbId = Schema::hasTable('rfid_scans') ? (int) (RfidScan::max('id') ?? 0) : 0;
 
-        // 1. Ambil langsung dari tabel rfid_scans (termasuk status ditolak / belum dikonfigurasi)
-        if (Schema::hasTable('rfid_scans')) {
-            $scanQuery = RfidScan::query()
-                ->whereNotNull('uid')
-                ->where('uid', '!=', '');
-
-            if ($since !== null && $since > 0) {
-                $sinceDate = \Carbon\Carbon::createFromTimestamp($since);
-                $scanQuery->where(function ($q) use ($sinceDate) {
-                    $q->where('scanned_at', '>=', $sinceDate)
-                      ->orWhere('created_at', '>=', $sinceDate);
-                });
-            }
-
-            $scanModel = $scanQuery->orderByDesc('scanned_at')
-                ->orderByDesc('id')
-                ->first();
-
-            if ($scanModel) {
-                $cleanUidFromDb = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', (string) $scanModel->uid));
-                if (strlen($cleanUidFromDb) >= 4) {
-                    $scan = [
-                        'uid' => $cleanUidFromDb,
-                        'formatted_uid' => $scanModel->formatted_uid ?: implode(':', str_split($cleanUidFromDb, 2)),
-                        'card_type' => $scanModel->card_type ?: 'Kartu RFID',
-                        'sak' => $scanModel->sak,
-                        'atqa' => $scanModel->atqa,
-                        'uid_size' => $scanModel->uid_size,
-                        'device_id' => $scanModel->device_id ?: 'ESP32-RC522',
-                        'fungsi' => $scanModel->fungsi,
-                        'scanned_at' => ($scanModel->scanned_at ?? $scanModel->created_at)?->toISOString(),
-                        'timestamp' => ($scanModel->scanned_at ?? $scanModel->created_at)?->timestamp ?? now()->timestamp,
-                    ];
-                }
-            }
-        }
-
-        // 2. Fallback ke Cache jika tabel rfid_scans tidak ada atau belum tercatat
-        if (! $scan) {
-            $cachedScan = Cache::get('rfid_latest_scan');
-            if ($cachedScan && ! empty($cachedScan['uid'])) {
-                if ($since === null || $since <= 0 || ((int) ($cachedScan['timestamp'] ?? 0) >= $since)) {
-                    $scan = $cachedScan;
-                }
-            }
-        }
-
-        if (! $scan) {
+        // Mode Inisialisasi: kembalikan latest_id saat ini tanpa menampilkan UID lama
+        if ($request->boolean('init')) {
             return response()->json([
                 'status' => 'waiting',
+                'found' => false,
+                'latest_id' => $latestDbId,
                 'message' => 'Menunggu kartu ditempelkan pada reader',
                 'data' => null,
             ]);
+        }
+
+        $scan = null;
+        $hasAfterId = $request->filled('after_id');
+
+        if ($hasAfterId) {
+            $afterId = (int) $request->input('after_id');
+
+            if (Schema::hasTable('rfid_scans')) {
+                $scanModel = RfidScan::query()
+                    ->where('id', '>', $afterId)
+                    ->whereNotNull('uid')
+                    ->where('uid', '!=', '')
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($scanModel) {
+                    $cleanUidFromDb = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', (string) $scanModel->uid));
+                    if (strlen($cleanUidFromDb) >= 4) {
+                        $scan = [
+                            'id' => $scanModel->id,
+                            'uid' => $cleanUidFromDb,
+                            'formatted_uid' => $scanModel->formatted_uid ?: implode(':', str_split($cleanUidFromDb, 2)),
+                            'card_type' => $scanModel->card_type ?: 'Kartu RFID',
+                            'sak' => $scanModel->sak,
+                            'atqa' => $scanModel->atqa,
+                            'uid_size' => $scanModel->uid_size,
+                            'device_id' => $scanModel->device_id ?: 'ESP32-RC522',
+                            'fungsi' => $scanModel->fungsi,
+                            'scanned_at' => ($scanModel->scanned_at ?? $scanModel->created_at)?->toISOString(),
+                            'timestamp' => ($scanModel->scanned_at ?? $scanModel->created_at)?->timestamp ?? now()->timestamp,
+                        ];
+                    }
+                }
+            }
+
+            if (! $scan) {
+                return response()->json([
+                    'status' => 'waiting',
+                    'found' => false,
+                    'latest_id' => $afterId,
+                    'message' => 'Menunggu kartu ditempelkan pada reader',
+                    'data' => null,
+                ]);
+            }
+        } else {
+            // Backward compatibility: mode `since` / Cache
+            $since = $request->filled('since') ? (int) $request->input('since') : null;
+
+            if (Schema::hasTable('rfid_scans')) {
+                $scanQuery = RfidScan::query()
+                    ->whereNotNull('uid')
+                    ->where('uid', '!=', '');
+
+                if ($since !== null && $since > 0) {
+                    $sinceDate = \Carbon\Carbon::createFromTimestamp($since);
+                    $scanQuery->where(function ($q) use ($sinceDate) {
+                        $q->where('scanned_at', '>=', $sinceDate)
+                          ->orWhere('created_at', '>=', $sinceDate);
+                    });
+                }
+
+                $scanModel = $scanQuery->orderByDesc('scanned_at')
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($scanModel) {
+                    $cleanUidFromDb = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', (string) $scanModel->uid));
+                    if (strlen($cleanUidFromDb) >= 4) {
+                        $scan = [
+                            'id' => $scanModel->id,
+                            'uid' => $cleanUidFromDb,
+                            'formatted_uid' => $scanModel->formatted_uid ?: implode(':', str_split($cleanUidFromDb, 2)),
+                            'card_type' => $scanModel->card_type ?: 'Kartu RFID',
+                            'sak' => $scanModel->sak,
+                            'atqa' => $scanModel->atqa,
+                            'uid_size' => $scanModel->uid_size,
+                            'device_id' => $scanModel->device_id ?: 'ESP32-RC522',
+                            'fungsi' => $scanModel->fungsi,
+                            'scanned_at' => ($scanModel->scanned_at ?? $scanModel->created_at)?->toISOString(),
+                            'timestamp' => ($scanModel->scanned_at ?? $scanModel->created_at)?->timestamp ?? now()->timestamp,
+                        ];
+                    }
+                }
+            }
+
+            if (! $scan) {
+                $cachedScan = Cache::get('rfid_latest_scan');
+                if ($cachedScan && ! empty($cachedScan['uid'])) {
+                    if ($since === null || $since <= 0 || ((int) ($cachedScan['timestamp'] ?? 0) >= $since)) {
+                        $scan = $cachedScan;
+                    }
+                }
+            }
+
+            if (! $scan) {
+                return response()->json([
+                    'status' => 'waiting',
+                    'found' => false,
+                    'latest_id' => $latestDbId,
+                    'message' => 'Menunggu kartu ditempelkan pada reader',
+                    'data' => null,
+                ]);
+            }
         }
 
         $cleanUid = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', (string) $scan['uid']));
@@ -612,6 +671,8 @@ class RfidController extends Controller
 
         return response()->json([
             'status' => 'detected',
+            'found' => true,
+            'latest_id' => $scan['id'] ?? $latestDbId,
             'message' => 'Kartu terdeteksi',
             'data' => $scan,
             'is_used' => $isUsed,
@@ -635,12 +696,14 @@ class RfidController extends Controller
         abort_unless($user && ($user->isAdminRt() || $user->hasRole('rt') || $user->isAdminRw() || $user->isSuperAdmin()), 403);
 
         self::refreshRecordingSession($user->id);
+        $latestId = Schema::hasTable('rfid_scans') ? (int) (RfidScan::max('id') ?? 0) : 0;
 
         return response()->json([
             'status' => 'success',
             'message' => 'Sesi perekaman aktif',
             'expires_in' => 120,
             'server_time' => now()->timestamp,
+            'latest_id' => $latestId,
         ]);
     }
 

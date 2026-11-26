@@ -917,9 +917,35 @@ class RfidMultiFunctionAndDeviceTest extends TestCase
 
     public function test_modal_latest_scan_returns_unconfigured_or_denied_scan_from_rfid_scans_table(): void
     {
-        $since = now()->subSeconds(5)->timestamp;
+        // 1. Scan lama sudah ada sebelum modal dibuka
+        $this->withHeaders([
+            'X-Device-Token' => $this->plainToken,
+        ])->postJson('/api/rfid/scan', [
+            'uid' => 'DE:AD:BE:EF',
+            'device_id' => 'ESP32 Gerbang',
+        ])->assertStatus(200);
 
-        // Simulasikan tap dari perangkat yang belum dikonfigurasi (tersimpan sebagai ditolak)
+        // 2. Modal dibuka -> init=1 mengambil baselineScanId tanpa menampilkan UID lama
+        $initRes = $this->actingAs($this->adminRt)->getJson('/warga/rfid/latest?init=1');
+        $initRes->assertStatus(200)
+            ->assertJson([
+                'status' => 'waiting',
+                'found' => false,
+                'data' => null,
+            ]);
+        $baselineId = (int) $initRes->json('latest_id');
+        $this->assertGreaterThan(0, $baselineId);
+
+        // 3. Polling dengan after_id sebelum tap baru -> tetap waiting (found: false)
+        $beforeTap = $this->actingAs($this->adminRt)->getJson("/warga/rfid/latest?after_id={$baselineId}");
+        $beforeTap->assertStatus(200)
+            ->assertJson([
+                'status' => 'waiting',
+                'found' => false,
+                'data' => null,
+            ]);
+
+        // 4. Tap baru masuk setelah modal terbuka (meski perangkat belum dikonfigurasi)
         $this->withHeaders([
             'X-Device-Token' => $this->plainToken,
         ])->postJson('/api/rfid/scan', [
@@ -931,17 +957,19 @@ class RfidMultiFunctionAndDeviceTest extends TestCase
               'access_granted' => false,
           ]);
 
-        // Polling modal tetap wajib menangkap UID dari rfid_scans setelah since
-        $poll = $this->actingAs($this->adminRt)->getJson("/warga/rfid/latest?since={$since}");
+        // 5. Polling dengan after_id menangkap tap baru
+        $poll = $this->actingAs($this->adminRt)->getJson("/warga/rfid/latest?after_id={$baselineId}");
         $poll->assertStatus(200)
             ->assertJson([
                 'status' => 'detected',
+                'found' => true,
                 'data' => [
                     'uid' => 'A9163707',
                     'formatted_uid' => 'A9:16:37:07',
                     'device_id' => 'ESP32 Gerbang',
                 ],
             ]);
+        $this->assertGreaterThan($baselineId, (int) $poll->json('latest_id'));
     }
 
     public function test_superadmin_can_quick_set_gerbang_and_normalized_uid_opens_gate(): void

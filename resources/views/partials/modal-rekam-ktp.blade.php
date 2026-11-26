@@ -176,7 +176,7 @@
         let currentRfidUid = '';
         let detectedCardType = '';
         let rfidPollTimer = null;
-        let rfidListenStartTime = 0;
+        let baselineScanId = null;
         let lastBeepUid = null;
 
         // Web Audio API Synth Beep saat kartu terbaca
@@ -265,11 +265,15 @@
 
         // Event saat modal terbuka
         modalEl.addEventListener('shown.bs.modal', function () {
-            rfidListenStartTime = Math.floor(Date.now() / 1000) - 5;
+            baselineScanId = null;
+            resetScannerBox();
 
-            if (rfidPollTimer) clearInterval(rfidPollTimer);
+            if (rfidPollTimer) {
+                clearInterval(rfidPollTimer);
+                rfidPollTimer = null;
+            }
 
-            // Tandai sesi perekaman aktif di server & sinkronkan server_time
+            // 1. Tandai sesi perekaman aktif di server & ambil baseline latest_id (init=1) TANPA menampilkan UID lama
             fetch('{{ route("warga.rfid.session.start") }}', {
                 method: 'POST',
                 headers: {
@@ -278,20 +282,24 @@
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
+            }).catch(e => console.log('Gagal mengaktifkan sesi perekaman:', e));
+
+            fetch(`{{ route('warga.rfid.latest') }}?init=1`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             })
             .then(res => res.json())
             .then(data => {
-                if (data && data.server_time) {
-                    rfidListenStartTime = Number(data.server_time) - 3;
-                }
-                pollLatestScan();
+                baselineScanId = Number(data && data.latest_id !== undefined ? data.latest_id : 0);
+                rfidPollTimer = setInterval(pollLatestScan, 1500);
             })
             .catch(e => {
-                console.log('Gagal mengaktifkan sesi perekaman:', e);
-                pollLatestScan();
+                console.log('Gagal mengambil baseline scan ID:', e);
+                baselineScanId = 0;
+                rfidPollTimer = setInterval(pollLatestScan, 1500);
             });
-
-            rfidPollTimer = setInterval(pollLatestScan, 1500);
         });
 
         // Event saat modal ditutup
@@ -313,11 +321,11 @@
             }).catch(e => console.log('Gagal menghentikan sesi perekaman:', e));
         });
 
-        // Polling ke backend untuk cek apakah ada tap kartu baru dari NodeMCU
+        // Polling ke backend untuk cek apakah ada tap kartu BARU setelah modal dibuka (id > baselineScanId)
         function pollLatestScan() {
-            if (!currentWargaId) return;
+            if (!currentWargaId || baselineScanId === null) return;
 
-            fetch(`{{ route('warga.rfid.latest') }}?since=${rfidListenStartTime}`, {
+            fetch(`{{ route('warga.rfid.latest') }}?after_id=${baselineScanId}`, {
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
@@ -325,7 +333,10 @@
             })
             .then(res => res.json())
             .then(data => {
-                if (data.status === 'detected' && data.data && data.data.uid) {
+                if (data.found && data.status === 'detected' && data.data && data.data.uid) {
+                    if (data.latest_id !== undefined && data.latest_id !== null) {
+                        baselineScanId = Number(data.latest_id);
+                    }
                     const detectedUid = String(data.data.uid).toUpperCase().replace(/[^A-Z0-9]/g, '');
                     const formattedUid = data.data.formatted_uid || (detectedUid.match(/.{1,2}/g)?.join(':') || detectedUid);
                     const cardType = data.data.card_type || 'Smart Card / RFID';
